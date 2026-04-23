@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.env/
+.env
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Datasets (raw / large — keep local)
+dataset/NTHUDDD2/
+dataset/YawDD_raw/
+dataset/YawDD+/
+dataset/YawDD_plus_reconstructed/
+
+# Model weights and serialized checkpoints
+checkpoints/
+artifacts/models/
+archive.zip
+*.pt
+*.pth
+*.ckpt
+*.ckpt.*
+*.pkl
+*.joblib
+*.safetensors
+*.onnx
+*.h5
+*.pb
+
+# Large / regenerable artifacts (keep: artifacts/mappings/, artifacts/splits/, lightweight artifacts/results/)
+artifacts/visual_checks/
+artifacts/figures/
+artifacts/preprocessed/

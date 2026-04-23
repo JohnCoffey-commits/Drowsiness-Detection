@@ -1,0 +1,4 @@
+cnn_architecture,model,train_accuracy,validation_accuracy,test_accuracy,precision,recall,f1,status
+CNN-1 (ResNet18),resnet18,N/A,N/A,N/A,N/A,N/A,N/A,split manifest has no samples: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/artifacts/splits/yawdd_dash_subject_split.csv
+CNN-2 (MobileNetV2),mobilenet_v2,N/A,N/A,N/A,N/A,N/A,N/A,split manifest has no samples: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/artifacts/splits/yawdd_dash_subject_split.csv
+CNN-3 (EfficientNet-B0),efficientnet_b0,N/A,N/A,N/A,N/A,N/A,N/A,split manifest has no samples: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/artifacts/splits/yawdd_dash_subject_split.csv
