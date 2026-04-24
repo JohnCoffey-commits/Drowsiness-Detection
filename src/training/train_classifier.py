@@ -3,9 +3,19 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
+import random
 import time
 from copy import deepcopy
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+MPL_CONFIG_DIR = PROJECT_ROOT / "artifacts" / "cache" / "matplotlib"
+TORCH_CACHE_DIR = PROJECT_ROOT / "artifacts" / "cache" / "torch"
+MPL_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+TORCH_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+os.environ.setdefault("MPLCONFIGDIR", str(MPL_CONFIG_DIR))
+os.environ.setdefault("TORCH_HOME", str(TORCH_CACHE_DIR))
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -17,13 +27,29 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import models, transforms
 
 
-LABEL_TO_INDEX = {"no-yawn": 0, "yawn": 1}
+LABEL_TO_INDEX = {"no_yawn": 0, "yawn": 1}
 INDEX_TO_LABEL = {v: k for k, v in LABEL_TO_INDEX.items()}
+LABEL_ALIASES = {"no-yawn": "no_yawn", "no_yawn": "no_yawn", "yawn": "yawn"}
 MODEL_NAMES = {"resnet18", "mobilenet_v2", "efficientnet_b0"}
 
 
 def repo_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return PROJECT_ROOT
+
+
+def canonical_label(label: str) -> str:
+    try:
+        return LABEL_ALIASES[label]
+    except KeyError as exc:
+        raise ValueError(f"Unsupported label {label!r}; expected one of {sorted(LABEL_TO_INDEX)}") from exc
+
+
+def set_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 
 class MouthCropDataset(Dataset):
@@ -47,14 +73,34 @@ def read_split(path: Path) -> dict[str, list[dict[str, str]]]:
     if not path.exists():
         raise SystemExit(f"Split manifest not found: {path}")
     rows_by_split = {"train": [], "val": [], "test": []}
+    skipped_bad_label = 0
+    skipped_missing_file = 0
     with path.open(newline="") as f:
         for row in csv.DictReader(f):
-            if row.get("split") in rows_by_split and row.get("label") in LABEL_TO_INDEX:
-                if Path(row["processed_path"]).exists():
-                    rows_by_split[row["split"]].append(row)
+            split = row.get("split")
+            if split not in rows_by_split:
+                continue
+            try:
+                label = canonical_label(row.get("label", ""))
+            except ValueError:
+                skipped_bad_label += 1
+                continue
+            processed_path = row.get("processed_path") or row.get("mouth_crop_path")
+            if not processed_path or not Path(processed_path).is_file():
+                skipped_missing_file += 1
+                continue
+            normalized_row = dict(row)
+            normalized_row["label"] = label
+            normalized_row["processed_path"] = processed_path
+            rows_by_split[split].append(normalized_row)
     if not all(rows_by_split.values()):
         counts = {split: len(rows) for split, rows in rows_by_split.items()}
         raise SystemExit(f"Split manifest must contain existing samples for train/val/test. Found: {counts}")
+    if skipped_bad_label or skipped_missing_file:
+        print(
+            "Skipped rows while reading split manifest: "
+            f"bad_label={skipped_bad_label}, missing_file={skipped_missing_file}"
+        )
     return rows_by_split
 
 
@@ -65,6 +111,7 @@ def build_transforms(image_size: int) -> dict[str, transforms.Compose]:
             [
                 transforms.RandomResizedCrop(image_size, scale=(0.90, 1.0), ratio=(0.95, 1.05)),
                 transforms.RandomRotation(8),
+                transforms.RandomAffine(degrees=0, scale=(0.95, 1.05)),
                 transforms.ColorJitter(brightness=0.15, contrast=0.15),
                 transforms.ToTensor(),
                 normalize,
@@ -117,15 +164,16 @@ def class_weights(rows: list[dict[str, str]], device: torch.device) -> torch.Ten
     return torch.tensor(weights, dtype=torch.float32, device=device)
 
 
-def accuracy_from_logits(logits: torch.Tensor, targets: torch.Tensor) -> float:
+def correct_from_logits(logits: torch.Tensor, targets: torch.Tensor) -> int:
     predictions = logits.argmax(dim=1)
-    return (predictions == targets).float().mean().item()
+    return int((predictions == targets).sum().item())
 
 
 def run_epoch(model, dataloader, criterion, optimizer, device: torch.device, train: bool) -> tuple[float, float]:
     model.train(train)
-    losses = []
-    accuracies = []
+    total_loss = 0.0
+    total_correct = 0
+    total_samples = 0
     for images, labels in dataloader:
         images = images.to(device)
         labels = labels.to(device)
@@ -136,9 +184,11 @@ def run_epoch(model, dataloader, criterion, optimizer, device: torch.device, tra
                 optimizer.zero_grad(set_to_none=True)
                 loss.backward()
                 optimizer.step()
-        losses.append(loss.item())
-        accuracies.append(accuracy_from_logits(logits.detach(), labels))
-    return float(np.mean(losses)), float(np.mean(accuracies))
+        batch_size = labels.size(0)
+        total_loss += loss.item() * batch_size
+        total_correct += correct_from_logits(logits.detach(), labels)
+        total_samples += batch_size
+    return total_loss / total_samples, total_correct / total_samples
 
 
 @torch.no_grad()
@@ -165,6 +215,7 @@ def make_loaders(rows_by_split, batch_size: int, image_size: int, num_workers: i
     transforms_by_split = build_transforms(image_size)
     datasets = {
         "train": MouthCropDataset(rows_by_split["train"], transform=transforms_by_split["train"]),
+        "train_eval": MouthCropDataset(rows_by_split["train"], transform=transforms_by_split["eval"]),
         "val": MouthCropDataset(rows_by_split["val"], transform=transforms_by_split["eval"]),
         "test": MouthCropDataset(rows_by_split["test"], transform=transforms_by_split["eval"]),
     }
@@ -183,13 +234,20 @@ def make_loaders(rows_by_split, batch_size: int, image_size: int, num_workers: i
 def plot_history(history: list[dict[str, float]], output_path: Path, title: str) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     epochs = [row["epoch"] for row in history]
-    plt.figure(figsize=(8, 5))
-    plt.plot(epochs, [row["train_acc"] * 100 for row in history], label="Train accuracy")
-    plt.plot(epochs, [row["val_acc"] * 100 for row in history], label="Validation accuracy")
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy (%)")
-    plt.title(title)
-    plt.legend()
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+    axes[0].plot(epochs, [row["train_acc"] * 100 for row in history], label="Train")
+    axes[0].plot(epochs, [row["val_acc"] * 100 for row in history], label="Validation")
+    axes[0].set_xlabel("Epoch")
+    axes[0].set_ylabel("Accuracy (%)")
+    axes[0].set_title("Accuracy")
+    axes[0].legend()
+    axes[1].plot(epochs, [row["train_loss"] for row in history], label="Train")
+    axes[1].plot(epochs, [row["val_loss"] for row in history], label="Validation")
+    axes[1].set_xlabel("Epoch")
+    axes[1].set_ylabel("Loss")
+    axes[1].set_title("Loss")
+    axes[1].legend()
+    fig.suptitle(title)
     plt.tight_layout()
     plt.savefig(output_path, dpi=160)
     plt.close()
@@ -213,23 +271,24 @@ def plot_confusion(cm: np.ndarray, output_path: Path, title: str) -> None:
 
 
 def train_one(args: argparse.Namespace) -> dict[str, object]:
+    set_seed(args.seed)
+    torch.hub.set_dir(str(TORCH_CACHE_DIR))
     rows_by_split = read_split(args.split_manifest)
     device = select_device()
+    if device.type == "cpu":
+        cpu_threads = args.cpu_threads or (os.cpu_count() or 1)
+        torch.set_num_threads(cpu_threads)
+        torch.set_num_interop_threads(min(4, cpu_threads))
     batch_size = args.batch_size
 
-    try:
-        loaders = make_loaders(rows_by_split, batch_size, args.image_size, args.num_workers)
-    except RuntimeError as exc:
-        if "out of memory" in str(exc).lower() and batch_size > 16:
-            batch_size = 16
-            loaders = make_loaders(rows_by_split, batch_size, args.image_size, args.num_workers)
-        else:
-            raise
+    loaders = make_loaders(rows_by_split, batch_size, args.image_size, args.num_workers)
 
+    pretrained_used = not args.no_pretrained
     try:
         model = build_model(args.model, pretrained=not args.no_pretrained)
     except Exception as exc:  # noqa: BLE001 - offline environments may not have cached weights.
         print(f"Pretrained weights unavailable for {args.model}: {exc}. Falling back to random initialization.")
+        pretrained_used = False
         model = build_model(args.model, pretrained=False)
     model.to(device)
 
@@ -240,6 +299,7 @@ def train_one(args: argparse.Namespace) -> dict[str, object]:
 
     best_state = deepcopy(model.state_dict())
     best_val_acc = -1.0
+    best_train_acc = -1.0
     best_epoch = 0
     epochs_without_improvement = 0
     history: list[dict[str, float]] = []
@@ -270,6 +330,7 @@ def train_one(args: argparse.Namespace) -> dict[str, object]:
 
         if val_acc > best_val_acc:
             best_val_acc = val_acc
+            best_train_acc = train_acc
             best_epoch = epoch
             best_state = deepcopy(model.state_dict())
             epochs_without_improvement = 0
@@ -279,32 +340,50 @@ def train_one(args: argparse.Namespace) -> dict[str, object]:
                 break
 
     model.load_state_dict(best_state)
-    checkpoint_dir = args.output_dir / "checkpoints"
-    checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    torch.save(model.state_dict(), checkpoint_dir / f"{args.model}_best.pt")
+    args.checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
     metrics: dict[str, object] = {
         "model": args.model,
         "batch_size": batch_size,
+        "image_size": args.image_size,
+        "device": str(device),
+        "cpu_threads": torch.get_num_threads(),
+        "pretrained_requested": not args.no_pretrained,
+        "pretrained_used": pretrained_used,
         "best_epoch": best_epoch,
         "duration_seconds": round(time.time() - start, 2),
+        "class_to_index": LABEL_TO_INDEX,
+        "train_accuracy": float(best_train_acc),
+        "val_accuracy": float(best_val_acc),
     }
-    for split in ["train", "val", "test"]:
-        y_true, y_pred = collect_predictions(model, loaders[split], device)
-        acc = float(np.mean(np.array(y_true) == np.array(y_pred)))
-        precision, recall, f1, _ = precision_recall_fscore_support(
-            y_true, y_pred, labels=[0, 1], average="binary", pos_label=1, zero_division=0
-        )
-        metrics[f"{split}_accuracy"] = acc
-        metrics[f"{split}_precision"] = float(precision)
-        metrics[f"{split}_recall"] = float(recall)
-        metrics[f"{split}_f1"] = float(f1)
-        if split == "test":
-            cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
-            metrics["test_confusion_matrix"] = cm.tolist()
-            plot_confusion(cm, args.figures_dir / f"{args.model}_confusion_matrix.png", f"{args.model} Test Confusion Matrix")
+    y_true, y_pred = collect_predictions(model, loaders["test"], device)
+    test_acc = float(np.mean(np.array(y_true) == np.array(y_pred)))
+    precision, recall, f1, _ = precision_recall_fscore_support(
+        y_true, y_pred, labels=[0, 1], average="binary", pos_label=1, zero_division=0
+    )
+    cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
+    metrics["test_accuracy"] = test_acc
+    metrics["test_precision"] = float(precision)
+    metrics["test_recall"] = float(recall)
+    metrics["test_f1"] = float(f1)
+    metrics["test_confusion_matrix"] = cm.tolist()
+    plot_confusion(
+        cm,
+        args.figures_dir / f"{args.model}_test_confusion_matrix.png",
+        f"{args.model} Test Confusion Matrix",
+    )
 
     plot_history(history, args.figures_dir / f"{args.model}_training_curve.png", f"{args.model} Training Curve")
+    torch.save(
+        {
+            "model": args.model,
+            "model_state_dict": model.state_dict(),
+            "metrics": metrics,
+            "history": history,
+            "class_to_index": LABEL_TO_INDEX,
+        },
+        args.checkpoint_dir / f"{args.model}_best.pt",
+    )
     (args.output_dir / f"{args.model}_history.json").write_text(json.dumps(history, indent=2) + "\n")
     (args.output_dir / f"{args.model}_metrics.json").write_text(json.dumps(metrics, indent=2) + "\n")
     return metrics
@@ -316,18 +395,22 @@ def main() -> None:
     parser.add_argument("--split-manifest", type=Path, default=repo_root() / "artifacts" / "splits" / "yawdd_dash_subject_split.csv")
     parser.add_argument("--output-dir", type=Path, default=repo_root() / "artifacts" / "results")
     parser.add_argument("--figures-dir", type=Path, default=repo_root() / "artifacts" / "figures")
+    parser.add_argument("--checkpoint-dir", type=Path, default=repo_root() / "checkpoints")
     parser.add_argument("--image-size", type=int, default=224)
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--epochs", type=int, default=12)
     parser.add_argument("--freeze-epochs", type=int, default=3)
     parser.add_argument("--patience", type=int, default=3)
     parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--num-workers", type=int, default=2)
+    parser.add_argument("--num-workers", type=int, default=0)
+    parser.add_argument("--cpu-threads", type=int, default=0, help="0 uses os.cpu_count() on CPU.")
+    parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--no-pretrained", action="store_true")
     args = parser.parse_args()
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     args.figures_dir.mkdir(parents=True, exist_ok=True)
+    args.checkpoint_dir.mkdir(parents=True, exist_ok=True)
     metrics = train_one(args)
     print(json.dumps(metrics, indent=2))
 
