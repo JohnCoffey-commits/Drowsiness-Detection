@@ -1,0 +1,5 @@
+subject_id,split,num_images,num_drowsy,num_notdrowsy
+006,test,6739,2763,3976
+001,train,19016,9584,9432
+005,train,21933,13087,8846
+002,val,18833,10596,8237
