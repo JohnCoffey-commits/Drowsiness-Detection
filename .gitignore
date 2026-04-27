@@ -33,13 +33,16 @@ coverage.xml
 ._*
 
 # Datasets (raw / large — keep local)
+dataset/
 dataset/NTHUDDD2/
 dataset/YawDD_raw/
 dataset/YawDD+/
 dataset/YawDD_plus_reconstructed/
+*.zip
 
 # Model weights and serialized checkpoints
 checkpoints/
+outputs/**/checkpoints/
 artifacts/models/
 archive.zip
 *.pt

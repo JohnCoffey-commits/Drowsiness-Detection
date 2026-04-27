@@ -1,0 +1,136 @@
+{
+  "model_name": "mobilenet_v2",
+  "pretrained_requested": true,
+  "pretrained_required": true,
+  "pretrained_loaded": true,
+  "best_epoch": 8,
+  "best_val_macro_f1": 0.9791083314409976,
+  "checkpoint_path": "/content/drive/MyDrive/Drowsiness_Detection_Colab/outputs/mrl_eye/checkpoints/best_mobilenet_v2_mrl_eye.pt",
+  "val_threshold_sweep_path": "/content/drive/MyDrive/Drowsiness_Detection_Colab/outputs/mrl_eye/results/mobilenet_v2_val_threshold_sweep.csv",
+  "test_threshold_sweep_path": "/content/drive/MyDrive/Drowsiness_Detection_Colab/outputs/mrl_eye/results/mobilenet_v2_test_threshold_sweep.csv",
+  "threshold_selection": {
+    "threshold": 0.3,
+    "selection_source": "validation",
+    "selection_reason": "highest validation closed-eye recall among thresholds within 0.02 macro F1 of the best validation threshold",
+    "validation_metrics": {
+      "threshold": 0.3,
+      "accuracy": 0.9755161562667894,
+      "macro_f1": 0.9755099146830744,
+      "precision_closed": 0.9634710234278668,
+      "recall_closed": 0.987051950102637,
+      "f1_closed": 0.9751189454800717,
+      "precision_open": 0.9874636905671915,
+      "recall_open": 0.964605734767025,
+      "f1_open": 0.9759008838860769,
+      "false_open_count": 82.0,
+      "false_closed_count": 237.0
+    }
+  },
+  "test_metrics_at_validation_threshold": {
+    "accuracy": 0.9847908745247148,
+    "macro_precision": 0.98473631742994,
+    "macro_recall": 0.9848581236461105,
+    "macro_f1": 0.9847857288279747,
+    "weighted_f1": 0.9847918298439408,
+    "precision_closed": 0.9810934299669135,
+    "recall_closed": 0.9879422497223544,
+    "f1_closed": 0.984505928853755,
+    "precision_open": 0.9883792048929664,
+    "recall_open": 0.9817739975698664,
+    "f1_open": 0.9850655288021944,
+    "confusion_matrix": [
+      [
+        6227,
+        76
+      ],
+      [
+        120,
+        6464
+      ]
+    ],
+    "num_samples": 12887,
+    "false_open_count": 76,
+    "false_closed_count": 120,
+    "threshold": 0.3
+  },
+  "splits": {
+    "train": {
+      "accuracy": 0.9932521786307688,
+      "macro_precision": 0.9932563046137515,
+      "macro_recall": 0.9932481782627096,
+      "macro_f1": 0.9932518713675986,
+      "weighted_f1": 0.9932521508381201,
+      "precision_closed": 0.9938170390107263,
+      "recall_closed": 0.9925963834868645,
+      "f1_closed": 0.9932063362010105,
+      "precision_open": 0.9926955702167767,
+      "recall_open": 0.9938999730385548,
+      "f1_open": 0.9932974065341866,
+      "confusion_matrix": [
+        [
+          29093,
+          217
+        ],
+        [
+          181,
+          29491
+        ]
+      ],
+      "num_samples": 58982,
+      "false_open_count": 217,
+      "false_closed_count": 181
+    },
+    "val": {
+      "accuracy": 0.9791234937447233,
+      "macro_precision": 0.9790853709433487,
+      "macro_recall": 0.9791329566298623,
+      "macro_f1": 0.9791083314409976,
+      "weighted_f1": 0.9791240121140815,
+      "precision_closed": 0.9776201733648542,
+      "recall_closed": 0.9794726038212538,
+      "f1_closed": 0.978545511910396,
+      "precision_open": 0.9805505685218432,
+      "recall_open": 0.9787933094384708,
+      "f1_open": 0.9796711509715994,
+      "confusion_matrix": [
+        [
+          6203,
+          130
+        ],
+        [
+          142,
+          6554
+        ]
+      ],
+      "num_samples": 13029,
+      "false_open_count": 130,
+      "false_closed_count": 142
+    },
+    "test": {
+      "accuracy": 0.98626522852487,
+      "macro_precision": 0.9862740431433692,
+      "macro_recall": 0.9862434598348411,
+      "macro_f1": 0.9862582697344271,
+      "weighted_f1": 0.9862650125624081,
+      "precision_closed": 0.9866539561487131,
+      "recall_closed": 0.9852451213707758,
+      "f1_closed": 0.9859490354846392,
+      "precision_open": 0.9858941301380252,
+      "recall_open": 0.9872417982989065,
+      "f1_open": 0.9865675039842149,
+      "confusion_matrix": [
+        [
+          6210,
+          93
+        ],
+        [
+          84,
+          6500
+        ]
+      ],
+      "num_samples": 12887,
+      "false_open_count": 93,
+      "false_closed_count": 84
+    }
+  }
+}

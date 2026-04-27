@@ -1,0 +1,28 @@
+{
+  "analysis_date": "2026-04-27T20:34:37",
+  "source_output_dir": "/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/mrl_eye",
+  "artifact_completeness": "complete",
+  "primary_selected_model": "mobilenet_v2",
+  "recommended_default_threshold": 0.5,
+  "recommended_default_rule": "argmax / p_eye_closed >= 0.50",
+  "safety_prioritized_reference": {
+    "model": "resnet18",
+    "threshold": 0.3,
+    "rule": "p_eye_closed >= 0.30",
+    "test_macro_f1": 0.9760212299822918,
+    "test_recall_closed": 0.9907980326828494,
+    "test_false_open_count": 58,
+    "test_false_closed_count": 251
+  },
+  "primary_default_test_metrics": {
+    "test_accuracy": 0.98626522852487,
+    "test_macro_f1": 0.9862582697344272,
+    "test_recall_closed": 0.9852451213707758,
+    "test_false_open_count": 93,
+    "test_false_closed_count": 84
+  },
+  "stage10_status": "READY",
+  "stage10_checkpoint_required": "outputs/mrl_eye/checkpoints/best_mobilenet_v2_mrl_eye.pt",
+  "stage10_checkpoint_found": true,
+  "missing_artifacts": []
+}

@@ -1,0 +1,79 @@
+[
+  {
+    "epoch": 1,
+    "phase": "head_only",
+    "train_loss": 0.3785248416748518,
+    "train_accuracy_batch": 0.8576345325692584,
+    "val_accuracy": 0.9118121114437026,
+    "val_macro_f1": 0.9117816768602414,
+    "val_recall_closed": 0.9188378335701879,
+    "lr": 0.0001,
+    "seconds": 311.2679626941681
+  },
+  {
+    "epoch": 2,
+    "phase": "fine_tune",
+    "train_loss": 0.04659414602153231,
+    "train_accuracy_batch": 0.984096843104676,
+    "val_accuracy": 0.9758999155729526,
+    "val_macro_f1": 0.975880778599939,
+    "val_recall_closed": 0.9748934154429181,
+    "lr": 0.0001,
+    "seconds": 315.6141951084137
+  },
+  {
+    "epoch": 3,
+    "phase": "fine_tune",
+    "train_loss": 0.03188556873242956,
+    "train_accuracy_batch": 0.9885727849174324,
+    "val_accuracy": 0.9795840049121192,
+    "val_macro_f1": 0.9795758088788562,
+    "val_recall_closed": 0.987051950102637,
+    "lr": 0.0001,
+    "seconds": 317.59701347351074
+  },
+  {
+    "epoch": 4,
+    "phase": "fine_tune",
+    "train_loss": 0.028784589301945718,
+    "train_accuracy_batch": 0.9896069987453799,
+    "val_accuracy": 0.9837286054186815,
+    "val_macro_f1": 0.9837218714040641,
+    "val_recall_closed": 0.9909995262908574,
+    "lr": 0.0001,
+    "seconds": 306.8031589984894
+  },
+  {
+    "epoch": 5,
+    "phase": "fine_tune",
+    "train_loss": 0.02687364822056337,
+    "train_accuracy_batch": 0.9902682174222645,
+    "val_accuracy": 0.9829610868063551,
+    "val_macro_f1": 0.9829449313195204,
+    "val_recall_closed": 0.9794726038212538,
+    "lr": 0.0001,
+    "seconds": 307.52444648742676
+  },
+  {
+    "epoch": 6,
+    "phase": "fine_tune",
+    "train_loss": 0.02655725891738731,
+    "train_accuracy_batch": 0.9905733952731341,
+    "val_accuracy": 0.97728144907514,
+    "val_macro_f1": 0.97727625401942,
+    "val_recall_closed": 0.9897363019106269,
+    "lr": 5e-05,
+    "seconds": 312.4294309616089
+  },
+  {
+    "epoch": 7,
+    "phase": "fine_tune",
+    "train_loss": 0.021714074150533298,
+    "train_accuracy_batch": 0.9919127869519514,
+    "val_accuracy": 0.9739811190421368,
+    "val_macro_f1": 0.9739795862190592,
+    "val_recall_closed": 0.9939996841939049,
+    "lr": 5e-05,
+    "seconds": 316.27196860313416
+  }
+]
