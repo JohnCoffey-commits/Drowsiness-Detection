@@ -1,0 +1,8 @@
+Wrote combined real mouth timeline: outputs/stage15_real_mouth_eye_fusion/combined_stage14_real_mouth_timeline.csv
+Wrote Stage 15 comparison: outputs/stage15_real_mouth_eye_fusion/stage15_real_fusion_rule_comparison.csv
+Wrote Stage 15 summary: outputs/stage15_real_mouth_eye_fusion/stage15_real_fusion_summary.json
+Wrote Stage 15 report: reports/stage15_real_mouth_eye_fusion_validation_report.md
+Used real Stage 14 mouth/yawn timelines: true
+Used synthetic mouth timelines: false
+Used manual mouth annotation: false
+Warning: this is not final system-level drowsiness accuracy.

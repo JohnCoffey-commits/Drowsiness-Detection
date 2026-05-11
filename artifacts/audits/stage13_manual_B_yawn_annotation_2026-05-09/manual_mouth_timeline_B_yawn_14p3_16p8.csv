@@ -1,0 +1,388 @@
+video_slug,timestamp_sec,frame_index,p_yawn,yawn_event,recent_yawn_event,mouth_signal_status,mouth_source,notes
+A_normal_open_baseline,0.0,0,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,0.166715,5,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,0.333429,10,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,0.500144,15,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,0.666859,20,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,0.833573,25,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,1.000288,30,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,1.167003,35,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,1.333718,40,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,1.500432,45,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,1.667147,50,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,1.833862,55,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,2.000576,60,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,2.167291,65,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,2.334006,70,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,2.50072,75,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,2.667435,80,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,2.83415,85,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,3.000865,90,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,3.167579,95,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,3.334294,100,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,3.501009,105,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,3.667723,110,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,3.834438,115,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,4.001153,120,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,4.167867,125,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,4.334582,130,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,4.501297,135,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,4.668012,140,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,4.834726,145,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,5.001441,150,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,5.168156,155,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,5.33487,160,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,5.501585,165,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,5.6683,170,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,5.835014,175,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,6.001729,180,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,6.168444,185,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,6.335159,190,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,6.501873,195,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,6.668588,200,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,6.835303,205,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,7.002017,210,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,7.168732,215,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,7.335447,220,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,7.502161,225,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,7.668876,230,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,7.835591,235,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,8.002305,240,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,8.16902,245,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,8.335735,250,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,8.50245,255,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,8.669164,260,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,8.835879,265,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,9.002594,270,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,9.169308,275,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,9.336023,280,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,9.502738,285,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,9.669452,290,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,9.836167,295,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,10.002882,300,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,10.169597,305,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,10.336311,310,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,10.503026,315,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,10.669741,320,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,10.836455,325,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,11.00317,330,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,11.169885,335,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,11.336599,340,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+A_normal_open_baseline,11.503314,345,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+B_realistic_drowsy_simulation,0.0,0,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,0.208425,5,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,0.416851,10,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,0.625276,15,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,0.833702,20,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,1.042127,25,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,1.250552,30,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,1.458978,35,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,1.667403,40,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,1.875828,45,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,2.084254,50,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,2.292679,55,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,2.501105,60,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,2.70953,65,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,2.917955,70,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,3.126381,75,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,3.334806,80,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,3.543232,85,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,3.751657,90,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,3.960082,95,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,4.168508,100,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,4.376933,105,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,4.585359,110,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,4.793784,115,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,5.002209,120,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,5.210635,125,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,5.41906,130,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,5.627485,135,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,5.835911,140,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,6.044336,145,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,6.252762,150,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,6.461187,155,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,6.669612,160,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,6.878038,165,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,7.086463,170,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,7.294889,175,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,7.503314,180,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,7.711739,185,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,7.920165,190,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,8.12859,195,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,8.337016,200,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,8.545441,205,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,8.753866,210,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,8.962292,215,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,9.170717,220,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,9.379142,225,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,9.587568,230,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,9.795993,235,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,10.004419,240,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,10.212844,245,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,10.421269,250,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,10.629695,255,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,10.83812,260,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,11.046546,265,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,11.254971,270,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,11.463396,275,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,11.671822,280,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,11.880247,285,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,12.088672,290,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,12.297098,295,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,12.505523,300,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,12.713949,305,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,12.922374,310,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,13.130799,315,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,13.339225,320,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,13.54765,325,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,13.756076,330,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,13.964501,335,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,14.172926,340,0.05,False,False,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,14.381352,345,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,14.589777,350,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,14.798203,355,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,15.006628,360,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,15.215053,365,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,15.423479,370,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,15.631904,375,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,15.840329,380,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,16.048755,385,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,16.25718,390,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,16.465606,395,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,16.674031,400,0.95,True,True,ok,manual_video_review_annotation,user confirmed yawning from 14.3s to 16.8s
+B_realistic_drowsy_simulation,16.882456,405,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,17.090882,410,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,17.299307,415,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,17.507733,420,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,17.716158,425,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,17.924583,430,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,18.133009,435,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,18.341434,440,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,18.549859,445,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,18.758285,450,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,18.96671,455,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,19.175136,460,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,19.383561,465,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,19.591986,470,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,19.800412,475,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,20.008837,480,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,20.217263,485,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,20.425688,490,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,20.634113,495,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,20.842539,500,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,21.050964,505,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+B_realistic_drowsy_simulation,21.25939,510,0.05,False,True,ok,manual_video_review_annotation,outside manually confirmed yawn interval
+C_mild_head_motion,0.0,0,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,0.167142,5,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,0.334285,10,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,0.501427,15,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,0.668569,20,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,0.835712,25,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,1.002854,30,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,1.169996,35,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,1.337139,40,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,1.504281,45,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,1.671424,50,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,1.838566,55,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,2.005708,60,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,2.172851,65,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,2.339993,70,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,2.507135,75,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,2.674278,80,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,2.84142,85,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,3.008562,90,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,3.175705,95,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,3.342847,100,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,3.509989,105,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,3.677132,110,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,3.844274,115,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,4.011416,120,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,4.178559,125,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,4.345701,130,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,4.512844,135,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,4.679986,140,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,4.847128,145,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,5.014271,150,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,5.181413,155,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,5.348555,160,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,5.515698,165,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,5.68284,170,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,5.849982,175,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,6.017125,180,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,6.184267,185,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,6.351409,190,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,6.518552,195,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,6.685694,200,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,6.852837,205,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,7.019979,210,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,7.187121,215,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,7.354264,220,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,7.521406,225,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,7.688548,230,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,7.855691,235,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,8.022833,240,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,8.189975,245,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,8.357118,250,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,8.52426,255,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,8.691402,260,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,8.858545,265,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,9.025687,270,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,9.192829,275,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,9.359972,280,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,9.527114,285,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,9.694257,290,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,9.861399,295,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,10.028541,300,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,10.195684,305,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,10.362826,310,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,10.529968,315,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,10.697111,320,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,10.864253,325,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,11.031395,330,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,11.198538,335,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,11.36568,340,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,11.532822,345,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,11.699965,350,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,11.867107,355,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,12.034249,360,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,12.201392,365,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,12.368534,370,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,12.535677,375,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,12.702819,380,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,12.869961,385,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,13.037104,390,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,13.204246,395,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,13.371388,400,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,13.538531,405,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,13.705673,410,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,13.872815,415,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,14.039958,420,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,14.2071,425,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,14.374242,430,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,14.541385,435,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,14.708527,440,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,14.875669,445,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,15.042812,450,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,15.209954,455,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,15.377097,460,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,15.544239,465,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+C_mild_head_motion,15.711381,470,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,0.0,0,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,0.166709,5,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,0.333418,10,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,0.500126,15,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,0.666835,20,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,0.833544,25,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,1.000253,30,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,1.166961,35,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,1.33367,40,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,1.500379,45,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,1.667088,50,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,1.833796,55,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,2.000505,60,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,2.167214,65,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,2.333923,70,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,2.500631,75,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,2.66734,80,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,2.834049,85,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,3.000758,90,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,3.167466,95,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,3.334175,100,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,3.500884,105,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,3.667593,110,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,3.834301,115,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,4.00101,120,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,4.167719,125,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,4.334428,130,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,4.501136,135,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,4.667845,140,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,4.834554,145,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,5.001263,150,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,5.167971,155,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,5.33468,160,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,5.501389,165,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,5.668098,170,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,5.834806,175,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,6.001515,180,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,6.168224,185,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,6.334933,190,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,6.501641,195,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,6.66835,200,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,6.835059,205,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,7.001768,210,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,7.168476,215,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,7.335185,220,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,7.501894,225,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,7.668603,230,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,7.835311,235,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,8.00202,240,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,8.168729,245,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,8.335438,250,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,8.502146,255,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,8.668855,260,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,8.835564,265,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,9.002273,270,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,9.168981,275,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,9.33569,280,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,9.502399,285,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,9.669108,290,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,9.835816,295,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,10.002525,300,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,10.169234,305,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,10.335943,310,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,10.502652,315,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,10.66936,320,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,10.836069,325,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,11.002778,330,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,11.169487,335,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,11.336195,340,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,11.502904,345,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,11.669613,350,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,11.836322,355,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,12.00303,360,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,12.169739,365,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,12.336448,370,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,12.503157,375,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,12.669865,380,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,12.836574,385,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,13.003283,390,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,13.169992,395,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,13.3367,400,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,13.503409,405,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,13.670118,410,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,13.836827,415,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,14.003535,420,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,14.170244,425,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,14.336953,430,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,14.503662,435,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,14.67037,440,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,14.837079,445,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,15.003788,450,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,15.170497,455,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,15.337205,460,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,15.503914,465,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,15.670623,470,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,15.837332,475,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,16.00404,480,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,16.170749,485,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,16.337458,490,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,16.504167,495,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,16.670875,500,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,16.837584,505,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,17.004293,510,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,17.171002,515,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,17.33771,520,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,17.504419,525,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,17.671128,530,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,17.837837,535,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,18.004545,540,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,18.171254,545,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,18.337963,550,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,18.504672,555,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,18.67138,560,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,18.838089,565,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,19.004798,570,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,19.171507,575,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,19.338215,580,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,19.504924,585,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video
+D_controlled_long_open_closed,19.671633,590,0.05,False,False,ok,manual_video_review_annotation,no manually confirmed yawn interval for this video

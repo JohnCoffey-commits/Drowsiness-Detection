@@ -1,0 +1,10 @@
+$ python -m py_compile src/runtime/stage10_eye_roi_consistency.py
+stage10_py_compile=PASS
+$ python -m py_compile src/runtime/stage11_eye_temporal_analysis.py
+stage11_py_compile=PASS
+$ python src/runtime/stage10_eye_roi_consistency.py --preflight
+[done] predictions: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage10_eye_roi_consistency/runtime_eye_roi_predictions.csv
+[done] failures: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage10_eye_roi_consistency/failures.csv
+[done] summary: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage10_eye_roi_consistency/summary.json
+[done] report: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage10_eye_roi_consistency/STAGE10_RUNTIME_EYE_ROI_REPORT.md
+preflight=PASS

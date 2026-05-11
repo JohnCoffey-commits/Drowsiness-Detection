@@ -1,0 +1,24 @@
+{
+  "model": "resnet18",
+  "best_epoch": 4,
+  "batch_size": 32,
+  "image_size": 224,
+  "pretrained_used": true,
+  "duration_seconds": 548.02,
+  "train_accuracy": 0.9891747440891385,
+  "val_accuracy": 0.9885290148448043,
+  "test_accuracy": 0.9937242244934552,
+  "test_precision": 0.9647435897435898,
+  "test_recall": 0.9788617886178862,
+  "test_f1": 0.9717514124293786,
+  "test_confusion_matrix": [
+    [
+      9880,
+      44
+    ],
+    [
+      26,
+      1204
+    ]
+  ]
+}

@@ -1,0 +1,15 @@
+/Users/zhengpeixian/.matplotlib is not a writable directory
+Matplotlib created a temporary cache directory at /var/folders/_c/prf4j4_d3cnc67s5crnwdyz40000gn/T/matplotlib-u0foqevl because there was an issue with the default path (/Users/zhengpeixian/.matplotlib); it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
+Matplotlib is building the font cache; this may take a moment.
+python 3.12.11 | packaged by conda-forge | (main, Jun  4 2025, 14:38:53) [Clang 18.1.8 ]
+opencv 4.13.0
+mediapipe 0.10.35
+pillow 12.2.0
+numpy 2.4.4
+pandas 3.0.2
+matplotlib 3.10.9
+scikit-learn 1.8.0
+torch 2.11.0
+torchvision 0.26.0
+cuda_available False
+mps_available False

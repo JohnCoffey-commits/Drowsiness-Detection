@@ -1,0 +1,4 @@
+Wrote Stage 13 fusion comparison: outputs/stage13_mouth_eye_fusion_manual_B_yawn_annotation/stage13_fusion_rule_comparison.csv
+Wrote Stage 13 summary: outputs/stage13_mouth_eye_fusion_manual_B_yawn_annotation/stage13_fusion_summary.json
+Used real mouth timeline: artifacts/audits/stage13_manual_B_yawn_annotation_2026-05-09/manual_mouth_timeline_B_yawn_14p3_16p8.csv
+Warning: this is not final system-level drowsiness accuracy.

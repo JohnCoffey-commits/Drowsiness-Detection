@@ -1,0 +1,8 @@
+{
+  "fastapi_available": true,
+  "runs_root": "/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs",
+  "audit_dir": "/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/artifacts/audits/stage17_video_upload_mvp_2026-05-09",
+  "static_dir": "/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/src/backend/static",
+  "pipeline_script_exists": "/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/src/runtime/system_video_upload_pipeline.py",
+  "warning": "This output is a rule-based drowsiness warning-candidate analysis, not final system-level drowsiness accuracy."
+}

@@ -1,0 +1,9 @@
+Controlled video test was not run.
+
+Reason: the smoke test failed first, so the full controlled test was skipped according to the requested stop condition.
+
+Smoke failure:
+- command: python src/runtime/stage10_eye_roi_consistency.py --input-video "/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/temp/test/IMG_4901.mp4" --sample-every-n-frames 5 --max-frames 20 --save-crops --save-debug-frames --output-dir outputs/stage10_eye_roi_consistency_IMG_4901_smoke
+- exit code: 134
+- fatal error source: MediaPipe FaceLandmarker graph initialization
+- key error: graph_service.h:139 Check failed: service_ Service is unavailable.

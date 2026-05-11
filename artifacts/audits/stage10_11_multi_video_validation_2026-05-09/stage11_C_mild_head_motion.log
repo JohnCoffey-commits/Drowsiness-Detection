@@ -1,0 +1,8 @@
+[done] temporal summary: outputs/stage11_eye_temporal_analysis_C_mild_head_motion/stage11_eye_temporal_summary.csv
+[done] events: outputs/stage11_eye_temporal_analysis_C_mild_head_motion/stage11_eye_events.csv
+[done] summary: outputs/stage11_eye_temporal_analysis_C_mild_head_motion/stage11_eye_temporal_summary.json
+[done] output report: outputs/stage11_eye_temporal_analysis_C_mild_head_motion/STAGE11_EYE_TEMPORAL_REPORT.md
+[done] repo report: reports/stage11_eye_temporal_analysis_report.md
+[done] figure: outputs/stage11_eye_temporal_analysis_C_mild_head_motion/figures/p_eye_closed_rolling_mean.png
+[done] figure: outputs/stage11_eye_temporal_analysis_C_mild_head_motion/figures/eye_closed_binary_timeline.png
+[done] figure: outputs/stage11_eye_temporal_analysis_C_mild_head_motion/figures/perclos_like_score_over_time.png

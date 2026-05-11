@@ -1,0 +1,299 @@
+.
+├── .DS_Store
+├── .gitignore
+├── README_initial_experiment.md
+├── README_stage7_training.md
+├── README_yawdd_stage123.md
+├── README_yawdd_stage4b.md
+├── README_yawdd_stage5.md
+├── SystemUI
+│   ├── .gitignore
+│   ├── AGENTS.md
+│   ├── CLAUDE.md
+│   ├── README.md
+│   ├── components.json
+│   ├── eslint.config.mjs
+│   ├── next-env.d.ts
+│   ├── next.config.ts
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.mjs
+│   ├── public
+│   │   ├── eye.png
+│   │   ├── file.svg
+│   │   ├── globe.svg
+│   │   ├── next.svg
+│   │   ├── vercel.svg
+│   │   ├── window.svg
+│   │   └── yawn.png
+│   ├── src
+│   │   ├── app
+│   │   │   ├── alerts
+│   │   │   │   └── page.tsx
+│   │   │   ├── favicon.ico
+│   │   │   ├── globals.css
+│   │   │   ├── history-48h
+│   │   │   │   └── page.tsx
+│   │   │   ├── insights
+│   │   │   │   └── page.tsx
+│   │   │   ├── layout.tsx
+│   │   │   ├── live-monitor
+│   │   │   │   └── page.tsx
+│   │   │   ├── model-details
+│   │   │   │   └── page.tsx
+│   │   │   ├── page.tsx
+│   │   │   ├── session-review
+│   │   │   │   └── page.tsx
+│   │   │   └── settings
+│   │   │       └── page.tsx
+│   │   ├── components
+│   │   │   ├── dashboard
+│   │   │   │   ├── ChartMount.tsx
+│   │   │   │   ├── DrowsinessLevelChart.tsx
+│   │   │   │   ├── DrowsinessRiskCard.tsx
+│   │   │   │   ├── LiveVideoCard.tsx
+│   │   │   │   ├── PageChrome.tsx
+│   │   │   │   ├── RecentEventsList.tsx
+│   │   │   │   ├── Sidebar.tsx
+│   │   │   │   ├── StatusMetricCard.tsx
+│   │   │   │   ├── ThemeToggle.tsx
+│   │   │   │   └── TopBar.tsx
+│   │   │   └── ui
+│   │   │       ├── badge.tsx
+│   │   │       ├── button.tsx
+│   │   │       ├── card.tsx
+│   │   │       └── progress.tsx
+│   │   └── lib
+│   │       ├── mockData.ts
+│   │       └── utils.ts
+│   └── tsconfig.json
+├── artifacts
+│   ├── .DS_Store
+│   ├── audits
+│   │   └── stage10_pre_audit_2026-05-09
+│   │       ├── codex_audit
+│   │       │   ├── STAGE10_REPO_AUDIT.md
+│   │       │   ├── codex_stage10_dependency_summary.txt
+│   │       │   ├── codex_stage10_file_existence.tsv
+│   │       │   ├── codex_stage10_inference_grep.txt
+│   │       │   └── codex_stage10_mediapipe_grep.txt
+│   │       └── repo_snapshot
+│   │           ├── git_log_last10.txt
+│   │           ├── git_status.txt
+│   │           ├── repo_dir_list.txt
+│   │           ├── repo_file_list.txt
+│   │           ├── repo_pwd.txt
+│   │           └── repo_tree.txt
+│   ├── cache
+│   │   ├── matplotlib
+│   │   │   └── fontlist-v390.json
+│   │   └── torch
+│   ├── figures
+│   ├── mappings
+│   │   ├── mrl_eye_all_images.csv
+│   │   ├── mrl_eye_trainable.csv
+│   │   ├── mrl_eye_trainable_with_split.csv
+│   │   ├── nthuddd2_kaggle_all_images.csv
+│   │   ├── nthuddd2_kaggle_all_images_trainable.csv
+│   │   ├── nthuddd2_kaggle_all_images_trainable_with_split.csv
+│   │   ├── yawdd_dash_all_labeled_frames.csv
+│   │   ├── yawdd_dash_all_mouth_crops.csv
+│   │   ├── yawdd_dash_all_mouth_crops_trainable.csv
+│   │   └── yawdd_dash_mapping.csv
+│   ├── models
+│   │   └── face_landmarker.task
+│   ├── preprocessed
+│   │   └── yawdd_dash_mouth
+│   │       ├── manifest.csv
+│   │       ├── preprocessing_failures.csv
+│   │       └── preprocessing_summary.json
+│   ├── results
+│   │   ├── initial_results.csv
+│   │   └── metrics_summary.json
+│   ├── splits
+│   │   ├── mrl_eye_subject_split.csv
+│   │   ├── nthuddd2_kaggle_loso_folds.csv
+│   │   ├── nthuddd2_kaggle_subject_split.csv
+│   │   └── yawdd_dash_subject_split.csv
+│   └── visual_checks
+│       ├── 1-FemaleNoGlasses
+│       │   ├── frame_00000000_obj0_class0.jpg
+│       │   ├── frame_00001370_obj0_class0.jpg
+│       │   └── frame_00001661_obj0_class1.jpg
+│       ├── 13-MaleNoGlasses
+│       │   ├── frame_00000000_obj0_class0.jpg
+│       │   ├── frame_00000500_obj0_class0.jpg
+│       │   └── frame_00001001_obj0_class1.jpg
+│       ├── 8-MaleNoGlasses
+│       │   ├── frame_00000000_obj0_class0.jpg
+│       │   ├── frame_00000800_obj0_class0.jpg
+│       │   ├── frame_00001287_obj0_class0.jpg
+│       │   ├── frame_00001287_obj1_class0.jpg
+│       │   └── frame_00001756_obj0_class1.jpg
+│       ├── framecount_audit.csv
+│       ├── mouth_crops
+│       │   ├── face_mesh__no_yawn__1-MaleGlasses__00002566.jpg
+│       │   ├── face_mesh__no_yawn__3-MaleGlasses__00000632.jpg
+│       │   ├── face_mesh__no_yawn__3-MaleGlasses__00001564.jpg
+│       │   ├── face_mesh__no_yawn__9-MaleNoGlasses__00001719.jpg
+│       │   ├── face_mesh__yawn__1-FemaleNoGlasses__00001661.jpg
+│       │   ├── face_mesh__yawn__1-MaleGlasses__00002346.jpg
+│       │   ├── face_mesh__yawn__10-MaleGlasses__00000871.jpg
+│       │   ├── face_mesh__yawn__4-MaleNoGlasses__00000938.jpg
+│       │   ├── fallback_lower_face__no_yawn__12-FemaleGlasses__00000658.jpg
+│       │   ├── fallback_lower_face__no_yawn__12-FemaleGlasses__00000761.jpg
+│       │   ├── fallback_lower_face__no_yawn__12-FemaleGlasses__00000769.jpg
+│       │   ├── fallback_lower_face__no_yawn__12-FemaleGlasses__00000845.jpg
+│       │   ├── fallback_lower_face__yawn__11-MaleGlasses__00001320.jpg
+│       │   ├── fallback_lower_face__yawn__6-FemaleNoGlasses__00000842.jpg
+│       │   └── fallback_lower_face__yawn__6-FemaleNoGlasses__00000843.jpg
+│       ├── mrl_eye_by_split_contact_sheet.jpg
+│       ├── mrl_eye_closed_contact_sheet.jpg
+│       ├── mrl_eye_open_contact_sheet.jpg
+│       ├── nthuddd2_kaggle_drowsy_contact_sheet.jpg
+│       ├── nthuddd2_kaggle_notdrowsy_contact_sheet.jpg
+│       ├── spotcheck
+│       │   ├── 1-FemaleNoGlasses
+│       │   │   ├── c0_00000102.jpg
+│       │   │   ├── c0_00000456.jpg
+│       │   │   ├── c0_00001064.jpg
+│       │   │   ├── c0_00001153.jpg
+│       │   │   ├── c0_00001276.jpg
+│       │   │   ├── c1_00000797.jpg
+│       │   │   ├── c1_00000854.jpg
+│       │   │   ├── c1_00000869.jpg
+│       │   │   ├── c1_00000907.jpg
+│       │   │   ├── c1_00002495.jpg
+│       │   │   └── contact_sheet_1-FemaleNoGlasses.jpg
+│       │   ├── 13-MaleNoGlasses
+│       │   │   ├── c0_00000569.jpg
+│       │   │   ├── c0_00000919.jpg
+│       │   │   ├── c0_00001365.jpg
+│       │   │   ├── c0_00001905.jpg
+│       │   │   ├── c0_00002028.jpg
+│       │   │   ├── c1_00000983.jpg
+│       │   │   ├── c1_00001022.jpg
+│       │   │   ├── c1_00001131.jpg
+│       │   │   ├── c1_00001809.jpg
+│       │   │   ├── c1_00001825.jpg
+│       │   │   └── contact_sheet_13-MaleNoGlasses.jpg
+│       │   ├── 8-MaleNoGlasses
+│       │   │   ├── c0_00000062.jpg
+│       │   │   ├── c0_00000192.jpg
+│       │   │   ├── c0_00000453.jpg
+│       │   │   ├── c0_00000482.jpg
+│       │   │   ├── c0_00001052.jpg
+│       │   │   ├── c1_00001189.jpg
+│       │   │   ├── c1_00001233.jpg
+│       │   │   ├── c1_00001239.jpg
+│       │   │   ├── c1_00001768.jpg
+│       │   │   ├── c1_00001800.jpg
+│       │   │   └── contact_sheet_8-MaleNoGlasses.jpg
+│       │   ├── spotcheck_report.md
+│       │   └── spotcheck_samples.csv
+│       └── validation_log.json
+├── colab_file
+│   ├── .DS_Store
+│   ├── stage7_yawdd_training.ipynb
+│   ├── stage7_yawdd_training_r.ipynb
+│   ├── stage8_nthuddd2_kaggle_training.ipynb
+│   ├── stage9_mrl_eye_training.ipynb
+│   └── stage9_mrl_eye_training_r.ipynb
+├── docs
+│   ├── PROJECT_CURRENT_STATUS.md
+│   ├── PROJECT_LEARNING_GUIDE.md
+│   └── PROJECT_STRUCTURE.md
+├── outputs
+│   ├── .DS_Store
+│   └── mrl_eye
+│       ├── .DS_Store
+│       ├── README.md
+│       ├── artifact_inventory.md
+│       ├── error_analysis
+│       │   ├── efficientnet_b0_false_closed_contact_sheet.jpg
+│       │   ├── efficientnet_b0_false_open_contact_sheet.jpg
+│       │   ├── mobilenet_v2_false_closed_contact_sheet.jpg
+│       │   ├── mobilenet_v2_false_open_contact_sheet.jpg
+│       │   ├── resnet18_false_closed_contact_sheet.jpg
+│       │   └── resnet18_false_open_contact_sheet.jpg
+│       ├── figures
+│       │   ├── efficientnet_b0_confusion_matrix.png
+│       │   ├── efficientnet_b0_pr_curve_closed.png
+│       │   ├── efficientnet_b0_training_curve.png
+│       │   ├── mobilenet_v2_confusion_matrix.png
+│       │   ├── mobilenet_v2_pr_curve_closed.png
+│       │   ├── mobilenet_v2_training_curve.png
+│       │   ├── resnet18_confusion_matrix.png
+│       │   ├── resnet18_pr_curve_closed.png
+│       │   └── resnet18_training_curve.png
+│       ├── reports
+│       │   └── mrl_eye_experiment_summary.md
+│       └── results
+│           ├── efficientnet_b0_history.json
+│           ├── efficientnet_b0_metrics.json
+│           ├── efficientnet_b0_test_threshold_sweep.csv
+│           ├── efficientnet_b0_val_threshold_sweep.csv
+│           ├── mobilenet_v2_history.json
+│           ├── mobilenet_v2_metrics.json
+│           ├── mobilenet_v2_test_threshold_sweep.csv
+│           ├── mobilenet_v2_val_threshold_sweep.csv
+│           ├── mrl_eye_initial_results.csv
+│           ├── mrl_eye_metrics_summary.json
+│           ├── mrl_eye_stage9b_model_comparison.csv
+│           ├── mrl_eye_stage9b_model_selection.json
+│           ├── resnet18_history.json
+│           ├── resnet18_metrics.json
+│           ├── resnet18_test_threshold_sweep.csv
+│           └── resnet18_val_threshold_sweep.csv
+├── reports
+│   ├── dataset_inspection_summary.csv
+│   ├── initial_experiment_summary.md
+│   ├── mrl_eye_dataset_report.md
+│   ├── mrl_eye_split_report.md
+│   ├── mrl_eye_stage9_training_plan.md
+│   ├── mrl_eye_stage9b_error_analysis.md
+│   ├── nthu_dataset_report.md
+│   ├── nthuddd2_kaggle_dataset_report.md
+│   ├── preprocessing_report.md
+│   ├── yawdd_dash_dataset_report.md
+│   ├── yawdd_dash_mapping_report.md
+│   ├── yawdd_dash_mouth_crop_report.md
+│   ├── yawdd_dash_reconstruction_report.md
+│   ├── yawdd_dash_split_report.md
+│   ├── yawdd_dash_visual_sanity_check.md
+│   ├── yawdd_plus_annotation_format_report.md
+│   └── yawdd_raw_dash_report.md
+├── requirements.txt
+└── src
+    ├── .DS_Store
+    ├── __init__.py
+    ├── data
+    │   ├── __init__.py
+    │   ├── audit_yawdd_dash_framecounts.py
+    │   ├── build_mrl_eye_manifest.py
+    │   ├── build_nthuddd2_kaggle_manifest.py
+    │   ├── build_yawdd_dash_mapping.py
+    │   ├── build_yawdd_split.py
+    │   ├── extract_yawdd_dash_labeled_frames.py
+    │   ├── inspect_datasets.py
+    │   ├── inspect_mrl_eye.py
+    │   ├── inspect_yawdd_plus_annotations.py
+    │   ├── inspect_yawdd_raw_dash.py
+    │   ├── merge_yawdd_dash_labels.py
+    │   ├── split_mrl_eye_subjects.py
+    │   ├── split_nthuddd2_kaggle_subject.py
+    │   ├── spotcheck_mrl_eye.py
+    │   ├── spotcheck_nthuddd2_kaggle.py
+    │   ├── spotcheck_yawdd_reconstructed.py
+    │   ├── validate_yawdd_dash_frames.py
+    │   ├── verify_yawdd_dash_reconstruction.py
+    │   └── verify_yawdd_mouth_crops.py
+    ├── preprocessing
+    │   ├── generate_yawdd_mouth_crops.py
+    │   └── precompute_yawdd_mouth_crops.py
+    └── training
+        ├── run_initial_baselines.py
+        ├── train_classifier.py
+        └── train_mrl_eye_baselines.py
+
+53 directories, 244 files

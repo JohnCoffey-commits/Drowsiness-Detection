@@ -1,0 +1,10 @@
+I0000 00:00:1778311930.577238 1208368 init-domain.cc:128] Fiber init: default domain = pthread, concurrency = 11, prefix = pthread-default
+W0000 00:00:1778311930.580407 1208368 face_landmarker_graph.cc:180] Sets FaceBlendshapesGraph acceleration to xnnpack by default.
+I0000 00:00:1778311930.617538 1208368 gl_context.cc:407] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1778311930.622202 1208372 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1778311930.631324 1208375 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[done] predictions: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage10_eye_roi_consistency_IMG_4901_controlled_terminal/runtime_eye_roi_predictions.csv
+[done] failures: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage10_eye_roi_consistency_IMG_4901_controlled_terminal/failures.csv
+[done] summary: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage10_eye_roi_consistency_IMG_4901_controlled_terminal/summary.json
+[done] report: /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage10_eye_roi_consistency_IMG_4901_controlled_terminal/STAGE10_RUNTIME_EYE_ROI_REPORT.md

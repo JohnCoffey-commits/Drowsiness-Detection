@@ -1,0 +1,14 @@
+path	status	size_bytes
+outputs/mrl_eye/checkpoints/best_mobilenet_v2_mrl_eye.pt	FOUND	9156491
+reports/mrl_eye_stage9b_error_analysis.md	FOUND	10016
+docs/PROJECT_STRUCTURE.md	FOUND	12736
+docs/PROJECT_CURRENT_STATUS.md	FOUND	16620
+requirements.txt	FOUND	86
+outputs/mrl_eye/results/mrl_eye_stage9b_model_selection.json	FOUND	1038
+outputs/mrl_eye/results/mrl_eye_stage9b_model_comparison.csv	FOUND	827
+outputs/mrl_eye/results/mobilenet_v2_metrics.json	FOUND	4111
+outputs/mrl_eye/results/mobilenet_v2_val_threshold_sweep.csv	FOUND	1606
+outputs/mrl_eye/results/mobilenet_v2_test_threshold_sweep.csv	FOUND	1597
+artifacts/mappings/mrl_eye_trainable_with_split.csv	FOUND	24606502
+artifacts/splits/mrl_eye_subject_split.csv	FOUND	2349
+artifacts/models/face_landmarker.task	FOUND	3758596

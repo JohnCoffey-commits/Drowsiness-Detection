@@ -1,0 +1,8 @@
+$ /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/.venv-stage10/bin/python src/runtime/system_video_upload_pipeline.py --input-video /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_028476634500/input/B_upload_test.mp4 --session-id upload_028476634500 --output-dir /Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_028476634500 --sample-every-n-frames 5 --max-frames 300 --save-debug --save-keyframes --force
+STAGE17_VIDEO_UPLOAD_PIPELINE_COMPLETED session_id=upload_028476634500
+summary=/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_028476634500/summary.json
+timeline=/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_028476634500/timeline.csv
+keyframes=10
+This output is a rule-based drowsiness warning-candidate analysis, not final system-level drowsiness accuracy.
+
+[exit_code] 0

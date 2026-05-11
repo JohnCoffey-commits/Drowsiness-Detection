@@ -1,0 +1,19 @@
+Stage 10 dependency audit summary
+
+requirements.txt:
+- mediapipe: present, not version-pinned
+- opencv-python: present, not version-pinned
+- pillow: present, not version-pinned
+- numpy: present, not version-pinned
+- pandas: present, not version-pinned
+- scikit-learn: present, not version-pinned
+- matplotlib: present, not version-pinned
+- torch: present, not version-pinned
+- torchvision: present, not version-pinned
+
+MediaPipe model asset:
+- artifacts/models/face_landmarker.task: FOUND, 3758596 bytes
+
+Runtime implication:
+- Stage 10 should not rely on exact dependency versions from requirements.txt because none are pinned.
+- Existing Stage 5 MediaPipe Tasks code may need normal terminal execution on macOS because README_yawdd_stage5.md notes strict sandbox issues for MediaPipe Tasks GL/Metal context.

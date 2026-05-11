@@ -1,0 +1,12 @@
+I0000 00:00:1778342501.248312 1641361 init-domain.cc:128] Fiber init: default domain = pthread, concurrency = 11, prefix = pthread-default
+W0000 00:00:1778342501.248686 1641361 face_landmarker_graph.cc:180] Sets FaceBlendshapesGraph acceleration to xnnpack by default.
+I0000 00:00:1778342501.340140 1641361 gl_context.cc:407] GL version: 2.1 (2.1 Metal - 90.5), renderer: Apple M4
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1778342501.341353 1641389 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1778342501.347426 1641386 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+STAGE14_RUNTIME_COMPLETED video=C_mild_head_motion
+summary=/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/stage14_mouth_yawn_runtime_C_mild_head_motion/summary.json
+successful_mouth_crop_count=89
+failure_count=6
+yawn_event_count=0
+This is runtime mouth/yawn inference, not final system-level drowsiness accuracy.

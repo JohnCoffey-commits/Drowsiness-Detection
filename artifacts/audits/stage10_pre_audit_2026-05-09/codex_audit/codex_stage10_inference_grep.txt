@@ -1,0 +1,27 @@
+Curated grep for inference/demo/runtime/webcam/video/predict/deploy/live/stream, excluding .git, .venv, dataset, data, node_modules, checkpoints, large model/archive files, and generated repo snapshot files.
+
+Path-name matches:
+SystemUI/src/app/live-monitor
+SystemUI/src/components/dashboard/LiveVideoCard.tsx
+
+Relevant content matches:
+SystemUI/src/app/live-monitor/page.tsx: Live Monitor dashboard page with tracking status, model signals, ROI preview cards, runtime event stream.
+SystemUI/src/components/dashboard/LiveVideoCard.tsx: Frontend video card with static Unsplash image and drawn ROI boxes; no Python or model integration.
+SystemUI/src/lib/mockData.ts: Mock live-monitor data, demo-video/webcam settings, selected eye model MobileNetV2, default threshold string.
+SystemUI/src/app/page.tsx: Imports LiveVideoCard for dashboard landing page.
+SystemUI/src/app/session-review/page.tsx: Contains session video playback placeholder text.
+
+Python ML/training matches:
+src/training/train_mrl_eye_baselines.py: predict(...) helper for offline train/val/test evaluation; not a reusable runtime inference CLI.
+src/training/train_classifier.py: collect_predictions(...) helper for offline classifier evaluation.
+
+Offline data/video preparation matches:
+src/data/inspect_yawdd_raw_dash.py: Inspects raw YawDD Dash video files without decoding frames.
+src/data/build_yawdd_dash_mapping.py: Maps YawDD+ annotation folders to raw YawDD Dash videos.
+src/data/audit_yawdd_dash_framecounts.py: Reads raw video frame counts for audit.
+src/data/validate_yawdd_dash_frames.py: Decodes selected frames for validation.
+src/data/extract_yawdd_dash_labeled_frames.py: Offline YawDD Dash frame extraction.
+src/data/build_yawdd_split.py: Carries raw_video_path metadata into YawDD split artifacts.
+
+Conclusion:
+No existing Python inference/demo/runtime pipeline found.

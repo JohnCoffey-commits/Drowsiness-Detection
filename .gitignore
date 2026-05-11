@@ -5,6 +5,8 @@ __pycache__/
 *.so
 .Python
 .venv/
+.venv-stage10/
+.venv-*/
 venv/
 env/
 .env/
@@ -21,6 +23,16 @@ htmlcov/
 .coverage
 .coverage.*
 coverage.xml
+
+# Node / Next.js frontend local artifacts
+node_modules/
+.next/
+out/
+coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # Jupyter
 .ipynb_checkpoints/
@@ -61,3 +73,21 @@ artifacts/visual_checks/
 artifacts/figures/
 artifacts/preprocessed/
 artifacts/cache/
+artifacts/audits/**/*.jpg
+artifacts/audits/**/*.jpeg
+artifacts/audits/**/*.png
+
+# Local browser automation snapshots
+.playwright-cli/
+
+# Runtime output artifacts.
+# Keep previously tracked lightweight outputs/mrl_eye evidence, but do not add new
+# generated Stage 10+ runtime/upload runs or large debug frames by accident.
+outputs/stage*/
+outputs/stage*.csv
+outputs/stage*.json
+outputs/system_video_upload_runs/
+
+# Local upload-validation videos and generated upload evidence
+upload_test/*.mp4
+upload_test/results/

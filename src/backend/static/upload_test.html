@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stage 17 Video Upload Analysis</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f4f7f9;
+        color: #0f172a;
+      }
+      body {
+        margin: 0;
+        padding: 32px;
+      }
+      main {
+        max-width: 1120px;
+        margin: 0 auto;
+        display: grid;
+        gap: 18px;
+      }
+      section {
+        background: white;
+        border: 1px solid #dbe4ee;
+        border-radius: 8px;
+        padding: 18px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      }
+      h1, h2 {
+        margin: 0 0 10px;
+      }
+      p {
+        color: #475569;
+        line-height: 1.5;
+      }
+      button {
+        border: 0;
+        border-radius: 8px;
+        background: #2563eb;
+        color: white;
+        padding: 10px 14px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+      input[type="file"] {
+        display: block;
+        margin: 14px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+      }
+      .metric {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        background: #f8fafc;
+      }
+      .metric span {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .metric strong {
+        font-size: 28px;
+      }
+      img {
+        max-width: 100%;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+      }
+      .keyframes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      .keyframes figure {
+        margin: 0;
+      }
+      .keyframes figcaption {
+        margin-top: 6px;
+        color: #475569;
+        font-size: 13px;
+      }
+      code {
+        background: #eef2ff;
+        border-radius: 6px;
+        padding: 2px 6px;
+      }
+      .warning {
+        color: #92400e;
+        background: #fffbeb;
+        border-color: #fde68a;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section>
+        <h1>Stage 17 Video Upload Analysis</h1>
+        <p>
+          Upload a short demo video to run rule-based eye-mouth warning-candidate
+          analysis. This is not final system-level drowsiness accuracy.
+        </p>
+        <input id="videoFile" type="file" accept=".mp4,.mov,.avi,.m4v,video/*" />
+        <button id="uploadButton" type="button">Analyze video</button>
+        <p id="status"></p>
+      </section>
+
+      <section class="warning">
+        <strong>Claim boundary</strong>
+        <p>
+          Use "drowsiness warning candidate", "high-confidence warning candidate",
+          "eye-warning candidate", "mouth-warning candidate", and "signal unreliable".
+          Do not treat this MVP as final drowsy/not-drowsy truth.
+        </p>
+      </section>
+
+      <section id="results" hidden>
+        <h2>Result Summary</h2>
+        <div class="grid" id="metrics"></div>
+      </section>
+
+      <section id="figureSection" hidden>
+        <h2>Fusion Timeline</h2>
+        <img id="fusionFigure" alt="Fusion state timeline" />
+      </section>
+
+      <section id="keyframeSection" hidden>
+        <h2>Keyframes</h2>
+        <div class="keyframes" id="keyframes"></div>
+      </section>
+    </main>
+
+    <script>
+      const button = document.getElementById("uploadButton");
+      const fileInput = document.getElementById("videoFile");
+      const statusEl = document.getElementById("status");
+      const results = document.getElementById("results");
+      const metrics = document.getElementById("metrics");
+      const figureSection = document.getElementById("figureSection");
+      const fusionFigure = document.getElementById("fusionFigure");
+      const keyframeSection = document.getElementById("keyframeSection");
+      const keyframes = document.getElementById("keyframes");
+
+      function metric(label, value) {
+        return `<div class="metric"><span>${label}</span><strong>${value ?? 0}</strong></div>`;
+      }
+
+      button.addEventListener("click", async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+          statusEl.textContent = "Choose a video first.";
+          return;
+        }
+        button.disabled = true;
+        statusEl.textContent = "Uploading and analyzing. Short demo videos can still take a while.";
+        results.hidden = true;
+        figureSection.hidden = true;
+        keyframeSection.hidden = true;
+
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+          const response = await fetch("/api/analyze-video", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.detail?.error || data.detail || "Analysis failed");
+          }
+          const summary = data.summary || {};
+          statusEl.textContent = `Completed session ${data.session_id}`;
+          metrics.innerHTML = [
+            metric("Normal frames", summary.normal_frames),
+            metric("Eye-warning", summary.eye_warning_candidate_frames),
+            metric("Mouth-warning", summary.mouth_warning_candidate_frames),
+            metric("High-confidence", summary.high_confidence_drowsiness_candidate_frames),
+            metric("Signal unreliable", summary.signal_unreliable_frames),
+            metric("Keyframes", (data.keyframes || []).length),
+          ].join("");
+          results.hidden = false;
+          if (data.fusion_figure_url) {
+            fusionFigure.src = data.fusion_figure_url;
+            figureSection.hidden = false;
+          }
+          keyframes.innerHTML = (data.keyframes || [])
+            .slice(0, 20)
+            .map((item) => `
+              <figure>
+                <img src="${item.url}" alt="${item.warning_type} keyframe" />
+                <figcaption>${item.warning_type} at ${Number(item.timestamp_sec).toFixed(2)}s</figcaption>
+              </figure>
+            `)
+            .join("");
+          keyframeSection.hidden = (data.keyframes || []).length === 0;
+        } catch (error) {
+          statusEl.textContent = String(error.message || error);
+        } finally {
+          button.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>

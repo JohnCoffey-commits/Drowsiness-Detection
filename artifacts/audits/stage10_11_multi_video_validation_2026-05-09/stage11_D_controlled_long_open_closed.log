@@ -1,0 +1,8 @@
+[done] temporal summary: outputs/stage11_eye_temporal_analysis_D_controlled_long_open_closed/stage11_eye_temporal_summary.csv
+[done] events: outputs/stage11_eye_temporal_analysis_D_controlled_long_open_closed/stage11_eye_events.csv
+[done] summary: outputs/stage11_eye_temporal_analysis_D_controlled_long_open_closed/stage11_eye_temporal_summary.json
+[done] output report: outputs/stage11_eye_temporal_analysis_D_controlled_long_open_closed/STAGE11_EYE_TEMPORAL_REPORT.md
+[done] repo report: reports/stage11_eye_temporal_analysis_report.md
+[done] figure: outputs/stage11_eye_temporal_analysis_D_controlled_long_open_closed/figures/p_eye_closed_rolling_mean.png
+[done] figure: outputs/stage11_eye_temporal_analysis_D_controlled_long_open_closed/figures/eye_closed_binary_timeline.png
+[done] figure: outputs/stage11_eye_temporal_analysis_D_controlled_long_open_closed/figures/perclos_like_score_over_time.png

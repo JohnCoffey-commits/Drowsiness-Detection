@@ -1,0 +1,35 @@
+Curated grep for MediaPipe and Face Mesh usage, excluding .git, .venv, dataset, data, node_modules, checkpoints, large model/archive files, and generated repo snapshot files.
+
+requirements.txt:1:mediapipe
+
+src/preprocessing/generate_yawdd_mouth_crops.py:5:MediaPipe Face Mesh (via the MediaPipe Tasks `FaceLandmarker`) is used to detect 478 facial landmarks per frame.
+src/preprocessing/generate_yawdd_mouth_crops.py:43:import mediapipe as mp
+src/preprocessing/generate_yawdd_mouth_crops.py:44:from mediapipe.tasks.python import BaseOptions
+src/preprocessing/generate_yawdd_mouth_crops.py:45:from mediapipe.tasks.python.vision import (
+src/preprocessing/generate_yawdd_mouth_crops.py:46:    FaceLandmarker,
+src/preprocessing/generate_yawdd_mouth_crops.py:47:    FaceLandmarkerOptions,
+src/preprocessing/generate_yawdd_mouth_crops.py:55:MOUTH_LANDMARK_IDS: Tuple[int, ...] = (
+src/preprocessing/generate_yawdd_mouth_crops.py:111:def mouth_bbox_from_landmarks(landmarks, img_w: int, img_h: int) -> Tuple[int, int, int, int]:
+src/preprocessing/generate_yawdd_mouth_crops.py:157:def build_landmarker(model_path: Path) -> FaceLandmarker:
+src/preprocessing/generate_yawdd_mouth_crops.py:158:options = FaceLandmarkerOptions(...)
+src/preprocessing/generate_yawdd_mouth_crops.py:166:return FaceLandmarker.create_from_options(options)
+src/preprocessing/generate_yawdd_mouth_crops.py:326:mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
+src/preprocessing/generate_yawdd_mouth_crops.py:328:result = landmarker.detect(mp_image)
+src/preprocessing/generate_yawdd_mouth_crops.py:336:if result is not None and result.face_landmarks:
+src/preprocessing/generate_yawdd_mouth_crops.py:338:bbox = mouth_bbox_from_landmarks(result.face_landmarks[0], w, h)
+
+src/preprocessing/precompute_yawdd_mouth_crops.py:12:MOUTH_LANDMARKS = [
+src/preprocessing/precompute_yawdd_mouth_crops.py:84:def mouth_box_from_landmarks(face_landmarks, width: int, height: int) -> tuple[int, int, int, int]:
+src/preprocessing/precompute_yawdd_mouth_crops.py:163:import mediapipe as mp
+src/preprocessing/precompute_yawdd_mouth_crops.py:172:with mp.solutions.face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1, refine_landmarks=True) as face_mesh:
+src/preprocessing/precompute_yawdd_mouth_crops.py:182:result = face_mesh.process(image_rgb)
+src/preprocessing/precompute_yawdd_mouth_crops.py:187:box = mouth_box_from_landmarks(result.multi_face_landmarks[0], width, height)
+
+README_yawdd_stage5.md:20:Runs the MediaPipe Tasks `FaceLandmarker` on the full frame.
+README_yawdd_stage5.md:21:Uses a fixed set of 40 lip landmarks (outer lip + inner lip).
+README_yawdd_stage5.md:83:.venv/bin/pip install mediapipe opencv-python numpy pillow
+README_yawdd_stage5.md:90:curl ... artifacts/models/face_landmarker.task
+
+Conclusion:
+- MediaPipe is used for mouth ROI generation only.
+- No Python eye ROI implementation was found.
