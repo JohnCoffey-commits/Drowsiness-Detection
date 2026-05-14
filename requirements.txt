@@ -1,3 +1,4 @@
+fastapi
 mediapipe
 opencv-python
 pillow
@@ -7,3 +8,5 @@ scikit-learn
 matplotlib
 torch
 torchvision
+python-multipart
+uvicorn

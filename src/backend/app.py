@@ -9,36 +9,52 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 import time
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+from src.runtime.realtime_temporal_state import REALTIME_RULE_WARNING, RealtimeTemporalState  # noqa: E402
+
 RUNS_ROOT = PROJECT_ROOT / "outputs" / "system_video_upload_runs"
 AUDIT_DIR = PROJECT_ROOT / "artifacts" / "audits" / "stage17_video_upload_mvp_2026-05-09"
 STATIC_DIR = PROJECT_ROOT / "src" / "backend" / "static"
 ALLOWED_EXTENSIONS = {".mp4", ".mov", ".avi", ".m4v"}
 MAX_UPLOAD_BYTES = 750 * 1024 * 1024
+DEFAULT_CORS_ORIGINS = (
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:3001",
+    "http://localhost:3001",
+)
 WARNING = (
     "This output is a rule-based drowsiness warning-candidate analysis, "
     "not final system-level drowsiness accuracy."
 )
+REALTIME_WARNING = REALTIME_RULE_WARNING
+MAX_REALTIME_FRAME_BYTES = 8 * 1024 * 1024
+REALTIME_SESSIONS: dict[str, dict[str, Any]] = {}
 
 
 try:
-    from fastapi import FastAPI, File, HTTPException, UploadFile
+    from fastapi import FastAPI, File, Form, HTTPException, UploadFile
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
     from fastapi.staticfiles import StaticFiles
 except ImportError as exc:  # pragma: no cover - exercised by preflight in minimal envs.
     FastAPI = None
     File = None
+    Form = None
     HTTPException = None
     UploadFile = None
     CORSMiddleware = None
@@ -67,6 +83,35 @@ def load_json(path: Path) -> Any:
     if not path.exists():
         raise FileNotFoundError(path)
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def parse_optional_float(value: str | None) -> float | None:
+    if value is None or value == "":
+        return None
+    try:
+        return float(value)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid numeric field: {value}") from exc
+
+
+def parse_optional_int(value: str | None) -> int | None:
+    parsed = parse_optional_float(value)
+    return None if parsed is None else int(parsed)
+
+
+def configured_cors_origins() -> list[str]:
+    """Return local defaults plus comma-separated deployment origins."""
+
+    origins = list(DEFAULT_CORS_ORIGINS)
+    for origin in os.environ.get("VISIONGUARD_CORS_ORIGINS", "").split(","):
+        normalized = origin.strip().rstrip("/")
+        if normalized and normalized not in origins:
+            origins.append(normalized)
+    return origins
 
 
 def session_dir(session_id: str) -> Path:
@@ -186,12 +231,7 @@ def create_app():
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[
-            "http://127.0.0.1:3000",
-            "http://localhost:3000",
-            "http://127.0.0.1:3001",
-            "http://localhost:3001",
-        ],
+        allow_origins=configured_cors_origins(),
         allow_credentials=False,
         allow_methods=["GET", "POST"],
         allow_headers=["*"],
@@ -248,6 +288,144 @@ def create_app():
         response["audit_log"] = log_path
         return JSONResponse(response)
 
+    @app.get("/api/realtime/health")
+    async def realtime_health():
+        from src.runtime.realtime_frame_inference import get_realtime_service
+
+        return JSONResponse(get_realtime_service().health())
+
+    @app.post("/api/realtime/session/start")
+    async def realtime_session_start():
+        session_id = f"realtime_{uuid.uuid4().hex[:12]}"
+        started_at = now_iso()
+        REALTIME_SESSIONS[session_id] = {
+            "session_id": session_id,
+            "started_at": started_at,
+            "last_frame_at": None,
+            "stopped_at": None,
+            "status": "active",
+            "temporal_state": RealtimeTemporalState(),
+        }
+        return JSONResponse(
+            {
+                "ok": True,
+                "session_id": session_id,
+                "started_at": started_at,
+                "note": (
+                    "Lightweight in-memory realtime session. Frame-level evidence is fused into "
+                    "a session-local realtime warning-candidate state; no alarm output, "
+                    "system-level conclusion, or history ingestion is computed."
+                ),
+                "warning": REALTIME_WARNING,
+            }
+        )
+
+    @app.post("/api/realtime/session/stop")
+    async def realtime_session_stop(session_id: str = Form(...)):
+        session = REALTIME_SESSIONS.get(session_id)
+        if session is None:
+            raise HTTPException(status_code=404, detail=f"Unknown realtime session_id: {session_id}")
+
+        if session.get("status") == "stopped":
+            stopped_at = str(session.get("stopped_at") or now_iso())
+            note = (
+                "Realtime session was already stopped. Model singleton remains loaded for future sessions."
+            )
+        else:
+            stopped_at = now_iso()
+            session["status"] = "stopped"
+            session["stopped_at"] = stopped_at
+            temporal_state = session.get("temporal_state")
+            if isinstance(temporal_state, RealtimeTemporalState):
+                temporal_state.freeze()
+            note = (
+                "Realtime session stopped in memory. Session-local temporal state is frozen; "
+                "model singleton remains loaded and checkpoints are not unloaded."
+            )
+
+        return JSONResponse(
+            {
+                "ok": True,
+                "session_id": session_id,
+                "stopped_at": stopped_at,
+                "note": note,
+                "warning": REALTIME_WARNING,
+            }
+        )
+
+    @app.post("/api/realtime/frame")
+    async def realtime_frame(
+        session_id: str = Form(...),
+        frame: UploadFile = File(...),
+        client_timestamp_ms: str | None = Form(default=None),
+        frame_width: str | None = Form(default=None),
+        frame_height: str | None = Form(default=None),
+        sampling_fps: str | None = Form(default=None),
+    ):
+        session = REALTIME_SESSIONS.get(session_id)
+        if session is None:
+            raise HTTPException(status_code=404, detail=f"Unknown realtime session_id: {session_id}")
+        if session.get("status") == "stopped":
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "ok": False,
+                    "session_id": session_id,
+                    "error": "Realtime session has been stopped.",
+                    "warning": REALTIME_WARNING,
+                },
+            )
+        if frame.content_type not in {"image/jpeg", "image/jpg", "application/octet-stream"}:
+            raise HTTPException(status_code=400, detail="Realtime frame must be an image/jpeg upload.")
+
+        frame_bytes = await frame.read()
+        await frame.close()
+        if not frame_bytes:
+            raise HTTPException(status_code=400, detail="Realtime frame upload is empty.")
+        if len(frame_bytes) > MAX_REALTIME_FRAME_BYTES:
+            raise HTTPException(status_code=413, detail="Realtime frame upload is too large.")
+
+        from src.runtime.realtime_frame_inference import RealtimeFrameInferenceError, get_realtime_service
+
+        try:
+            result = get_realtime_service().analyze_frame(
+                session_id=session_id,
+                frame_bytes=frame_bytes,
+                client_timestamp_ms=parse_optional_float(client_timestamp_ms),
+                frame_width=parse_optional_int(frame_width),
+                frame_height=parse_optional_int(frame_height),
+                sampling_fps=parse_optional_float(sampling_fps),
+            )
+        except RealtimeFrameInferenceError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "ok": False,
+                    "session_id": session_id,
+                    "error": str(exc),
+                    "warning": REALTIME_WARNING,
+                },
+            ) from exc
+        except Exception as exc:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "ok": False,
+                    "session_id": session_id,
+                    "error": f"Realtime frame inference failed: {exc}",
+                    "warning": REALTIME_WARNING,
+                },
+            ) from exc
+
+        temporal_state = session.get("temporal_state")
+        if not isinstance(temporal_state, RealtimeTemporalState):
+            temporal_state = RealtimeTemporalState()
+            session["temporal_state"] = temporal_state
+        result["temporal"] = temporal_state.update_from_frame(result)
+
+        session["last_frame_at"] = now_iso()
+        return JSONResponse(result, status_code=200 if result.get("ok") else 400)
+
     @app.get("/api/runs/{session_id}/summary")
     async def get_summary(session_id: str):
         try:
@@ -293,6 +471,7 @@ def run_preflight() -> int:
         "audit_dir": str(AUDIT_DIR),
         "static_dir": str(STATIC_DIR),
         "pipeline_script_exists": str(PROJECT_ROOT / "src/runtime/system_video_upload_pipeline.py"),
+        "cors_origins": configured_cors_origins(),
         "warning": WARNING,
     }
     if FASTAPI_IMPORT_ERROR is not None:

@@ -10,6 +10,7 @@ The repository currently supports a modular driver monitoring system rather than
 - MRL Eye open/closed specialist -> `p_eye_closed`
 - Runtime video analysis and rule-based fusion -> warning-candidate states
 - FastAPI + Next.js Stage 17 video-upload analysis workstation
+- FastAPI + Next.js Stage 19 Live Monitor realtime webcam warning-candidate prototype with product-style visual warning overlays, default-on sound alerts after camera start, and a realtime-bound warning-candidate risk gauge
 
 ## 2. High-Level Project Architecture
 
@@ -18,10 +19,11 @@ The repository currently supports a modular driver monitoring system rather than
 | Mouth/yawn module | Original YawDD Dash videos plus YawDD+ annotation files | Binary mouth/yawn classification | `p_yawn` | Stage 7 completed |
 | Eye open/closed module | MRL Eye | Binary eye-state classification | `p_eye_closed` | Stage 9 and Stage 9B completed |
 | Runtime temporal analysis | Controlled A/B/C/D videos and upload videos | Eye/mouth ROI extraction, timeline generation, rule-based fusion | warning-candidate timelines | Stage 10-15 completed as controlled-validation prototype |
-| Video Upload Analysis MVP | Uploaded local videos through FastAPI + SystemUI | Professional warning-candidate review page | summary, intervals, figures, keyframes, technical files | Stage 17.4 local MVP stabilized |
+| Video Upload Analysis MVP | Uploaded local videos through FastAPI + SystemUI | Professional warning-candidate review page | summary, intervals, figures, keyframes, technical files | Stage 17.5 evidence-review UI polished |
+| Live Monitor realtime prototype | Browser webcam sampled frames through SystemUI + FastAPI | Single-frame evidence, session-local temporal warning-candidate state, product-style visual warning overlays, face visibility cue, default-on sound alerts after camera start, and realtime-bound warning-candidate risk gauge | `p_eye_closed`, `p_yawn`, ROI quality, realtime candidate state, product warning overlays, frontend warning-candidate severity score | Stage 19.6B local prototype with clean product-style webcam frame, automatic sampling from Start Camera, and dynamic risk gauge binding |
 | NTHUDDD2 branch | Official NTHU considered; Kaggle extracted-frame version explored | Drowsy/not-drowsy frame classification | Not part of final module direction | Not main direction |
 
-Stage 17 currently produces rule-based drowsiness warning-candidate analysis for uploaded videos. Current reported accuracies are specialist-module results, not final system-level driver drowsiness accuracy. The project does not currently claim webcam support, deployment readiness, final system-level performance, or final drowsiness truth.
+Stage 17 currently produces rule-based drowsiness warning-candidate analysis for uploaded videos. Stage 19.6B adds a local Live Monitor realtime webcam warning-candidate feasibility prototype polish pass with a clean product-style webcam frame, product yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, automatic sampling from Start Camera, default-on sound alerts after the camera user gesture, and a Drowsiness Risk card bound to frontend warning-candidate severity state. Current reported accuracies are specialist-module results, not final system-level driver drowsiness accuracy. The project does not currently include browser notification, 48h history ingestion from webcam, database storage, final drowsiness truth, deployment readiness, or final system-level performance claims.
 
 ## 3. Repository Layout
 
@@ -52,8 +54,8 @@ Drowsiness_Detection/
 | `artifacts/` | Preprocessing outputs, manifests, split files, visual checks, and intermediate results. |
 | `reports/` | Human-readable reports for dataset inspection, preprocessing, split validation, training summaries, and model selection. |
 | `src/` | Python source code for dataset preparation, preprocessing, training, and runtime checks. |
-| `src/backend/` | FastAPI backend for Stage 17 upload analysis and safe artifact serving. |
-| `SystemUI/` | Independent Next.js App Router frontend for the dashboard and Stage 17 video-upload analysis page. |
+| `src/backend/` | FastAPI backend for Stage 17 upload analysis, safe artifact serving, and Stage 19 realtime frame evidence endpoints. |
+| `SystemUI/` | Independent Next.js App Router frontend for Live Monitor, Stage 17 video-upload analysis, and Stage 18 history review pages. |
 | `scripts/` | Local helper scripts, currently including the Stage 17 one-command launcher. |
 | `upload_test/` | Local short videos for upload UI/backend validation. |
 | `colab_file/` | Google Colab notebooks used for GPU training and Colab workflows. |
@@ -194,34 +196,42 @@ Runtime scripts for safe post-training checks.
 | `src/runtime/stage14_mouth_yawn_runtime.py` | Stage 14 runtime mouth ROI consistency and mouth/yawn inference using the recovered Stage 7 ResNet18 checkpoint. |
 | `src/runtime/stage15_real_mouth_eye_fusion_validation.py` | Stage 15 real synchronized rule-based mouth-eye fusion validation using Stage 12 eye timelines and Stage 14 model-generated `p_yawn` timelines. |
 | `src/runtime/system_video_upload_pipeline.py` | Stage 17 single-video upload analysis pipeline that runs eye branch, mouth branch, F5 fusion, and keyframe extraction. |
+| `src/runtime/realtime_frame_inference.py` | Stage 19 realtime single-frame webcam evidence inference service for Live Monitor. |
+| `src/runtime/realtime_temporal_state.py` | Stage 19 session-local realtime temporal warning-candidate state for Live Monitor. |
 | `src/runtime/keyframe_extractor.py` | Stage 17 helper for saving warning-candidate keyframe screenshots. |
 
 ### `src/backend/`
 
-FastAPI backend for local upload analysis and safe artifact serving.
+FastAPI backend for local upload analysis, safe artifact serving, and realtime frame evidence endpoints.
 
 | File | Purpose |
 | --- | --- |
-| `src/backend/app.py` | Stage 17 backend entrypoint. Provides `POST /api/analyze-video` and safe session file URLs under `/api/runs/{session_id}/...`. |
+| `src/backend/app.py` | Stage 17 backend entrypoint plus Stage 19 realtime endpoints. Provides `POST /api/analyze-video`, `/api/realtime/health`, `/api/realtime/session/start`, `/api/realtime/frame`, `/api/realtime/session/stop`, and safe session file URLs under `/api/runs/{session_id}/...`. |
 | `src/backend/static/upload_test.html` | Minimal standalone backend-hosted upload test page. The primary frontend is now SystemUI `/video-upload`. |
 
 ## 8. SystemUI Frontend
 
 `SystemUI/` is an independent Next.js App Router frontend using TypeScript, Tailwind CSS, shadcn/base-ui style components, `lucide-react`, and `recharts`.
 
-Important Stage 17 frontend files:
+Important frontend files:
 
 | Path | Purpose |
 | --- | --- |
+| `SystemUI/src/app/page.tsx` | Route entry for `/` Live Monitor; stores the latest frontend warning-candidate risk state emitted by `LiveVideoCard` and passes it into the Drowsiness Risk card. |
+| `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | Stage 19.6B Live Monitor product UI: clean webcam frame, single Start/Stop Camera button, automatic 2 FPS sampling, product-style yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, default-on sound after camera start, and risk-state callback emission. |
+| `SystemUI/src/components/dashboard/DrowsinessRiskCard.tsx` | Stage 19.6B presentational risk gauge bound to the Live Monitor frontend warning-candidate severity state with smooth score and needle animation. |
 | `SystemUI/src/app/video-upload/page.tsx` | Route entry for `/video-upload`. |
-| `SystemUI/src/components/dashboard/Sidebar.tsx` | Sidebar menu; Video Upload Analysis is placed directly under Dashboard. |
-| `SystemUI/src/components/dashboard/PageChrome.tsx` | Shared dashboard page chrome/layout wrapper. |
+| `SystemUI/src/components/dashboard/Sidebar.tsx` | Sidebar menu; Live Monitor, Video Upload Analysis, 48h History, and Insights navigation. |
+| `SystemUI/src/components/dashboard/AppShell.tsx` | Shared dashboard app shell/layout wrapper. |
 | `SystemUI/src/components/video-upload/VideoUploadAnalysis.tsx` | Main Stage 17 upload analysis workstation component. |
 | `SystemUI/src/components/video-upload/AnalysisSummaryCards.tsx` | Summary metric cards for duration, sampled frames, warning-candidate frame counts, yawn events, and suppressed escalation. |
 | `SystemUI/src/components/video-upload/IntervalReviewTable.tsx` | Warning-candidate interval review table. |
 | `SystemUI/src/components/video-upload/KeyframeEvidenceGallery.tsx` | Keyframe evidence gallery with timestamp, frame index, fusion state, probabilities, and reason metadata. |
 | `SystemUI/src/components/video-upload/TechnicalEvidencePanel.tsx` | Collapsible technical evidence/download links. |
 | `SystemUI/src/components/video-upload/InterpretationNotice.tsx` | Permanent safe interpretation warning and Stage 17 explanation text. |
+| `SystemUI/src/lib/liveMonitorAlertUtils.ts` | Stage 19.5 frontend-only visual alert mapping, debounce, normal-clear, cooldown, and session-local alert event helper. |
+| `SystemUI/src/lib/liveMonitorSoundUtils.ts` | Stage 19.6A Web Audio helper for Live Monitor warning sounds after the camera user gesture. |
+| `SystemUI/src/lib/liveMonitorRiskUtils.ts` | Stage 19.6B frontend utility mapping camera/sampling, alert kind, temporal state, and face/signal quality into a product-facing warning-candidate severity score. |
 | `SystemUI/src/lib/videoUploadTypes.ts` | TypeScript types for backend response, summary, intervals, figures, and keyframes. |
 | `SystemUI/src/lib/videoUploadUtils.ts` | URL, formatting, interval, figure, keyframe, and copy-summary helpers. |
 
@@ -236,6 +246,20 @@ Permanent wording boundary for the page:
 ```text
 This output is a rule-based drowsiness warning-candidate analysis, not final system-level drowsiness accuracy.
 ```
+
+Current Stage 19 Live Monitor route:
+
+```text
+http://127.0.0.1:3000/
+```
+
+Permanent wording boundary for Live Monitor:
+
+```text
+This output is a realtime rule-based warning-candidate analysis, not final system-level drowsiness accuracy.
+```
+
+Current Stage 19.6B Live Monitor includes webcam capture, mirrored preview for frontend display only, automatic 2 FPS frame sampling after Start Camera, single-frame backend evidence, session-local temporal warning-candidate state, a frontend visual alert debounce layer, product-style yawn/eye/critical-eye warning overlays, a face-not-visible signal-quality overlay, a right-side Drowsiness Risk card bound to frontend warning-candidate severity state, smooth score/needle animation, session-local alert events kept out of the default video frame, no default in-card diagnostic panel, and default-on sound alerts initialized by the camera user gesture. It still does not include browser notifications, 48h history ingestion, database storage, final system-level drowsiness accuracy, deployment readiness, or final system-level performance claims.
 
 ## 9. Colab Notebooks
 
@@ -366,6 +390,22 @@ Stage 17 video-upload MVP:
 | `Makefile` | Includes `make stage17-ui` target for the one-command launcher. |
 | `artifacts/audits/stage17_video_upload_mvp_2026-05-09/stage17_systemui_backend_audit.md` | SystemUI/backend audit for Stage 17. |
 
+Stage 18 and Stage 19 frontend/realtime additions:
+
+| Path | Purpose |
+| --- | --- |
+| `SystemUI/src/app/history-48h/page.tsx` | Stage 18 frontend-only 48h History page. |
+| `SystemUI/src/components/history-48h/` | Stage 18 demo/local history charts, timeline, sessions, and review queue components. |
+| `SystemUI/src/lib/history48hTypes.ts` | Stage 18 history event/session types. |
+| `SystemUI/src/lib/history48hStorage.ts` | Stage 18 browser localStorage load/save/reset/clear helpers. |
+| `src/runtime/realtime_frame_inference.py` | Stage 19 single-frame webcam evidence service. |
+| `src/runtime/realtime_temporal_state.py` | Stage 19 realtime warning-candidate temporal state with yawn context/reminder and conservative eye active/reminder semantics. |
+| `SystemUI/src/lib/liveMonitorAlertUtils.ts` | Stage 19.5 frontend visual alert debounce/cooldown state helper for Live Monitor. |
+| `SystemUI/src/lib/liveMonitorSoundUtils.ts` | Stage 19.6A Web Audio sound pattern and playback helper for Live Monitor warning sounds after the camera user gesture. |
+| `SystemUI/src/lib/liveMonitorRiskUtils.ts` | Stage 19.6B frontend risk mapping for idle, normal, yawn warning, eye warning, critical eye warning, and signal-quality states. |
+| `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | Stage 19.6B Live Monitor UI for webcam capture, automatic sampling, clean video frame, product yawn/eye/critical-eye warning overlays, face visibility cue, single Start/Stop Camera button, and risk-state callback emission. |
+| `SystemUI/src/components/dashboard/DrowsinessRiskCard.tsx` | Stage 19.6B dynamic Drowsiness Risk gauge with animated frontend warning-candidate severity score and needle. |
+
 Expected C upload validation markers recorded for Stage 17.4:
 
 | Marker | Expected value |
@@ -408,9 +448,12 @@ Checkpoint locations:
 | Stage 17.2 interpretation wording | Completed; eye-warning evidence is not automatically described as verified sustained full eye closure. |
 | Stage 17.3 Video Upload Analysis UI | Completed in SystemUI route `/video-upload`. |
 | Stage 17.4 launcher and acceptance/demo docs | Completed; `make stage17-ui` starts local backend and frontend. |
+| Stage 17.5 `/video-upload` evidence review cleanup | Completed; compact evidence review UI with safe optional-field handling. |
+| Stage 18 `/history-48h` frontend history page | Completed frontend-only; uses demo/local browser history data. |
+| Stage 19 Live Monitor realtime prototype | Completed through Stage 19.6B with local webcam preview, automatic 2 FPS sampling from Start Camera, realtime frame evidence, rule-based temporal warning-candidate state, conservative yawn/eye semantics, product-style yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, default-on sound after camera start, dynamic Drowsiness Risk gauge binding, and no default in-card diagnostic panel. |
 | Safety-prioritized MRL Eye reference | ResNet18 with validation-selected threshold around `0.30`. |
 | NTHUDDD2 branch | Explored but no longer the main system direction. |
-| Current claim boundary | Rule-based uploaded-video warning-candidate analysis only; no webcam, final system-level performance, or deployment-readiness claim. |
+| Current claim boundary | Local warning-candidate prototypes only; no browser notification, no history ingestion from webcam, no database storage, no final system-level performance, and no deployment-readiness claim. |
 
 ## 13. What Should and Should Not Be Committed to GitHub
 

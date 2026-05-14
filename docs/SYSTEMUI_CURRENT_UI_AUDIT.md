@@ -2,6 +2,8 @@
 
 生成日期：2026-05-10
 
+状态说明（2026-05-13）：本文件是历史 UI 审计快照。它早于 Stage 19 Live Monitor 工作；当前 `/` 已从 Dashboard 改为 Live Monitor，并已接入 browser webcam preview、2 FPS frame sampling、realtime frame evidence 和 realtime rule-based warning-candidate state。当前状态请以 `docs/PROJECT_CURRENT_STATUS.md` 和 `docs/PROJECT_STRUCTURE.md` 为准。
+
 ## 1. 总览
 
 `SystemUI/` 是一个独立的 Next.js 前端项目，用于展示驾驶员疲劳/困倦监测系统的仪表盘界面。
@@ -557,4 +559,3 @@ http://127.0.0.1:8000
 - 不要声称最终系统级准确率。
 - 不要把 webcam 选项描述为已实现。
 - 不要把 mock History/Insights 当作真实结果。
-

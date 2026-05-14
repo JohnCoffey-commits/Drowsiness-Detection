@@ -1,7 +1,9 @@
 # Project Learning Guide: Driver Drowsiness Detection
 
 > 本学习指南基于当前仓库中的 `docs/`、`reports/`、`src/`、`SystemUI/`、`scripts/`、`artifacts/`、`outputs/`、`colab_file/`、`upload_test/` 和 `dataset/` 目录整理。本文主要使用中文说明，并保留关键技术术语的 English labels。  
-> 重要边界：本文解释的是当前已经完成的数据预处理（Data Preprocessing）、specialist modules、runtime temporal analysis、rule-based fusion，以及 Stage 17.4 本地 video-upload warning-candidate MVP。它不是最终系统级疲劳检测准确率（Final System-Level Drowsiness Accuracy）报告。
+> 重要边界：本文解释的是当前已经完成的数据预处理（Data Preprocessing）、specialist modules、runtime temporal analysis、rule-based fusion、Stage 17.5 本地 `/video-upload` warning-candidate evidence review UI、Stage 18 frontend-only `/history-48h` demo/local history page，以及 Stage 19 `/` Live Monitor 本地 realtime warning-candidate prototype。它不是最终系统级疲劳检测准确率（Final System-Level Drowsiness Accuracy）报告，也不是 alarm / deployment readiness 报告。
+
+Last updated: 2026-05-13
 
 ## 1. Project Overview
 
@@ -9,14 +11,16 @@
 
 本项目目标是构建一个基于深度学习（Deep Learning）的驾驶员疲劳检测与监控系统（Driver Drowsiness Detection and Monitoring System）。当前仓库中的设计不是一个单一的端到端疲劳分类器（Monolithic Classifier），而是一个模块化系统（Modular System）：先训练多个可解释的视觉行为专家模型（Specialist Classifiers），再用 runtime ROI extraction、temporal analysis 和 rule-based fusion 把概率输出组合成 uploaded-video warning-candidate analysis。
 
-当前已经完成并稳定到 Stage 17.4 的主要部分是：
+当前已经完成并稳定到 Stage 19 Live Monitor prototype 的主要部分是：
 
 | 模块 | 数据来源 | 当前任务 | 输出概念 | 当前状态 |
 |---|---|---|---|---|
 | 嘴部/打哈欠模块（Mouth/Yawn Specialist） | YawDD Dash 原始视频 + YawDD+ annotation files | `no_yawn` vs `yawn` 二分类（Binary Classification） | `p_yawn` | Stage 7 completed |
 | 眼睛开闭模块（Eye Open/Closed Specialist） | MRL Eye dataset | `closed` vs `open` 二分类（Binary Classification） | `p_eye_closed` | Stage 8, Stage 9, Stage 9B completed |
 | Runtime temporal analysis | A/B/C/D 和 upload test videos | eye ROI、mouth ROI、temporal warning-candidate analysis | sampled timelines | Stage 10-15 completed as controlled-validation prototype |
-| Video Upload Analysis UI | Uploaded short videos | local rule-based warning-candidate review workstation | summary, intervals, figures, keyframes, technical evidence | Stage 17.4 local MVP stabilized |
+| Video Upload Analysis UI | Uploaded short videos | local rule-based warning-candidate review workstation | summary, intervals, tabbed figures, keyframes, technical evidence | Stage 17.5 evidence-review UI polished |
+| 48h History UI | Browser local demo history | recent warning-candidate history review | summary cards, charts, timeline, sessions, review queue | Stage 18 frontend-only page completed |
+| Live Monitor UI/API | Browser webcam sampled frames | realtime frame evidence and temporal warning-candidate state | `p_eye_closed`, `p_yawn`, ROI/signal quality, realtime candidate state | Stage 19 local prototype completed |
 
 `p_yawn` 表示某一帧或某一嘴部区域裁剪（Mouth ROI Crop）属于打哈欠类别的模型概率。`p_eye_closed` 表示某一眼部图像属于闭眼类别的模型概率。这两个值都是 specialist-module outputs。Stage 17 使用它们生成 rule-based warning-candidate results，不生成最终疲劳真值（final drowsiness truth）或最终系统级准确率。
 
@@ -32,7 +36,7 @@
 
 ### 1.3 未来工作（Future Work Suggestions）
 
-当前已经有 Stage 15/17 的 rule-based fusion 和 uploaded-video warning-candidate UI。未来自然的工作包括：Stage 18 real-time webcam warning-candidate feasibility prototype、异步/后台上传任务、更多人工复核、最终疲劳分数（Fatigue Score）设计、learned fusion classifier（需要同步标注数据后才能考虑）和部署评估。当前不能声明 final system-level drowsiness accuracy、deployment readiness 或 final drowsiness truth。
+当前已经有 Stage 15/17 的 rule-based fusion、Stage 17.5 uploaded-video warning-candidate UI、Stage 18 frontend-only 48h history UI，以及 Stage 19 Live Monitor 本地 realtime warning-candidate prototype。更合理的下一步是围绕明确边界继续推进：如果做历史，就接入真实 persisted run records；如果做 Live Monitor，就先设计 alert debounce / alarm policy 和 history ingestion 边界，再实现。当前不能声明 final system-level drowsiness accuracy、deployment readiness、alarm readiness 或 final drowsiness truth。
 
 ## 2. Repository Structure and File Map
 
@@ -49,8 +53,8 @@
 | `src/training/` | CNN baseline 训练脚本 | Model training / evaluation | PyTorch Dataset/DataLoader、transfer learning、metrics |
 | `src/runtime/` | Stage 10-17 runtime scripts | Video inference / temporal analysis / rule-based fusion | eye ROI、mouth ROI、timeline、warning-candidate fusion |
 | `src/backend/` | FastAPI backend | Stage 17 upload API / artifact serving | `/api/analyze-video`、session files、安全 URL |
-| `SystemUI/` | independent Next.js frontend | Stage 17.3 upload analysis workstation | `/video-upload` UI、Sidebar、summary/interval/keyframe review |
-| `scripts/` | local helper scripts | Stage 17.4 launcher | 一键启动 backend + frontend |
+| `SystemUI/` | independent Next.js frontend | Stage 17.5 upload analysis workstation + Stage 18 history page + Stage 19 Live Monitor | `/` Live Monitor、`/video-upload` UI、`/history-48h` UI、Sidebar、summary/interval/keyframe/history review、realtime evidence panel |
+| `scripts/` | local helper scripts | Stage 17 launcher | 一键启动 backend + frontend |
 | `colab_file/` | Colab notebooks | GPU training / completed run records | Stage 7 和 Stage 9 completed notebook outputs |
 | `outputs/` | 同步回本地的训练输出 | Final experiment artifacts | MRL Eye metrics、figures、error analysis、checkpoints |
 | `outputs/mrl_eye/` | MRL Eye Stage 9/9B 完整输出 | Eye module model selection | MobileNetV2 选择证据、threshold sweeps、error sheets |
@@ -78,7 +82,14 @@
 | `reports/stage15_real_mouth_eye_fusion_validation_report.md` | Stage 15 real synchronized rule-based fusion | Stage 12 eye timeline + Stage 14 mouth timeline 如何融合 |
 | `reports/stage17_video_upload_detection_mvp_report.md` | Stage 17 upload backend/pipeline report | `/api/analyze-video`、summary、figures、keyframes |
 | `reports/stage17_2_manual_review_interpretation_report.md` | Stage 17.2 manual interpretation report | 如何安全解释 C 视频的 warning-candidate intervals |
-| `reports/stage17_4_video_upload_mvp_stabilization_report.md` | Stage 17.4 当前稳定报告 | launcher、acceptance、demo、限制边界 |
+| `reports/stage17_4_video_upload_mvp_stabilization_report.md` | Stage 17.4 historical stabilization report | launcher、acceptance、demo、限制边界 |
+| `docs/STAGE17_5_EYE_EVIDENCE_CALIBRATION.md` | Stage 17.5 eye evidence calibration | weak/moderate/strong eye evidence、strength gate、安全解释 |
+| `reports/stage17_5_eye_evidence_calibration_report.md` | Stage 17.5 runtime/report summary | Stage 17.5 backend output interpretation fields |
+| `docs/STAGE17_5_VIDEO_UPLOAD_UI_FALLBACK_POLISH.md` | Stage 17.5 keyframe fallback polish | missing optional fields、recent-yawn temporal window、Supporting keyframe |
+| `docs/STAGE17_5_VIDEO_UPLOAD_UI_SECOND_PASS_CLEANUP.md` | Stage 17.5 `/video-upload` UI cleanup | compact interval table、metric scope、tabbed figures、fusion vs evidence separation |
+| `docs/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md` | Stage 18 48h History page | frontend-only localStorage history、filters、charts、manual review queue |
+| `src/runtime/realtime_frame_inference.py` | Stage 19 realtime frame evidence | webcam JPEG frame decode、MediaPipe ROI、eye/mouth model inference、frame-level evidence |
+| `src/runtime/realtime_temporal_state.py` | Stage 19 realtime temporal state | mouth activity、recent yawn context/reminder、active eye-warning state、recent sustained eye-warning reminder |
 | `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | Stage 17 API/result schema | `summary.json`、interval、timeline、keyframe metadata |
 | `docs/STAGE17_3_LOCAL_LAUNCH_GUIDE.md` | Stage 17 local launch guide | `make stage17-ui`、backend/frontend URL、排错 |
 | `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md` | Stage 17.3 UI report | `/video-upload` 页面结构和 safe wording |
@@ -97,14 +108,16 @@
 
 ### 3.1 已实现事实（Implemented Facts）
 
-当前系统已经形成了“两个 specialist classifiers + runtime temporal analysis + Stage 17 uploaded-video warning-candidate UI”的本地 MVP：
+当前系统已经形成了“两个 specialist classifiers + runtime temporal analysis + Stage 17 uploaded-video warning-candidate UI + Stage 18 frontend history review UI + Stage 19 Live Monitor realtime prototype”的本地 MVP：
 
 1. YawDD/YawDD+ Dash mouth/yawn specialist：输入嘴部裁剪图，输出 `p_yawn`。
 2. MRL Eye open/closed specialist：输入眼部图像，输出 `p_eye_closed`。
 3. Stage 10-15 runtime pipeline：对视频帧抽样，提取 eye/mouth ROI，生成 `p_eye_closed` 和 `p_yawn` timelines，并做 rule-based fusion。
-4. Stage 17.3/17.4 Video Upload Analysis UI：通过 FastAPI `/api/analyze-video` 分析上传视频，并在 Next.js `/video-upload` 中展示 summary、warning-candidate intervals、figures、keyframes 和 technical files。
+4. Stage 17.3/17.5 Video Upload Analysis UI：通过 FastAPI `/api/analyze-video` 分析上传视频，并在 Next.js `/video-upload` 中展示 compact overview、summary metrics、expandable warning-candidate intervals、tabbed figures、keyframes 和 technical files。
+5. Stage 18 48h History UI：在 Next.js `/history-48h` 中用 demo/local `localStorage` 数据展示 recent warning-candidate history、charts、event timeline、sessions 和 manual review queue。
+6. Stage 19 Live Monitor：在 Next.js `/` 中使用 browser webcam preview、2 FPS frame sampling、FastAPI realtime frame evidence endpoints 和 session-local temporal warning-candidate state。
 
-当前已经完成的是 rule-based warning-candidate analysis，而不是最终系统级疲劳真值。也就是说，项目现在可以输出 `normal`、`eye_warning_candidate`、`mouth_warning_candidate`、`high_confidence_drowsiness_candidate` 和 `signal_unreliable` 等 warning-candidate states；但它仍然不是 webcam 系统，不是可部署系统，也不报告 final system-level drowsiness accuracy。
+当前已经完成的是 rule-based warning-candidate analysis、frontend evidence/history review 和本地 realtime warning-candidate prototype，而不是最终系统级疲劳真值。也就是说，项目现在可以输出或展示 `normal`、`eye_warning_candidate`、`mouth_warning_candidate`、`high_confidence_drowsiness_candidate` 和 `signal_unreliable` 等 warning-candidate states；但它仍然不是 alarm system，不是可部署系统，也不报告 final system-level drowsiness accuracy。
 
 ### 3.2 系统设计解释（Inferred Interpretation）
 
@@ -587,7 +600,7 @@ ResNet18 at threshold `0.30` 是 safety-prioritized reference。它把 false_ope
 |---|---|---|
 | Model-level performance | 单个 CNN 在给定数据集 split 上的分类性能 | 已完成 |
 | Specialist-module performance | mouth/yawn 或 eye open/closed module 的任务性能 | 已完成 |
-| Rule-based warning-candidate performance | 多模块、时间融合、Stage 17.1 rule-based fusion 在上传视频中的 warning-candidate 输出 | 已完成本地 MVP，但需要人工验收和更多视频验证 |
+| Rule-based warning-candidate performance | 多模块、时间融合、Stage 17.1/17.5 rule-based fusion/interpretation 在上传视频中的 warning-candidate 输出 | 已完成本地 MVP，但需要更多视频和人工复核 |
 | Final system-level performance | 真实系统级疲劳真值、最终准确率、部署级监控性能 | 未完成，future work |
 
 ## 14. What Has Been Completed vs What Is Future Work
@@ -611,10 +624,16 @@ ResNet18 at threshold `0.30` 是 safety-prioritized reference。它把 false_ope
 | Stage 15 real synchronized fusion | Completed rule-based validation | `reports/stage15_real_mouth_eye_fusion_validation_report.md`, `outputs/stage15_real_mouth_eye_fusion/` | Stage 12 eye timeline + Stage 14 mouth timeline 如何融合 | 不声明 final drowsiness truth |
 | Stage 17.1 sustained-eye gate | Completed | `reports/stage17_video_upload_detection_mvp_report.md`, `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | recent mouth/yawn evidence + sustained eye-warning evidence 才升级 high-confidence | 保持 rule-based，不改成 trained fusion |
 | Stage 17.2 interpretation wording | Completed | `reports/stage17_2_manual_review_interpretation_report.md` | eye-warning evidence 的安全解释边界 | 演示和 UI 必须保持 safe wording |
-| Stage 17.3 Video Upload Analysis UI | Completed local MVP | `SystemUI/src/app/video-upload/page.tsx`, `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md` | upload workstation、summary、intervals、figures、keyframes、technical files | 继续做手工验收和 UX 稳定 |
-| Stage 17.4 launcher and acceptance docs | Completed | `scripts/start_stage17_ui.sh`, `docs/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md`, `reports/stage17_4_video_upload_mvp_stabilization_report.md` | `make stage17-ui` 一键启动、demo script、acceptance checklist | Stage 17.4 acceptance 完成后再进入 Stage 18 |
+| Stage 17.3 Video Upload Analysis UI | Completed local MVP | `SystemUI/src/app/video-upload/page.tsx`, `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md` | upload workstation、summary、intervals、figures、keyframes、technical files | 后续被 Stage 17.5 UI cleanup 改进 |
+| Stage 17.4 launcher and acceptance docs | Completed | `scripts/start_stage17_ui.sh`, `docs/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md`, `reports/stage17_4_video_upload_mvp_stabilization_report.md` | `make stage17-ui` 一键启动、demo script、acceptance checklist | 历史稳定包，当前由 Stage 17.5/18 supersede |
+| Stage 17.5 eye evidence calibration | Completed | `docs/STAGE17_5_EYE_EVIDENCE_CALIBRATION.md`, `reports/stage17_5_eye_evidence_calibration_report.md`, `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | weak/moderate/strong eye evidence、interval eye-strength gate、weak-eye suppression | 不 retrain，不改 `p_eye_closed` / `p_yawn` 公式 |
+| Stage 17.5 `/video-upload` UI evidence cleanup | Completed | `docs/STAGE17_5_VIDEO_UPLOAD_UI_SECOND_PASS_CLEANUP.md`, `SystemUI/src/components/video-upload/` | compact interval table、metric scope、fusion state vs descriptive evidence、tabbed figures | 继续保持 safe wording 和 optional-field clarity |
+| Stage 18 `/history-48h` frontend history page | Completed frontend-only | `SystemUI/src/app/history-48h/page.tsx`, `SystemUI/src/components/history-48h/`, `docs/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md` | localStorage demo history、filters、charts、timeline、manual review queue | 下一步可接入真实 upload history storage；不代表 webcam 已实现 |
+| Stage 19 `/` Live Monitor webcam capture/sampling | Completed local prototype | `SystemUI/src/app/page.tsx`, `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | getUserMedia、mirror preview、2 FPS canvas JPEG sampling、session cleanup | display mirror 不影响 backend raw frame evidence |
+| Stage 19 realtime single-frame evidence API | Completed local prototype | `src/runtime/realtime_frame_inference.py`, `src/backend/app.py` | `/api/realtime/health`、session start/frame/stop、`p_eye_closed`、`p_yawn`、ROI/signal quality | 不调用 `/api/analyze-video`，不写 history |
+| Stage 19 realtime temporal warning-candidate state | Completed local prototype | `src/runtime/realtime_temporal_state.py`, `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | `mouth_active`、recent yawn context/reminder、`eye_warning_active`、recent sustained eye-warning reminder | reminder 是 display-only，不驱动 high-confidence escalation |
 | Final fatigue score | Future work | not available | 如何从 probabilities / warning candidates 到 risk score | 定义 final score 需要额外验证，不能从 Stage 17 直接声明 |
-| Real-time webcam warning-candidate prototype | Future work / recommended Stage 18 | not available | webcam latency、ROI stability、state machine、manual review | 只有 Stage 17.4 acceptance 完成后再做 feasibility prototype |
+| Alert debounce, alarm output, and webcam history ingestion | Future work | not available | alarm policy、cooldown、manual review、persistence schema | 不要从当前 Stage 19 state 直接写 history 或触发 alarm |
 | Deployment | Future work | not available | packaging、hardware tests、security、monitoring | 当前不能声明 deployment readiness |
 
 ## 15. Project-Specific Risks and Caveats
@@ -710,13 +729,21 @@ Questions：accuracy 高时还可能有什么系统性错误？哪些 visual pat
 Evidence：confusion matrices 和 false-open/false-closed contact sheets。  
 Afterward you should explain：为什么 safety task 不能只看 accuracy。
 
-### Module 10: Understand Stage 17 rule-based fusion, UI, and system-level limitations
+### Module 10: Understand Stage 17/17.5 rule-based fusion, UI, and system-level limitations
 
-Files to read：`reports/stage15_real_mouth_eye_fusion_validation_report.md`, `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md`, `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md`, `reports/stage17_4_video_upload_mvp_stabilization_report.md`  
-Concepts：Rule-Based Fusion, Sustained-Eye Gate, Warning-Candidate Interval Review, Safe Interpretation Wording  
-Questions：Stage 17.1 为什么要求 recent mouth/yawn evidence plus sustained eye-warning evidence？为什么 brief blink-like activity 要 suppressed from high-confidence escalation？  
-Evidence：Stage 17 schema、C upload validation markers、UI acceptance checklist。  
-Afterward you should explain：Stage 17 输出的是 rule-based warning candidates；它不是 webcam，不是 final drowsiness truth，也不是可部署系统。
+Files to read：`reports/stage15_real_mouth_eye_fusion_validation_report.md`, `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md`, `docs/STAGE17_5_EYE_EVIDENCE_CALIBRATION.md`, `docs/STAGE17_5_VIDEO_UPLOAD_UI_SECOND_PASS_CLEANUP.md`
+Concepts：Rule-Based Fusion, Sustained-Eye Gate, Stage 17.5 Eye-Evidence Calibration, Warning-Candidate Interval Review, Safe Interpretation Wording
+Questions：Stage 17.1 为什么要求 recent mouth/yawn evidence plus sustained eye-warning evidence？为什么 brief blink-like activity 要 suppressed from high-confidence escalation？为什么 Stage 17.5 UI 要区分 backend fusion state 和 descriptive eye evidence？
+Evidence：Stage 17 schema、C upload validation markers、Stage 17.5 UI validation notes、UI acceptance checklist。
+Afterward you should explain：Stage 17/17.5 输出的是 uploaded-video rule-based warning candidates；它不是 webcam，不是 final drowsiness truth，也不是可部署系统。
+
+### Module 11: Understand Stage 18 frontend-only 48h history UI
+
+Files to read：`docs/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md`, `SystemUI/src/app/history-48h/page.tsx`, `SystemUI/src/lib/history48hTypes.ts`, `SystemUI/src/lib/history48hStorage.ts`, `SystemUI/src/lib/history48hUtils.ts`
+Concepts：Frontend-Only History, `localStorage`, Demo/Local Data, Candidate Severity Display Score, Manual Review Queue
+Questions：`/history-48h` 为什么只能说 warning-candidate history？为什么 localStorage demo history 不能当成 backend truth 或 webcam monitoring？
+Evidence：Stage 18 implementation plan、history component files、manual validation checklist。
+Afterward you should explain：Stage 18 当前是 history review UI，不是 active webcam capture、backend storage、final drowsiness result 或 deployment-ready monitoring。
 
 ## 17. Questions I Should Be Able to Answer
 
@@ -758,13 +785,17 @@ Afterward you should explain：Stage 17 输出的是 rule-based warning candidat
 - Stage 17.2 为什么要求把 eye-warning evidence 解释为 reduced eye openness、blink-like activity、brief closure、fatigue-like appearance 或 ROI-sensitive cases，而不是直接写成 verified sustained full eye closure？
 - Stage 17.3 `/video-upload` 页面包含哪些结果区块？为什么 interval table 和 keyframe metadata 很重要？
 - `make stage17-ui` 会启动哪些服务？backend/frontend URL 分别是什么？
-- Stage 17.4 acceptance checklist 应如何验证 safe wording 和 UI evidence？
-- 未来 Stage 18 real-time webcam warning-candidate prototype 应解决什么问题？
+- Stage 17.5 `/video-upload` UI 为什么要分开显示 backend fusion state 和 descriptive eye evidence？
+- Stage 17.5 为什么把 `recent_yawn_event` 解释成 temporal-window evidence？
+- Stage 18 `/history-48h` 使用什么数据源？为什么它必须标成 demo/local history data？
+- Stage 19 Live Monitor 为什么要把 current mouth activity、recent yawn context、post-yawn reminder 分开？
+- Stage 19 Live Monitor 为什么要把 current eye evidence、active temporal eye-warning candidate、recent sustained eye-warning reminder 分开？
+- 为什么 recent sustained eye-warning reminder 只能作为 display-only review note，不能参与 high-confidence escalation？
 - 为什么单帧 eye closed/open 或 yawn/no-yawn 不能直接等同于 drowsiness monitoring？
 
 ## 18. Final Summary
 
-当前项目已经从两个关键 specialist modules 扩展到 Stage 17.4 本地 video-upload warning-candidate MVP。它包括数据准备、主体级划分、CNN baseline 训练、runtime ROI extraction、rule-based temporal fusion、FastAPI upload backend、Next.js Video Upload Analysis UI、一键本地启动脚本和验收/演示文档。
+当前项目已经从两个关键 specialist modules 扩展到 Stage 17.5 本地 video-upload warning-candidate evidence review UI、Stage 18 frontend-only 48h History page，并进一步加入 Stage 19 Live Monitor realtime warning-candidate prototype。它包括数据准备、主体级划分、CNN baseline 训练、runtime ROI extraction、rule-based temporal fusion、FastAPI upload backend、Next.js Video Upload Analysis UI、frontend localStorage history UI、Live Monitor webcam preview/sampling/realtime evidence UI、一键本地启动脚本和验收/演示文档。
 
 第一个完成模块是 YawDD/YawDD+ Dash mouth/yawn specialist。它从原始 Dash `.avi` 视频和 YawDD+ annotation files 出发，重建 labeled frames，确认 class mapping，发现原始 bbox 不适合作 mouth ROI，然后用 MediaPipe Face Mesh 生成嘴部裁剪，并完成 subject-level split 和 Stage 7 CNN training。当前 Stage 7 notebook 结果显示 ResNet18 在 test accuracy 上最强，EfficientNet-B0 在 validation accuracy 上最强。该模块的输出概念是 `p_yawn`。
 
@@ -772,7 +803,11 @@ Afterward you should explain：Stage 17 输出的是 rule-based warning candidat
 
 在 specialist modules 之后，Stage 10-15 建立了 controlled-video runtime analysis 和 real synchronized rule-based fusion。Stage 17.1 引入 sustained-eye gate：high-confidence warning candidate 需要 recent mouth/yawn evidence 加 sustained eye-warning evidence；brief blink-like activity 即使与 recent-yawn 重叠，也会被 conservatively suppressed from high-confidence escalation。Stage 17.2 明确解释边界：eye-warning evidence 不能自动描述成 verified sustained full eye closure。
 
-Stage 17.3/17.4 把上传视频分析整理成可演示的本地 MVP。FastAPI backend 使用 `POST /api/analyze-video`，SystemUI 的 `/video-upload` 页面展示 summary cards、warning-candidate intervals、fusion timeline、`p_eye_closed` / `p_yawn` figures、keyframe evidence gallery 和 technical evidence links。`make stage17-ui` 可以一键启动 backend `http://127.0.0.1:8000` 和 frontend `http://127.0.0.1:3000/video-upload`。
+Stage 17.3/17.4 把上传视频分析整理成可演示的本地 MVP。Stage 17.5 进一步改进 eye-evidence interpretation 和 `/video-upload` evidence review UI：compact result overview、summary metrics、expandable warning-candidate intervals、fusion state vs descriptive eye evidence clarification、tabbed evidence figures、keyframe evidence gallery 和 technical evidence links。FastAPI backend 使用 `POST /api/analyze-video`，`make stage17-ui` 可以一键启动 backend `http://127.0.0.1:8000` 和 frontend `http://127.0.0.1:3000/video-upload`。
+
+Stage 18 新增 `/history-48h` 页面，用 browser `localStorage` key `visionguard.history48h.v1` 保存 demo/local warning-candidate history，并展示 48-hour summary cards、candidate severity trend、event distribution、state breakdown、event timeline、recent sessions 和 manual review queue。这个页面是 frontend-only history review，不代表 webcam 已经实现，也不代表 backend 持久化历史已经接通。
+
+Stage 19 把 `/` 从 Dashboard concept 推进为 Live Monitor 本地 prototype。它支持 browser webcam preview、display-only mirror、2 FPS frame sampling、FastAPI realtime session lifecycle、single-frame `p_eye_closed` / `p_yawn` evidence、ROI/signal quality status，以及 session-local realtime rule-based warning-candidate state。当前 yawn 语义拆成 `mouth_active`、4 秒 recent yawn fusion context、8 秒 post-yawn reminder；eye 语义拆成 current eye evidence、active temporal eye-warning candidate、4 秒 recent sustained eye-warning reminder。两个 reminder 都是 display-only review notes，不应触发 alarm、history write 或 high-confidence escalation。
 
 最重要的技术 lessons 是：
 
@@ -780,7 +815,9 @@ Stage 17.3/17.4 把上传视频分析整理成可演示的本地 MVP。FastAPI b
 - 主体级划分（Subject-Level Split）比 random frame-level split 更适合评估跨驾驶员泛化。
 - 迁移学习（Transfer Learning）、加权交叉熵（Weighted Cross Entropy）、早停（Early Stopping）和学习率调度器（Learning Rate Scheduler）构成了当前 CNN baseline 的核心训练机制。
 - 安全相关任务不能只看 accuracy；必须看 recall、F1、confusion matrix、false_open、false_closed 和 threshold sweep。
-- Stage 17 输出是 rule-based drowsiness warning-candidate analysis，必须使用 warning-candidate wording。
+- Stage 17/17.5 输出是 rule-based drowsiness warning-candidate analysis，必须使用 warning-candidate wording。
+- Stage 18 `/history-48h` 当前只展示 demo/local warning-candidate history；它不是 active webcam monitoring，也不是 backend truth storage。
+- Stage 19 Live Monitor 当前是 local realtime warning-candidate prototype；它不是 alarm system，不写 `/history-48h`，也不是 deployment-ready monitoring。
 - 当前所有准确率都是 specialist-module metrics，不能报告成最终 driver drowsiness detection accuracy。
 
-自然的下一步不是重新训练已有模块，也不是直接宣称部署可用；应先完成 Stage 17.4 acceptance，然后再进入 Stage 18 real-time webcam warning-candidate feasibility prototype。Stage 18 也仍应保持 prototype 边界：warning candidates only，不输出最终 drowsiness truth、最终系统级准确率或部署可用声明。
+自然的下一步不是重新训练已有模块，也不是直接宣称部署可用；更合理的是在明确边界内推进：history 方向应把真实 uploaded-video run records 持久化并接入 `/history-48h`，Live Monitor 方向应先设计 alert debounce / alarm policy 和 history ingestion schema，再决定是否接入。未来工作仍应保持 warning-candidate boundary：不输出最终 drowsiness truth、最终系统级准确率或部署可用声明。

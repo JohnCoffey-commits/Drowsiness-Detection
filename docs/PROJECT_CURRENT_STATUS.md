@@ -1,5 +1,17 @@
 # Project Current Status and Experimental Summary
 
+Last updated: 2026-05-14
+
+Current snapshot: the repository has moved beyond the historical Stage 16 final integration package, Stage 17.4 uploaded-video MVP stabilization, and Stage 18 frontend-only history page. The current working system state is:
+
+- Stage 17.5 `/video-upload` evidence-review UI polish and interpretation cleanup.
+- Stage 18 `/history-48h` frontend-only warning-candidate history page with demo/local `localStorage` data.
+- Stage 17 FastAPI uploaded-video backend and rule-based fusion remain the current real backend-connected analysis path.
+- Stage 19.6B `/` Live Monitor realtime webcam warning-candidate feasibility prototype now supports a clean product-style webcam frame, automatic 2 FPS sampling from Start Camera, realtime single-frame backend evidence, session-local realtime rule-based warning-candidate state, product-style yawn/eye/critical-eye warning overlays, a face-not-visible signal-quality overlay, default-on sound alerts after the camera user gesture, and a Drowsiness Risk card bound to frontend warning-candidate severity state.
+- Latest Stage 19 work connects the right-side Drowsiness Risk gauge to the Live Monitor realtime warning-candidate state while keeping cooldown-controlled session-local alert events and conservative yawn/eye reminder semantics.
+
+This is still a local warning-candidate MVP. The Live Monitor is a realtime webcam warning-candidate feasibility prototype, not browser notification, not history ingestion, not database storage, not final system-level drowsiness accuracy, not a trained fusion classifier, and not deployment readiness.
+
 ## 1. Project Goal
 
 The project goal is to build a driver drowsiness detection and monitoring system using deep learning. The current design is modular: each model specializes in one visible driver behavior, and the current Stage 17 system combines the specialist outputs with rule-based temporal fusion for uploaded-video warning-candidate analysis.
@@ -19,9 +31,11 @@ The results in this document are specialist-module metrics and rule-based warnin
 | YawDD/YawDD+ Dash mouth/yawn | Mouth crops from reconstructed Dash video frames | No-yawn vs yawn | `0 = no_yawn`, `1 = yawn` | `p_yawn` | Completed |
 | MRL Eye | Eye crop images | Closed vs open | `0 = closed`, `1 = open` | `p_eye_closed` | Completed through Stage 9B |
 | Stage 10-15 runtime/fusion pipeline | Sampled full-face video frames | Runtime eye ROI, mouth ROI, temporal signals, and rule-based fusion | Not trained labels | Warning-candidate timeline | Completed as controlled-validation prototype |
-| Stage 17 video-upload MVP | Uploaded short video | Rule-based warning-candidate analysis with keyframes and technical evidence | Not final truth labels | Upload-session summary, intervals, figures, keyframes | Completed through Stage 17.4 local acceptance/demo documentation |
+| Stage 17 video-upload MVP | Uploaded short video | Rule-based warning-candidate analysis with keyframes and technical evidence | Not final truth labels | Upload-session summary, intervals, figures, keyframes | Backend-connected local MVP completed through Stage 17.5 evidence-review UI polish |
+| Stage 18 48h History UI | Browser-local demo/local history events | Frontend warning-candidate history review | Demo/local records, not backend truth labels | Summary cards, charts, event timeline, review queue | Frontend-only page completed at `/history-48h` |
+| Stage 19 Live Monitor | Browser webcam sampled frames | Realtime single-frame evidence, rule-based temporal warning-candidate state, product-style warning overlays, face visibility cue, default-on sound alerts after camera start, and dynamic risk gauge binding | Not final truth labels | `p_eye_closed`, `p_yawn`, ROI/signal quality, realtime temporal candidate state, product overlays, frontend warning-candidate severity score | Stage 19.6B realtime webcam warning-candidate feasibility prototype |
 
-The current Stage 17 output is a rule-based drowsiness warning-candidate analysis for uploaded videos. It is not final system-level drowsiness accuracy, not deployment readiness, not a trained fusion classifier, and not webcam monitoring. Learned fusion, final fatigue scoring, and real-time webcam feasibility remain future work.
+The current backend-connected Stage 17 output is a rule-based drowsiness warning-candidate analysis for uploaded videos. The Stage 18 `/history-48h` page is frontend-only demo/local history storage. The Stage 19.6B Live Monitor is a realtime webcam warning-candidate feasibility prototype with visual alert debounce, session-local alert events, product-style warning overlays, automatic sampling from Start Camera, default-on sound alerts after the camera user gesture, and a dynamic frontend warning-candidate severity gauge. It has no browser notification or history writes. None of these pages report final system-level drowsiness accuracy, deployment readiness, or trained fusion. Learned fusion, final fatigue scoring, real backend history storage, alert output beyond the current frontend layer, and persisted webcam history remain future work.
 
 ## 3. Dataset Strategy
 
@@ -553,11 +567,11 @@ Stage 16 artifacts:
 - `artifacts/audits/stage16_final_integration_2026-05-09/STAGE15_FIGURE_TITLE_FIX.md`
 - `artifacts/audits/stage16_final_integration_2026-05-09/final_repo_artifact_audit.md`
 
-Stage 16 status is now superseded by Stage 17.4. The Stage 16 evidence package remains useful historical integration evidence, but the current project state is the Stage 17.4 local video-upload warning-candidate MVP with acceptance and demo documentation.
+Stage 16 status is now superseded by Stage 17 and Stage 18 frontend work. The Stage 16 evidence package remains useful historical integration evidence, but the current project state is the Stage 17.5 local video-upload warning-candidate review UI plus the Stage 18 frontend-only 48h history page.
 
 ### 6.16 Stage 17 Video Upload Warning-Candidate MVP
 
-Stage 17 implemented and stabilized a video-upload warning-candidate MVP.
+Stage 17 implemented and stabilized a video-upload warning-candidate MVP. Stage 17.5 then refined both backend-provided eye evidence interpretation and the `/video-upload` UI presentation of warning-candidate evidence.
 
 The MVP lets a user upload a short video, run the existing eye-mouth rule-based warning-candidate pipeline, view summary results, inspect interval-level evidence, review figures/keyframes, and access technical evidence files through safe backend URLs.
 
@@ -647,7 +661,189 @@ Stage 17.3/17.4 manual upload validation on `upload_test/C_upload_test.mp4` prod
 
 Backend upload validation passed using `.venv-stage10` with the required backend dependencies.
 
-Stage 17.4 is the current project status. It remains a local video-upload warning-candidate MVP. It is not final system-level drowsiness accuracy, not deployment readiness, not webcam monitoring, and not a trained fusion classifier.
+Stage 17.5 added conservative eye evidence calibration and UI evidence-review cleanup:
+
+- Backend schema supports Stage 17.5 eye evidence fields such as weak/moderate/strong eye evidence, interval eye-strength gate status, and weak-eye suppression counts.
+- `/video-upload` keeps missing optional fields from being shown as false.
+- Keyframe cards no longer repeat long missing-field fallback text.
+- Recent-yawn evidence is explained as temporal-window evidence rather than necessarily a yawn in the exact current frame.
+- Interval rows are compact, with long backend reasons moved into expandable details.
+- Fusion state and descriptive eye evidence are clearly separated; the UI does not recompute or override backend fusion state.
+- Evidence figures are tabbed, with the fusion timeline visible by default.
+
+Stage 17.5 UI validation completed with `npm run lint`, `npm run build`, `/video-upload` browser checks, `/` route checks, and a backend-connected upload of `upload_test/C_upload_test.mp4`.
+
+Stage 17.5 remains a local uploaded-video warning-candidate MVP. It is not final system-level drowsiness accuracy, not deployment readiness, not webcam monitoring, and not a trained fusion classifier.
+
+### 6.17 Stage 18 48h History Frontend Page
+
+Stage 18 added a frontend-only 48-hour history page:
+
+```text
+http://127.0.0.1:3000/history-48h
+```
+
+The page summarizes recent warning-candidate history using demo/local browser data. It does not add webcam capture, backend history storage, model changes, Python inference changes, or Stage 17 fusion changes.
+
+Stage 18 implementation files:
+
+- `SystemUI/src/app/history-48h/page.tsx`
+- `SystemUI/src/components/history-48h/`
+- `SystemUI/src/lib/history48hTypes.ts`
+- `SystemUI/src/lib/history48hMockData.ts`
+- `SystemUI/src/lib/history48hStorage.ts`
+- `SystemUI/src/lib/history48hUtils.ts`
+- `SystemUI/next.config.ts`
+- `docs/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md`
+
+Stage 18 data strategy:
+
+- Uses localStorage key `visionguard.history48h.v1`.
+- Seeds realistic demo history across the recent 48 hours on first load.
+- Filters out records older than 48 hours.
+- Supports reset demo data, clear history, copy summary, local review-state updates, and session filtering.
+
+Stage 18 page sections:
+
+- Header and boundary notice.
+- Filters and controls.
+- Summary cards.
+- Candidate severity trend chart.
+- Warning-candidate distribution chart.
+- State breakdown chart.
+- High-risk warning candidates.
+- Event timeline with expandable details.
+- Recent sessions.
+- Manual review queue.
+- Interpretation note.
+
+The current sidebar intentionally shows only:
+
+1. Live Monitor
+2. Video Upload Analysis
+3. 48h History
+4. Insights
+
+Stage 18 validation completed with `npm run lint`, `npm run build`, `/history-48h` browser checks, localStorage reset/clear persistence checks, filter checks, manual-review local update checks, `/video-upload` route check, and `/` route check.
+
+Stage 18 is a frontend evidence-review/history page only. It is not backend history storage, not Live Monitor history ingestion, not final system-level drowsiness accuracy, and not deployment readiness.
+
+### 6.18 Stage 19 Live Monitor Realtime Webcam Prototype
+
+Stage 19 develops `/` from the former Dashboard concept into the Live Monitor local webcam prototype:
+
+```text
+http://127.0.0.1:3000/
+```
+
+Current Live Monitor implementation:
+
+- Renames the visible Dashboard navigation and page header to `Live Monitor`.
+- Uses real browser webcam capture through `navigator.mediaDevices.getUserMedia`.
+- Keeps webcam preview mirrored for frontend display only; backend sampled frames remain unmirrored.
+- Starts active webcam sampling automatically at 2 FPS through a hidden canvas and JPEG `Blob` extraction after Start Camera.
+- Starts and stops an in-memory realtime backend session with the camera lifecycle.
+- Sends sampled frames to `POST /api/realtime/frame`.
+- Returns frame-level `p_eye_closed`, `p_yawn`, face/ROI status, signal quality, device, and latency.
+- Maintains session-local realtime temporal warning-candidate state.
+- Maps backend `fusion_state` into product-style yawn and eye warning overlays after 1.0 second stable-state debounce.
+- Escalates critical eye warnings at the UI layer from existing `high_confidence` events, sustained eye-warning fields, or repeated debounced eye-warning events in a recent frontend window.
+- Shows a face-not-visible signal-quality overlay when existing face/ROI/signal fields indicate an unreliable camera signal.
+- Emits a small frontend risk state to the parent page so the Drowsiness Risk card can reflect the current realtime warning-candidate state without duplicate realtime API calls.
+- Updates the Drowsiness Risk card as a frontend warning-candidate severity score covering idle, normal monitoring, yawn warning, eye warning, critical eye warning, and signal-quality states.
+- Animates the Drowsiness Risk score and needle smoothly when the target frontend severity score changes.
+- Applies normal-clear debounce and per-kind cooldown before adding session-local alert events.
+- Keeps session-local alert events for the current Live Monitor session only in frontend state; these are not shown as a default in-card diagnostic panel and are not written to `/history-48h`.
+- Removes default in-video diagnostic metric panels, sound controls, test sound control, and separate Start/Stop Sampling controls from the product UI.
+- Adds default-on sound alerts through the Web Audio API after the Start Camera user gesture. Sound plays only when a debounced/cooldown visual alert event is created or when the unacknowledged critical-eye modal repeat timer runs.
+- Stops sampling, camera tracks, realtime sessions, active warning overlays, and sound repeat timers on Stop Camera and route/component unmount.
+
+Realtime backend endpoints:
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /api/realtime/health` | Realtime service health and checkpoint path availability without expensive inference. |
+| `POST /api/realtime/session/start` | Creates a lightweight in-memory realtime session. |
+| `POST /api/realtime/frame` | Accepts one JPEG webcam frame and returns frame-level evidence plus temporal state. |
+| `POST /api/realtime/session/stop` | Stops the in-memory realtime session without unloading model singletons. |
+
+Realtime temporal state currently separates yawn and eye semantics:
+
+| Concept | Current behavior |
+| --- | --- |
+| `mouth_active` | Current or near-current mouth/yawn activity; drives `mouth_warning_candidate`. |
+| `recent_yawn_event` | 4.0 second fusion context only; does not by itself keep mouth-warning active. |
+| `recent_yawn_reminder` | 8.0 second display-only reminder; does not affect fusion state. |
+| `current_eye_evidence` | Current frame eye evidence category from `mean_p_eye_closed`. |
+| `eye_warning_active` | Temporal eye-warning candidate state; enters after rolling evidence, exits with hysteresis. |
+| `recent_eye_warning_reminder` | 4.0 second display-only note after a sustained moderate/strong eye-warning interval ends. |
+
+Live Monitor eye temporal parameters:
+
+| Parameter | Value |
+| --- | ---: |
+| `eye_closed_threshold` | `0.50` |
+| `eye_warning_enter_rolling_mean` | `0.60` |
+| `eye_warning_enter_consecutive_frames` | `2` |
+| `eye_warning_exit_rolling_mean` | `0.40` |
+| `eye_warning_exit_consecutive_frames` | `2` |
+| `sustained_eye_warning_min_seconds` | `1.0` |
+| `sustained_eye_warning_min_frames` | `5` |
+| `recent_eye_warning_reminder_seconds` | `4.0` |
+
+Live Monitor implementation files:
+
+- `SystemUI/src/app/page.tsx`
+- `SystemUI/src/components/dashboard/LiveVideoCard.tsx`
+- `SystemUI/src/lib/liveMonitorAlertUtils.ts`
+- `SystemUI/src/lib/liveMonitorSoundUtils.ts`
+- `SystemUI/src/components/dashboard/Sidebar.tsx`
+- `SystemUI/src/components/dashboard/AppShell.tsx`
+- `src/backend/app.py`
+- `src/runtime/realtime_frame_inference.py`
+- `src/runtime/realtime_temporal_state.py`
+
+Stage 19.5 visual alert parameters:
+
+| Parameter | Value |
+| --- | ---: |
+| Stable-state debounce for `eye_warning_candidate` | `1.0s` |
+| Stable-state debounce for `mouth_warning_candidate` | `1.0s` |
+| Stable-state debounce for `high_confidence_drowsiness_candidate` | `1.0s` |
+| Stable-state debounce for `signal_unreliable` | `1.0s` |
+| Normal-clear debounce | `2.0s` |
+| Same-kind `eye_warning` event cooldown | `8s` |
+| Same-kind `mouth_warning` event cooldown | `8s` |
+| Same-kind `high_confidence` event cooldown | `10s` |
+| Same-kind `signal_quality` event cooldown | `5s` |
+
+Stage 19.6A sound alert behavior:
+
+| Area | Current behavior |
+| --- | --- |
+| Default sound setting | On after Start Camera initializes or resumes Web Audio from the user gesture. |
+| Sound trigger | Only when a Stage 19.5 debounced/cooldown session-local visual alert event is created, plus the critical-eye modal repeat timer while unacknowledged. |
+| Test sound | Removed from the default Live Monitor product UI. |
+| Eye-warning sound | Stronger two-short-beep pattern. |
+| Mouth-warning sound | One short soft beep at a different pitch. |
+| High-confidence warning-candidate sound | Short repeated beep pattern. |
+| Signal quality sound | Neutral low beep; signal quality remains a quality cue, not driver-state evidence. |
+| Storage | React state only; no localStorage and no `/history-48h` write. |
+
+Stage 19.6B Drowsiness Risk gauge mapping:
+
+| State | Frontend score | Label | Helper |
+| --- | ---: | --- | --- |
+| Camera off or not sampling | `0` | `Idle` | `Start camera to monitor` |
+| Normal monitoring | `20` | `Low` | `Monitoring` |
+| Yawn warning candidate | `55` | `Medium` | `Yawn warning candidate` |
+| Eye warning candidate | `74` | `High` | `Eye warning candidate` |
+| Critical eye warning candidate | `92` | `Critical` | `Stop and rest when safe` |
+| Face not visible / signal unreliable | `30` | `Signal Check` | `Center face in frame` |
+
+Stage 19 validation completed with Python compile checks, backend preflight, realtime health/start/frame/stop HTTP checks, inline temporal tests, `npm run lint`, `npm run build`, and browser checks for `/`, `/video-upload`, and `/history-48h`. Stage 19.6B frontend validation should keep `npm run lint`, `npm run build`, and route checks for `/`, `/video-upload`, and `/history-48h` synchronized with Live Monitor UI changes.
+
+Stage 19.6B adds realtime Drowsiness Risk gauge binding, smooth score/needle animation, product-style Live Monitor UI polish, automatic sampling from Start Camera, default-on sound alerts after the camera user gesture, and no default in-card diagnostic panel. It does not implement browser notifications, 48h history ingestion, database storage, final system-level drowsiness accuracy, deployment readiness, or final system-level performance claims.
 
 ## 7. Current Best Models
 
@@ -702,16 +898,36 @@ YawDD safety interpretation:
 | `outputs/stage10_eye_roi_consistency_IMG_4901_controlled_terminal/` | Successful Stage 10 controlled-video runtime output directory. |
 | `src/runtime/system_video_upload_pipeline.py` | Stage 17 uploaded-video analysis pipeline. |
 | `src/backend/app.py` | FastAPI backend for upload analysis and constrained session file serving. |
-| `SystemUI/src/app/video-upload/page.tsx` | Stage 17.3 Video Upload Analysis route. |
-| `SystemUI/src/components/video-upload/` | Stage 17.3 modular UI components for upload, results, intervals, figures, keyframes, and technical evidence. |
+| `SystemUI/src/app/page.tsx` | Stage 19 Live Monitor route at `/`; stores the latest Live Monitor frontend warning-candidate risk state and passes it into the Drowsiness Risk card. |
+| `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | Stage 19.6B clean Live Monitor product UI with single Start/Stop Camera button, automatic frame sampling, product yawn/eye/critical-eye overlays, face visibility cue, default-on sound after camera start, and risk-state callback emission. |
+| `SystemUI/src/components/dashboard/DrowsinessRiskCard.tsx` | Stage 19.6B presentational Drowsiness Risk gauge bound to realtime frontend warning-candidate severity state with smooth score/needle animation. |
+| `SystemUI/src/lib/liveMonitorAlertUtils.ts` | Stage 19.5 frontend visual alert mapping, debounce, normal-clear, cooldown, and session-local alert event helper. |
+| `SystemUI/src/lib/liveMonitorSoundUtils.ts` | Stage 19.6A Web Audio sound pattern and playback helper for Live Monitor warning sounds after the camera user gesture. |
+| `SystemUI/src/lib/liveMonitorRiskUtils.ts` | Stage 19.6B frontend mapping from camera/sampling, alert kind, temporal state, and face/signal quality into a warning-candidate severity score. |
+| `SystemUI/src/app/video-upload/page.tsx` | Stage 17.3+ Video Upload Analysis route. |
+| `SystemUI/src/components/video-upload/` | Stage 17.5 modular UI components for upload, compact result overview, summary metrics, expandable intervals, tabbed figures, keyframes, and technical evidence. |
+| `SystemUI/src/app/history-48h/page.tsx` | Stage 18 48h History route. |
+| `SystemUI/src/components/history-48h/` | Stage 18 modular UI components for demo/local history summary, charts, timeline, sessions, and manual review queue. |
+| `SystemUI/src/lib/history48hTypes.ts` | Stage 18 strongly typed history event/session model. |
+| `SystemUI/src/lib/history48hMockData.ts` | Stage 18 seeded demo/local warning-candidate history data. |
+| `SystemUI/src/lib/history48hStorage.ts` | Stage 18 localStorage load/save/reset/clear helpers using `visionguard.history48h.v1`. |
+| `SystemUI/src/lib/history48hUtils.ts` | Stage 18 filters, aggregations, chart helpers, safe labels, and copy-summary text. |
 | `scripts/start_stage17_ui.sh` | One-command local launcher for backend and frontend. |
 | `Makefile` | Project-level command target `make stage17-ui`. |
+| `src/runtime/realtime_frame_inference.py` | Stage 19 realtime single-frame webcam evidence inference service. |
+| `src/runtime/realtime_temporal_state.py` | Stage 19 session-local realtime warning-candidate temporal state. |
 | `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | Stage 17 response, summary, interval, timeline, and keyframe schema. |
 | `docs/STAGE17_3_LOCAL_LAUNCH_GUIDE.md` | Local launcher and troubleshooting guide. |
 | `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md` | Stage 17.3 UI implementation report. |
 | `docs/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md` | Manual acceptance checklist for the video-upload MVP. |
 | `docs/STAGE17_4_DEMO_SCRIPT.md` | Safe-worded demo script for Stage 17.4. |
-| `reports/stage17_4_video_upload_mvp_stabilization_report.md` | Current Stage 17.4 stabilization report. |
+| `reports/stage17_4_video_upload_mvp_stabilization_report.md` | Historical Stage 17.4 stabilization report, superseded by Stage 17.5 UI cleanup and Stage 18 history-page work. |
+| `docs/STAGE17_5_EYE_EVIDENCE_CALIBRATION.md` | Stage 17.5 eye evidence calibration and strength-gate documentation. |
+| `reports/stage17_5_eye_evidence_calibration_report.md` | Stage 17.5 implementation report. |
+| `docs/STAGE17_5_VIDEO_UPLOAD_UI_EVIDENCE_REVIEW_PAGE.md` | Stage 17.5 evidence review UI page report. |
+| `docs/STAGE17_5_VIDEO_UPLOAD_UI_FALLBACK_POLISH.md` | Stage 17.5 keyframe fallback and optional-field UI polish report. |
+| `docs/STAGE17_5_VIDEO_UPLOAD_UI_SECOND_PASS_CLEANUP.md` | Stage 17.5 second-pass `/video-upload` evidence review cleanup report. |
+| `docs/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md` | Stage 18 frontend-only 48h History page implementation and validation record. |
 
 ## 10. Reporting Notes and Limitations
 
@@ -724,7 +940,13 @@ Use careful wording in reports and presentations:
 - Subject-level split was used for the current YawDD and MRL Eye modules.
 - Stage 15 and Stage 17 use rule-based fusion to produce warning-candidate states.
 - Learned fusion, final fatigue scoring, final system-level accuracy, and deployment readiness remain future work.
-- Stage 17.4 outputs are uploaded-video warning-candidate analysis results, not final drowsiness truth.
+- Stage 17.5 outputs are uploaded-video warning-candidate analysis results, not final drowsiness truth.
+- Stage 18 `/history-48h` data is demo/local browser history unless future storage is explicitly connected.
+- Stage 19 Live Monitor outputs are realtime rule-based warning-candidate states from webcam frame evidence, not final system-level drowsiness accuracy.
+- Stage 19 recent yawn context and recent sustained eye-warning reminders are temporal/contextual UI evidence; display-only reminders do not drive high-confidence escalation.
+- Stage 19.5 session-local alert events are frontend-only visual alert records for the current Live Monitor session; they are not `/history-48h` records and are not stored.
+- Stage 19.6A sound alerts default On after Start Camera and are tied to debounced warning-candidate event creation, plus the unacknowledged critical-eye modal repeat timer.
+- Stage 19.6B Drowsiness Risk values are frontend warning-candidate severity scores for display only, not final drowsiness truth.
 
 Known artifact caveat:
 
@@ -738,5 +960,5 @@ Known artifact caveat:
 - If checkpoints need to be versioned, use Git LFS rather than normal Git.
 - When adding new results, cite the exact local artifact used as the source of truth.
 - Keep the NTHUDDD2 work documented as an explored branch, not as the active final system direction.
-- Keep the Stage 17 launcher, schema, acceptance checklist, demo script, and stabilization report synchronized whenever the upload UI or backend API changes.
-- Recommended next stage: Stage 18 real-time webcam warning-candidate feasibility prototype, only after Stage 17.4 acceptance is complete.
+- Keep the Stage 17 launcher, schema, Stage 17.5 UI reports, Stage 18 history page documentation, and Stage 19 Live Monitor realtime API/state/visual-alert/sound notes synchronized whenever the upload UI, history UI, Live Monitor UI, or backend API changes.
+- Recommended next technical stages: design any browser notification or persisted history ingestion separately; keep those future stages behind the warning-candidate boundary.

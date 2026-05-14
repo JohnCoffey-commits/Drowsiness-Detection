@@ -95,7 +95,7 @@ wait_for_url "Frontend" "${FRONTEND_URL}" "${FRONTEND_PID}" 60
 
 cat <<EOF
 
-[stage17-ui] Stage 17.3 Video Upload Analysis UI is running.
+[stage17-ui] Stage 17.5 Video Upload Evidence Review UI is running.
 [stage17-ui] Frontend URL: ${FRONTEND_URL}
 [stage17-ui] Backend URL:  ${BACKEND_URL}
 [stage17-ui] Press Ctrl+C to stop both services.

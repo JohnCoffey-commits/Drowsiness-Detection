@@ -11,13 +11,13 @@ This is not final drowsiness accuracy. It is not mouth-eye fusion yet. It is not
 Stage 10 controlled output path:
 
 ```text
-/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_19aa1aecdc46/eye_stage10
+/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_e1a9578f689a/eye_stage10
 ```
 
 Input CSV:
 
 ```text
-/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_19aa1aecdc46/eye_stage10/runtime_eye_roi_predictions.csv
+/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_e1a9578f689a/eye_stage10/runtime_eye_roi_predictions.csv
 ```
 
 ## 3. Method
@@ -34,16 +34,16 @@ Input CSV:
 
 | Metric | Value |
 | --- | ---: |
-| Number of frames | 106 |
+| Number of frames | 107 |
 | Threshold used | 0.50 |
 | Rolling window | 5 sampled frames |
-| Mean `mean_p_eye_closed` | 0.215382087547 |
-| Min `mean_p_eye_closed` | 0.00078236 |
-| Max `mean_p_eye_closed` | 0.76270768 |
-| Total `mean_closed_binary` frames | 22 |
-| Total `either_eye_closed_binary` frames | 36 |
-| Total `both_eyes_closed_binary` frames | 17 |
-| Candidate eye-closure events | 8 |
+| Mean `mean_p_eye_closed` | 0.226194021869 |
+| Min `mean_p_eye_closed` | 0.00023945 |
+| Max `mean_p_eye_closed` | 0.83566874 |
+| Total `mean_closed_binary` frames | 29 |
+| Total `either_eye_closed_binary` frames | 35 |
+| Total `both_eyes_closed_binary` frames | 19 |
+| Candidate eye-closure events | 5 |
 
 ## 5. Candidate Event Table
 
@@ -51,22 +51,19 @@ Top candidate eye-closure events by duration, then max probability:
 
 | event_id | start_frame_index | end_frame_index | start_timestamp_sec | end_timestamp_sec | duration_sampled_frames | max_mean_p_eye_closed | mean_mean_p_eye_closed |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 4 | 155 | 205 | 6.457558 | 8.540641 | 11 | 0.751870 | 0.621920 |
-| 6 | 355 | 365 | 14.789891 | 15.206507 | 3 | 0.762708 | 0.630780 |
-| 1 | 30 | 35 | 1.249850 | 1.458158 | 2 | 0.714846 | 0.649295 |
-| 7 | 375 | 380 | 15.623124 | 15.831432 | 2 | 0.706902 | 0.677486 |
-| 2 | 45 | 45 | 1.874775 | 1.874775 | 1 | 0.667937 | 0.667937 |
-| 8 | 390 | 390 | 16.248049 | 16.248049 | 1 | 0.591607 | 0.591607 |
-| 3 | 75 | 75 | 3.124625 | 3.124625 | 1 | 0.567800 | 0.567800 |
-| 5 | 275 | 275 | 11.456957 | 11.456957 | 1 | 0.546059 | 0.546059 |
+| 2 | 135 | 185 | 4.501264 | 6.168399 | 11 | 0.835669 | 0.763417 |
+| 1 | 25 | 60 | 0.833567 | 2.000562 | 8 | 0.714331 | 0.635124 |
+| 3 | 235 | 265 | 7.835534 | 8.835815 | 7 | 0.761746 | 0.683651 |
+| 5 | 495 | 500 | 16.504635 | 16.671348 | 2 | 0.736083 | 0.625975 |
+| 4 | 465 | 465 | 15.504354 | 15.504354 | 1 | 0.538363 | 0.538363 |
 
 Candidate events are not confirmed drowsiness events; they are temporal eye-closure candidates derived from the eye-only signal.
 
 ## 6. Figures
 
-- `/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_19aa1aecdc46/eye_stage11/figures/p_eye_closed_rolling_mean.png`
-- `/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_19aa1aecdc46/eye_stage11/figures/eye_closed_binary_timeline.png`
-- `/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_19aa1aecdc46/eye_stage11/figures/perclos_like_score_over_time.png`
+- `/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_e1a9578f689a/eye_stage11/figures/p_eye_closed_rolling_mean.png`
+- `/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_e1a9578f689a/eye_stage11/figures/eye_closed_binary_timeline.png`
+- `/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/outputs/system_video_upload_runs/upload_e1a9578f689a/eye_stage11/figures/perclos_like_score_over_time.png`
 
 ## 7. Interpretation
 
