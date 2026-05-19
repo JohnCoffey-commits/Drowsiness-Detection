@@ -15,6 +15,7 @@ The repository currently supports a modular driver monitoring system rather than
 - FastAPI + Next.js Stage 19 Live Monitor realtime webcam warning-candidate prototype with product-style visual warning overlays, default-on sound alerts after camera start, a realtime-bound warning-candidate risk gauge, dashboard widgets bound to stable Live Monitor events/score samples, and a product-style session-window state-derived display severity waveform chart
 - Stage 20A local MVP account/app-shell foundation, Stage 20B frontend-local Live Monitor history ingestion for `/history-48h`, and Stage 21A split between History review and Insights analytics
 - May 19 UI polish for Live Monitor desktop column balance, stronger selected sidebar contrast, collapsed sidebar control alignment, and a cleaner `/history-48h` header
+- Remote deployment-prep for Vercel-hosted `SystemUI/` calling a Cloudflare Tunnel HTTPS URL that forwards to the developer's local FastAPI backend
 
 ## 2. High-Level Project Architecture
 
@@ -260,6 +261,7 @@ Important frontend files:
 | `SystemUI/src/lib/history48hStorage.ts` | Stage 18/20B storage helpers for `visionguard.history48h.v1`, including pruning, deduping, user merge behavior, and Live Monitor append support. |
 | `SystemUI/src/lib/videoUploadTypes.ts` | TypeScript types for backend response, summary, intervals, figures, and keyframes. |
 | `SystemUI/src/lib/videoUploadUtils.ts` | URL, formatting, interval, figure, keyframe, and copy-summary helpers. |
+| `SystemUI/src/lib/apiConfig.ts` | Shared frontend API base URL helper. Reads `NEXT_PUBLIC_API_BASE_URL`, falls back to `http://127.0.0.1:8000`, normalizes trailing slashes, and builds backend API URLs for upload and realtime client calls. |
 
 Current Stage 17 route:
 
@@ -415,6 +417,7 @@ Stage 17 video-upload MVP:
 | `src/backend/static/upload_test.html` | Standalone backend-hosted upload test page. |
 | `SystemUI/src/app/video-upload/page.tsx` | SystemUI video-upload analysis page. |
 | `SystemUI/src/components/video-upload/` | Modular Stage 17 UI components for upload, summary cards, interval table, keyframes, technical evidence, and interpretation notice. |
+| `SystemUI/src/lib/apiConfig.ts` | Shared frontend backend API base URL helper using `NEXT_PUBLIC_API_BASE_URL` with local fallback. |
 | `SystemUI/src/lib/videoUploadTypes.ts` | TypeScript response and evidence types. |
 | `SystemUI/src/lib/videoUploadUtils.ts` | Safe URL construction, formatting, interval merging, figure/keyframe grouping, and copy-summary helpers. |
 | `outputs/system_video_upload_runs/` | Per-session Stage 17 upload-analysis outputs. |
@@ -429,8 +432,10 @@ Stage 17 video-upload MVP:
 | `docs/STAGE17_3_LOCAL_LAUNCH_GUIDE.md` | One-command local launch guide for backend and frontend. |
 | `docs/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md` | Manual acceptance checklist for the Stage 17.3/17.4 video-upload MVP. |
 | `docs/STAGE17_4_DEMO_SCRIPT.md` | Demo script for presenting the Stage 17.4 warning-candidate MVP. |
+| `docs/DEPLOYMENT_RUNBOOK.md` | External-access deployment runbook for Vercel-hosted `SystemUI/`, Cloudflare Tunnel, local FastAPI backend, environment variables, preflight validation, troubleshooting, and rollback. |
+| `scripts/deployment_preflight.sh` | Safe repeatable deployment preflight for backend health and optional CORS OPTIONS validation. |
 | `scripts/start_stage17_ui.sh` | Starts FastAPI backend and Next.js frontend, and stops both on Ctrl+C. |
-| `Makefile` | Includes `make stage17-ui` target for the one-command launcher. |
+| `Makefile` | Includes `make stage17-ui` and `make deployment-preflight` targets. |
 | `artifacts/audits/stage17_video_upload_mvp_2026-05-09/stage17_systemui_backend_audit.md` | SystemUI/backend audit for Stage 17. |
 
 Stage 18, Stage 19, and Stage 20 frontend/realtime additions:

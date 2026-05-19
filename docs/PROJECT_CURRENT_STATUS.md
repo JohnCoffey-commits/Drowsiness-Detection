@@ -13,8 +13,9 @@ Current snapshot: the repository has moved beyond the historical Stage 16 final 
 - Stage 20B connects stable Live Monitor frontend warning-candidate events into `/history-48h` frontend-local history under `visionguard.history48h.v1`, scoped to the current local MVP user where auth is available.
 - Stage 21A separates event history from analytics: `/history-48h` is now the event-level local warning-candidate history and review workstation, while `/insights` is the user-scoped local analytics page derived from the same frontend-local history records.
 - Latest May 19 UI polish balances the Live Monitor desktop grid when the sidebar is expanded, keeps selected sidebar labels/icons white, aligns the collapsed sidebar logo and expand control on one row, and removes the extra top explanatory notice block from `/history-48h` while preserving the warning-candidate boundary elsewhere.
+- Latest remote deployment-prep adds shared frontend backend URL config using `NEXT_PUBLIC_API_BASE_URL`, backend CORS origin configuration using `VISIONGUARD_ALLOWED_ORIGINS`, a deployment preflight script, and a Vercel plus Cloudflare Tunnel runbook. This is deployment configuration and validation preparation only; it is not a production deployment.
 
-This is still a local warning-candidate MVP. The Live Monitor is a realtime webcam warning-candidate feasibility prototype, not browser notification, not backend database history ingestion, not production authentication, not raw image/video storage, not final system-level drowsiness accuracy, not a trained fusion classifier, and not deployment readiness.
+Current outputs keep warning-candidate/review boundaries. The repository does not include browser notification, backend database history ingestion, production authentication, raw image/video storage, final system-level drowsiness accuracy claims, or a trained end-to-end fusion classifier.
 
 ## 1. Project Goal
 
@@ -979,6 +980,7 @@ YawDD safety interpretation:
 | `outputs/stage10_eye_roi_consistency_IMG_4901_controlled_terminal/` | Successful Stage 10 controlled-video runtime output directory. |
 | `src/runtime/system_video_upload_pipeline.py` | Stage 17 uploaded-video analysis pipeline. |
 | `src/backend/app.py` | FastAPI backend for upload analysis and constrained session file serving. |
+| `SystemUI/src/lib/apiConfig.ts` | Shared frontend backend URL configuration helper. Reads `NEXT_PUBLIC_API_BASE_URL`, falls back to `http://127.0.0.1:8000`, trims trailing slashes, and builds backend API URLs for client components. |
 | `SystemUI/src/app/page.tsx` | Lightweight Stage 19.7C route placeholder for `/`; persistent Live Monitor rendering is owned by `AppShell`. |
 | `SystemUI/src/components/dashboard/AppShell.tsx` | Persistent application shell that keeps `LiveMonitorPage` mounted across normal route navigation so camera/session state is not reset by visiting other pages. |
 | `SystemUI/src/components/dashboard/LiveMonitorPage.tsx` | Stage 19.7C/20B Live Monitor route content; stores the latest frontend warning-candidate risk state, writes lightweight dashboard events/state-derived display severity points, appends stable warning-candidate events to frontend-local 48h history, skips camera-off fake stored chart points, passes real current-drive/today/current-session data into the dashboard widgets, and owns the smooth right-column Recent Events overlay state. |
@@ -1002,7 +1004,9 @@ YawDD safety interpretation:
 | `SystemUI/src/lib/history48hUtils.ts` | Stage 18/20B filters, aggregations, chart helpers, safe labels, source labels, and copy-summary text. |
 | `SystemUI/src/lib/liveMonitorHistoryIngestion.ts` | Stage 20B pure mapper and append helper that converts stable Live Monitor dashboard events into frontend-local 48h history records without raw frame/image/video payloads. |
 | `scripts/start_stage17_ui.sh` | One-command local launcher for backend and frontend. |
-| `Makefile` | Project-level command target `make stage17-ui`. |
+| `Makefile` | Project-level command targets `make stage17-ui` and `make deployment-preflight`. |
+| `scripts/deployment_preflight.sh` | Safe repeatable deployment preflight for local backend health, optional remote backend health, and optional CORS OPTIONS validation. |
+| `docs/DEPLOYMENT_RUNBOOK.md` | Practical external-access deployment runbook for Vercel-hosted `SystemUI/`, Cloudflare Tunnel HTTPS backend URL, the developer's local FastAPI backend, environment variables, validation, troubleshooting, and rollback. |
 | `src/runtime/realtime_frame_inference.py` | Stage 19 realtime single-frame webcam evidence inference service. |
 | `src/runtime/realtime_temporal_state.py` | Stage 19 session-local realtime warning-candidate temporal state. |
 | `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | Stage 17 response, summary, interval, timeline, and keyframe schema. |

@@ -37,6 +37,7 @@ DEFAULT_CORS_ORIGINS = (
     "http://127.0.0.1:3001",
     "http://localhost:3001",
 )
+ALLOWED_ORIGINS_ENV = "VISIONGUARD_ALLOWED_ORIGINS"
 WARNING = (
     "This output is a rule-based drowsiness warning-candidate analysis, "
     "not final system-level drowsiness accuracy."
@@ -103,14 +104,23 @@ def parse_optional_int(value: str | None) -> int | None:
     return None if parsed is None else int(parsed)
 
 
-def configured_cors_origins() -> list[str]:
-    """Return local defaults plus comma-separated deployment origins."""
-
-    origins = list(DEFAULT_CORS_ORIGINS)
-    for origin in os.environ.get("VISIONGUARD_CORS_ORIGINS", "").split(","):
+def parse_allowed_origins(value: str | None) -> list[str]:
+    origins = []
+    for origin in (value or "").split(","):
         normalized = origin.strip().rstrip("/")
-        if normalized and normalized not in origins:
+        if normalized:
             origins.append(normalized)
+    return origins
+
+
+def configured_cors_origins() -> list[str]:
+    """Return explicit local defaults plus comma-separated deployment frontend origins."""
+
+    origins = []
+    configured_origins = parse_allowed_origins(os.environ.get(ALLOWED_ORIGINS_ENV))
+    for origin in [*DEFAULT_CORS_ORIGINS, *configured_origins]:
+        if origin not in origins:
+            origins.append(origin)
     return origins
 
 

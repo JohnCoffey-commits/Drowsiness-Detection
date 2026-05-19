@@ -1,14 +1,15 @@
 # VisionGuard SystemUI
 
-Next.js frontend for the VisionGuard warning-candidate prototype.
+Next.js frontend for the VisionGuard Drowsiness Detection and Monitoring System.
 
 Routes:
 
-- `/` Live Monitor webcam warning-candidate UI.
-- `/video-upload` uploaded-video warning-candidate review page.
+- `/` Live Monitor webcam UI.
+- `/video-upload` uploaded-video evidence review page.
 - `/history-48h` frontend-only history review page.
+- `/insights` frontend-only analytics page.
 
-The UI is a warning-candidate prototype. It must not be described as final system-level drowsiness accuracy.
+The UI keeps the project boundary text for warning-candidate outputs and must not be described as final system-level drowsiness accuracy.
 
 ## Local Development
 
@@ -36,21 +37,23 @@ The frontend defaults to `http://127.0.0.1:8000` for backend API calls. Override
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-## Simple Vercel Frontend Deploy
+## Vercel Frontend External Access
 
-For a simple hosted demo, deploy only this `SystemUI` directory to Vercel and keep the Python FastAPI model backend on a separate server.
+For external access, deploy only this `SystemUI` directory to Vercel and keep the Python FastAPI model backend on the developer's local machine behind an HTTPS Cloudflare Tunnel.
 
 Recommended Vercel settings:
 
 - Root Directory: `SystemUI`
 - Install Command: `npm install`
 - Build Command: `npm run build`
-- Environment Variable: `NEXT_PUBLIC_API_BASE_URL=https://your-backend-domain.example`
+- Environment Variable: `NEXT_PUBLIC_API_BASE_URL=https://<cloudflare-tunnel-url>`
 
-The backend must allow the Vercel frontend origin through `VISIONGUARD_CORS_ORIGINS`, for example:
+The backend must allow the Vercel frontend origin through `VISIONGUARD_ALLOWED_ORIGINS`, for example:
 
 ```bash
-VISIONGUARD_CORS_ORIGINS=https://your-vercel-app.vercel.app
+VISIONGUARD_ALLOWED_ORIGINS=https://<vercel-app-url>,http://localhost:3000,http://127.0.0.1:3000
 ```
 
 Browser webcam access requires HTTPS in deployed environments.
+
+See `../docs/DEPLOYMENT_RUNBOOK.md` for the full Vercel, Cloudflare Tunnel, CORS, and preflight validation flow.

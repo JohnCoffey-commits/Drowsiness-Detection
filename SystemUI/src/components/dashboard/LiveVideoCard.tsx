@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Coffee,
   Eye,
+  Server,
   ShieldAlert,
   Smile,
   VideoOff,
@@ -33,10 +34,11 @@ import {
   dashboardEventDraftFromLiveAlertEvent,
 } from "@/lib/liveMonitorDashboardStore";
 import type { LiveMonitorDashboardEventDraft } from "@/lib/liveMonitorDashboardTypes";
-import { buildApiUrl, DEFAULT_BACKEND_URL } from "@/lib/videoUploadUtils";
+import { buildApiUrl, getApiBaseUrl } from "@/lib/apiConfig";
 
 const DRIVER_PHOTO_URL =
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1600&auto=format&fit=crop";
+const REALTIME_API_BASE_URL = getApiBaseUrl();
 
 const CRITICAL_EYE_REPEAT_WINDOW_MS = 60_000;
 const CRITICAL_SOUND_REPEAT_MS = 2_200;
@@ -52,6 +54,8 @@ type CameraStatus =
 
 type RealtimeBackendStatus =
   | "Not connected"
+  | "Checking health"
+  | "Health check failed"
   | "Starting session"
   | "Session ready"
   | "Stopping session"
@@ -312,6 +316,31 @@ function getResponseError(payload: unknown, fallback: string): string {
   return fallback;
 }
 
+function realtimeReachabilityMessage(apiBaseUrl: string): string {
+  return `Realtime service is not reachable from this frontend. Backend unavailable. Check that the local FastAPI server and Cloudflare Tunnel are running. Verify NEXT_PUBLIC_API_BASE_URL (${apiBaseUrl}) and CORS allowed origins.`;
+}
+
+function realtimeActionErrorMessage(
+  action: string,
+  apiBaseUrl: string,
+  error?: unknown
+): string {
+  const details = getErrorMessage(error);
+  const lowerDetails = details.toLowerCase();
+  if (details.includes("NEXT_PUBLIC_API_BASE_URL")) {
+    return details;
+  }
+  if (
+    details === "Failed to fetch" ||
+    details === "Unexpected realtime backend error." ||
+    lowerDetails.includes("network") ||
+    lowerDetails.includes("load failed")
+  ) {
+    return `${action}. ${realtimeReachabilityMessage(apiBaseUrl)}`;
+  }
+  return `${action}. ${details} Verify NEXT_PUBLIC_API_BASE_URL (${apiBaseUrl}) and CORS allowed origins.`;
+}
+
 function formatCameraStatusLabel(status: CameraStatus): string {
   if (status === "Camera active") {
     return "Camera Active";
@@ -323,6 +352,24 @@ function formatCameraStatusLabel(status: CameraStatus): string {
     return "Camera Off";
   }
   return status;
+}
+
+function realtimeStatusTone(status: RealtimeBackendStatus): string {
+  if (status === "Session ready" || status === "Frame evidence") {
+    return "border-emerald-100 bg-white/90 text-emerald-900";
+  }
+  if (status === "Backend error" || status === "Health check failed") {
+    return "border-rose-100 bg-white/90 text-rose-900";
+  }
+  if (
+    status === "Checking health" ||
+    status === "Starting session" ||
+    status === "Sending frame" ||
+    status === "Stopping session"
+  ) {
+    return "border-blue-100 bg-white/90 text-blue-900";
+  }
+  return "border-white/60 bg-white/85 text-slate-800";
 }
 
 function getFaceVisibilityIssue(
@@ -610,7 +657,7 @@ export function LiveVideoCard({
   const [samplingError, setSamplingError] = useState<string | null>(null);
   const [isStartingRealtime, setIsStartingRealtime] = useState(false);
   const [, setRealtimeSessionId] = useState<string | null>(null);
-  const [, setBackendStatus] = useState<RealtimeBackendStatus>("Not connected");
+  const [backendStatus, setBackendStatus] = useState<RealtimeBackendStatus>("Not connected");
   const [backendError, setBackendError] = useState<string | null>(null);
   const [lastFrameEvidence, setLastFrameEvidence] = useState<RealtimeFrameEvidence | null>(null);
   const [alertController, setAlertController] = useState<LiveAlertControllerState>(() =>
@@ -810,6 +857,39 @@ export function LiveVideoCard({
     [clearActiveVisualAlert, clearSamplingInterval]
   );
 
+  const checkRealtimeHealth = useCallback(async () => {
+    setBackendStatus("Checking health");
+    setBackendError(null);
+
+    try {
+      const response = await fetch(
+        buildApiUrl("/api/realtime/health"),
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+      const payload = (await response.json().catch(() => null)) as
+        | { ok?: boolean; detail?: unknown }
+        | null;
+
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(
+          getResponseError(payload, `Realtime health check failed with HTTP ${response.status}.`)
+        );
+      }
+    } catch (error) {
+      const message = realtimeActionErrorMessage(
+        "Realtime health check failed",
+        REALTIME_API_BASE_URL,
+        error
+      );
+      setBackendStatus("Health check failed");
+      setBackendError(message);
+      throw new Error(message);
+    }
+  }, []);
+
   const stopRealtimeSession = useCallback(async (updateState = true) => {
     const sessionId = realtimeSessionIdRef.current;
 
@@ -833,7 +913,7 @@ export function LiveVideoCard({
 
     try {
       const response = await fetch(
-        buildApiUrl(DEFAULT_BACKEND_URL, "/api/realtime/session/stop"),
+        buildApiUrl("/api/realtime/session/stop"),
         {
           method: "POST",
           body: formData,
@@ -856,7 +936,13 @@ export function LiveVideoCard({
     } catch (error) {
       if (updateState && isMountedRef.current) {
         setBackendStatus("Backend error");
-        setBackendError(getErrorMessage(error));
+        setBackendError(
+          realtimeActionErrorMessage(
+            "Realtime session stop failed",
+            REALTIME_API_BASE_URL,
+            error
+          )
+        );
       }
     }
   }, []);
@@ -895,11 +981,13 @@ export function LiveVideoCard({
   );
 
   const startRealtimeSession = useCallback(async (): Promise<string> => {
+    await checkRealtimeHealth();
+
     setBackendStatus("Starting session");
     setBackendError(null);
 
     const response = await fetch(
-      buildApiUrl(DEFAULT_BACKEND_URL, "/api/realtime/session/start"),
+      buildApiUrl("/api/realtime/session/start"),
       { method: "POST" }
     );
     const payload = (await response.json().catch(() => null)) as RealtimeSessionStartResponse | null;
@@ -912,7 +1000,7 @@ export function LiveVideoCard({
     setRealtimeSessionId(payload.session_id);
     setBackendStatus("Session ready");
     return payload.session_id;
-  }, []);
+  }, [checkRealtimeHealth]);
 
   const sendFrameToBackend = useCallback(
     async (
@@ -939,7 +1027,7 @@ export function LiveVideoCard({
 
       try {
         setBackendStatus("Sending frame");
-        const response = await fetch(buildApiUrl(DEFAULT_BACKEND_URL, "/api/realtime/frame"), {
+        const response = await fetch(buildApiUrl("/api/realtime/frame"), {
           method: "POST",
           body: formData,
         });
@@ -967,7 +1055,13 @@ export function LiveVideoCard({
           return;
         }
         setBackendStatus("Backend error");
-        setBackendError(getErrorMessage(error));
+        setBackendError(
+          realtimeActionErrorMessage(
+            "Realtime frame submission failed",
+            REALTIME_API_BASE_URL,
+            error
+          )
+        );
       }
     },
     [evaluateVisualAlert, samplingFps]
@@ -1073,7 +1167,11 @@ export function LiveVideoCard({
       samplingIntervalRef.current = setInterval(sampleVideoFrame, Math.round(1000 / samplingFps));
       sampleVideoFrame();
     } catch (error) {
-      const message = getErrorMessage(error);
+      const message = realtimeActionErrorMessage(
+        "Camera is available, but backend evidence analysis is unavailable",
+        REALTIME_API_BASE_URL,
+        error
+      );
       setSamplingError(message);
       setBackendError(message);
       setBackendStatus("Backend error");
@@ -1326,6 +1424,19 @@ export function LiveVideoCard({
 
         <div className="absolute right-5 top-5 z-20 rounded-full border border-white/60 bg-white/85 px-3.5 py-1.5 text-xs font-semibold text-slate-800 shadow-lg backdrop-blur-md">
           {sourceLabel}
+        </div>
+
+        <div
+          className={`absolute bottom-5 left-5 z-20 flex max-w-[calc(100%-13rem)] items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md ${realtimeStatusTone(
+            backendStatus
+          )}`}
+          title={`Configured backend: ${REALTIME_API_BASE_URL}`}
+        >
+          <Server className="h-3.5 w-3.5 shrink-0" strokeWidth={2.3} />
+          <span className="shrink-0">Backend: {backendStatus}</span>
+          <span className="hidden min-w-0 truncate font-mono sm:inline">
+            {REALTIME_API_BASE_URL}
+          </span>
         </div>
 
         {activeProductAlert && !visibleCriticalAlert && (

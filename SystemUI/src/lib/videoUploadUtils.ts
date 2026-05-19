@@ -8,9 +8,18 @@ import {
   type WarningInterval,
   type WarningIntervalSource,
 } from "@/lib/videoUploadTypes";
+import {
+  buildApiUrlWithBase,
+  getApiBaseUrl,
+  normalizeApiBaseUrl,
+  validateApiBaseUrl,
+} from "@/lib/apiConfig";
 
-export const DEFAULT_BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+export const DEFAULT_BACKEND_URL = getApiBaseUrl();
+
+export function buildApiUrl(backendUrl: string, path: string): string {
+  return buildApiUrlWithBase(backendUrl, path);
+}
 
 export const MAX_UPLOAD_BYTES = 750 * 1024 * 1024;
 
@@ -40,31 +49,11 @@ export function sanitizeBrowserText(value: unknown): string {
 }
 
 export function validateBackendUrl(value: string): string | null {
-  const trimmed = value.trim();
-  if (!trimmed) return "Backend URL is required.";
-  if (trimmed.startsWith("file://")) return "file:// URLs are not allowed.";
-  if (!/^https?:\/\//i.test(trimmed)) {
-    return "Backend URL must start with http:// or https://.";
-  }
-  try {
-    const url = new URL(trimmed);
-    if (!["http:", "https:"].includes(url.protocol)) {
-      return "Backend URL must use http:// or https://.";
-    }
-    return null;
-  } catch {
-    return "Backend URL is not a valid URL.";
-  }
+  return validateApiBaseUrl(value);
 }
 
 export function normalizeBackendUrl(value: string): string {
-  return value.trim().replace(/\/+$/, "");
-}
-
-export function buildApiUrl(backendUrl: string, path: string): string {
-  const base = normalizeBackendUrl(backendUrl);
-  const safePath = path.startsWith("/") ? path : `/${path}`;
-  return `${base}${safePath}`;
+  return normalizeApiBaseUrl(value);
 }
 
 export function safeResponsePath(path?: string): string | null {

@@ -132,6 +132,12 @@ function usefulBackendError(payload: unknown, fallback: string): string {
   return sanitizeBrowserText(record.error || detail || record.message || fallback);
 }
 
+function backendReachabilityMessage(backendUrl: string): string {
+  return `Backend unavailable. Check that the local FastAPI server and Cloudflare Tunnel are running. Verify NEXT_PUBLIC_API_BASE_URL uses the current backend URL (${normalizeBackendUrl(
+    backendUrl,
+  )}) and CORS allowed origins include this frontend.`;
+}
+
 function SectionCard({
   children,
   className = "",
@@ -441,11 +447,13 @@ export function VideoUploadAnalysis() {
       });
       setBackendStatus(result.ok ? "connected" : "failed");
       if (!result.ok) {
-        setError(`Backend check failed with HTTP ${result.status}.`);
+        setError(
+          `Backend check failed with HTTP ${result.status}. Verify the backend URL and CORS allowed origins.`,
+        );
       }
     } catch {
       setBackendStatus("failed");
-      setError("Backend is not reachable at the configured URL.");
+      setError(backendReachabilityMessage(backendUrl));
     }
   }, [backendUrl]);
 
@@ -513,7 +521,7 @@ export function VideoUploadAnalysis() {
       if (analyzingTimerRef.current) clearTimeout(analyzingTimerRef.current);
       setStatus("backend-unavailable");
       setBackendStatus("failed");
-      setError("Backend request failed. Check the backend URL and retry.");
+      setError(backendReachabilityMessage(backendUrl));
     }
   };
 
@@ -705,7 +713,7 @@ export function VideoUploadAnalysis() {
                 className={`mt-2 w-full rounded-xl border bg-white px-3 py-2.5 font-mono text-sm text-slate-900 outline-none transition focus-visible:ring-2 focus-visible:ring-blue-400 ${
                   backendUrlError ? "border-red-300" : "border-slate-200"
                 }`}
-                placeholder="http://127.0.0.1:8000"
+                placeholder={DEFAULT_BACKEND_URL}
               />
             </label>
             {backendUrlError ? (
