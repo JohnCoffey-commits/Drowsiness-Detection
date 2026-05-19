@@ -47,6 +47,11 @@ import {
   sanitizeBrowserText,
   validateBackendUrl,
 } from "@/lib/videoUploadUtils";
+import { getArchiveClientId } from "@/lib/archiveClientId";
+import {
+  buildVideoArchiveRunPayload,
+  saveVideoArchiveRun,
+} from "@/lib/backendArchiveApi";
 import { useVisionGuardAuth } from "@/lib/authStore";
 import { useVisionGuardNotifications } from "@/lib/notificationStore";
 
@@ -380,6 +385,10 @@ export function VideoUploadAnalysis() {
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<VideoUploadResponse | null>(null);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  const [archiveState, setArchiveState] = useState<
+    "idle" | "saving" | "saved" | "failed"
+  >("idle");
+  const [archiveMessage, setArchiveMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analyzingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -400,6 +409,8 @@ export function VideoUploadAnalysis() {
       setResponse(null);
       setVideoDuration(undefined);
       setCopyState("idle");
+      setArchiveState("idle");
+      setArchiveMessage("");
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       if (!nextFile) {
         setFile(null);
@@ -457,6 +468,37 @@ export function VideoUploadAnalysis() {
     }
   }, [backendUrl]);
 
+  const saveVideoResultToArchive = useCallback(
+    async (payload: VideoUploadResponse) => {
+      setArchiveState("saving");
+      setArchiveMessage("Saving compact uploaded-video summary to local archive.");
+      const archivePayload = buildVideoArchiveRunPayload(
+        payload,
+        getArchiveClientId(),
+        currentUser?.id,
+        {
+          filename: file?.name,
+          fileSizeBytes: file?.size,
+          mimeType: file?.type,
+          browserDurationSec: videoDuration,
+          figureCount: figureDefinitions(normalizedBackendUrl, payload).length,
+        },
+      );
+      const result = await saveVideoArchiveRun(archivePayload);
+      if (result.ok) {
+        setArchiveState("saved");
+        setArchiveMessage("Saved compact uploaded-video summary to local archive.");
+      } else {
+        setArchiveState("failed");
+        setArchiveMessage(
+          result.error ||
+            "Archive save failed. The upload analysis result is still available.",
+        );
+      }
+    },
+    [currentUser?.id, file, normalizedBackendUrl, videoDuration],
+  );
+
   const analyzeVideo = async () => {
     if (!file) return;
     const validation = validateBackendUrl(backendUrl);
@@ -469,6 +511,8 @@ export function VideoUploadAnalysis() {
     setError(null);
     setResponse(null);
     setCopyState("idle");
+    setArchiveState("idle");
+    setArchiveMessage("");
     setStatus("uploading");
     setBackendStatus("unchecked");
     if (analyzingTimerRef.current) clearTimeout(analyzingTimerRef.current);
@@ -504,6 +548,7 @@ export function VideoUploadAnalysis() {
       setResponse(payload);
       setStatus("completed");
       setBackendStatus("connected");
+      void saveVideoResultToArchive(payload);
       if (currentUser) {
         addNotification({
           id: `video-upload-${currentUser.id}-${payload.session_id || Date.now()}`,
@@ -530,12 +575,16 @@ export function VideoUploadAnalysis() {
     setResponse(null);
     setError(null);
     setCopyState("idle");
+    setArchiveState("idle");
+    setArchiveMessage("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const clearResult = () => {
     setResponse(null);
     setCopyState("idle");
+    setArchiveState("idle");
+    setArchiveMessage("");
     setStatus(file ? "file-selected" : "idle");
   };
 
@@ -764,6 +813,44 @@ export function VideoUploadAnalysis() {
         {response ? (
           <>
             <ResultOverview response={response} figuresCount={figures.length} />
+
+            <div
+              className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 text-sm shadow-sm ${
+                archiveState === "failed"
+                  ? "border-amber-200 bg-amber-50 text-amber-800"
+                  : archiveState === "saved"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : "border-slate-200 bg-white text-slate-700"
+              }`}
+            >
+              <div className="flex items-start gap-2">
+                {archiveState === "saved" ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                ) : archiveState === "failed" ? (
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                ) : (
+                  <RefreshCw
+                    className={`mt-0.5 h-4 w-4 shrink-0 ${
+                      archiveState === "saving" ? "animate-spin" : ""
+                    }`}
+                  />
+                )}
+                <span>
+                  {archiveMessage ||
+                    "Compact uploaded-video summary can be saved to the local backend archive."}
+                </span>
+              </div>
+              {archiveState === "failed" ? (
+                <button
+                  type="button"
+                  onClick={() => saveVideoResultToArchive(response)}
+                  className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs font-semibold text-amber-800 outline-none transition hover:bg-amber-100 focus-visible:ring-2 focus-visible:ring-amber-300"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  Retry save
+                </button>
+              ) : null}
+            </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { EventTimelineTable } from "@/components/history-48h/EventTimelineTable";
 import { HistoryFilters } from "@/components/history-48h/HistoryFilters";
 import { HistoryHeader } from "@/components/history-48h/HistoryHeader";
@@ -15,10 +15,19 @@ import {
   saveHistory48hUserStore,
 } from "@/lib/history48hStorage";
 import { useVisionGuardAuth } from "@/lib/authStore";
+import {
+  archiveRecordsToHistoryStore,
+  exportArchiveRecords,
+  getArchiveHealth,
+  getArchiveRecords,
+  updateArchiveRecordReview,
+} from "@/lib/backendArchiveApi";
+import type { BackendArchiveRange } from "@/lib/backendArchiveTypes";
 import type {
   History48hStore,
   HistoryFilters as HistoryFilterState,
   ReviewStatus,
+  TimeWindowHours,
 } from "@/lib/history48hTypes";
 import {
   buildHistorySummaryText,
@@ -42,8 +51,19 @@ const EMPTY_STORE: History48hStore = {
   updatedAt: "",
 };
 
+const ARCHIVE_RANGE_TO_WINDOW: Record<BackendArchiveRange, TimeWindowHours> = {
+  "48h": 48,
+  "7d": 168,
+  "30d": 720,
+  all: 876000,
+};
+
 export function History48hPage() {
   const [store, setStore] = useState<History48hStore>(EMPTY_STORE);
+  const [archiveStore, setArchiveStore] = useState<History48hStore | null>(null);
+  const [archiveRange, setArchiveRange] = useState<BackendArchiveRange>("48h");
+  const [archiveStatus, setArchiveStatus] = useState("Backend archive not checked yet.");
+  const [archiveAvailable, setArchiveAvailable] = useState(false);
   const [filters, setFilters] = useState<HistoryFilterState>(DEFAULT_FILTERS);
   const [referenceNow, setReferenceNow] = useState<Date>(new Date());
   const [copyStatus, setCopyStatus] = useState("");
@@ -64,19 +84,61 @@ export function History48hPage() {
     return () => window.clearTimeout(id);
   }, [currentUser?.id, includeLegacyRecords]);
 
+  const refreshArchive = useCallback(async () => {
+    setArchiveStatus("Checking backend archive.");
+    try {
+      const health = await getArchiveHealth();
+      if (!health.ok || !health.enabled) {
+        setArchiveAvailable(false);
+        setArchiveStore(null);
+        setArchiveStatus("Backend archive unavailable; showing local_only history.");
+        return;
+      }
+      const response = await getArchiveRecords({
+        range: archiveRange,
+        limit: 500,
+      });
+      const nextStore = archiveRecordsToHistoryStore(response.records);
+      setArchiveStore(nextStore);
+      setArchiveAvailable(response.enabled && response.records.length > 0);
+      setArchiveStatus(
+        response.records.length > 0
+          ? `backend_archive loaded ${response.records.length} records from ${archiveRange}.`
+          : "Backend archive is reachable but has no records in this range; showing local_only history.",
+      );
+    } catch {
+      setArchiveAvailable(false);
+      setArchiveStore(null);
+      setArchiveStatus(
+        "Backend archive unavailable. Check FastAPI, Cloudflare Tunnel, NEXT_PUBLIC_API_BASE_URL, and CORS.",
+      );
+    }
+  }, [archiveRange]);
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      void refreshArchive();
+    }, 0);
+
+    return () => window.clearTimeout(id);
+  }, [refreshArchive]);
+
+  const activeStore = archiveAvailable && archiveStore ? archiveStore : store;
+  const activeDataSource = archiveAvailable && archiveStore ? "backend_archive" : "local_only";
+
   const filteredEvents = useMemo(
-    () => filterHistoryEvents(store.events, filters, referenceNow),
-    [filters, referenceNow, store.events]
+    () => filterHistoryEvents(activeStore.events, filters, referenceNow),
+    [activeStore.events, filters, referenceNow]
   );
 
   const summary = useMemo(
-    () => summarizeHistory(filteredEvents, store.sessions),
-    [filteredEvents, store.sessions]
+    () => summarizeHistory(filteredEvents, activeStore.sessions),
+    [activeStore.sessions, filteredEvents]
   );
 
   const sessionRows = useMemo(
-    () => buildSessionRows(store.sessions, filteredEvents),
-    [filteredEvents, store.sessions]
+    () => buildSessionRows(activeStore.sessions, filteredEvents),
+    [activeStore.sessions, filteredEvents]
   );
 
   const reviewQueue = useMemo(
@@ -95,6 +157,23 @@ export function History48hPage() {
   }
 
   function handleSetReviewStatus(eventId: string, status: ReviewStatus) {
+    if (activeDataSource === "backend_archive" && archiveStore) {
+      const nextStore = {
+        ...archiveStore,
+        events: updateHistoryEventReviewStatus(archiveStore.events, eventId, status),
+        updatedAt: new Date().toISOString(),
+      };
+      setArchiveStore(nextStore);
+      void updateArchiveRecordReview(eventId, {
+        reviewed: status === "reviewed",
+      }).then((result) => {
+        if (!result.ok) {
+          setCopyStatus("Archive review update failed");
+        }
+      });
+      return;
+    }
+
     const nextStore = {
       ...store,
       events: updateHistoryEventReviewStatus(store.events, eventId, status),
@@ -137,6 +216,33 @@ export function History48hPage() {
     setFilters((current) => ({ ...current, sessionId: undefined }));
   }
 
+  function handleArchiveRangeChange(nextRange: BackendArchiveRange) {
+    setArchiveRange(nextRange);
+    setFilters((current) => ({
+      ...current,
+      timeWindowHours: ARCHIVE_RANGE_TO_WINDOW[nextRange],
+    }));
+  }
+
+  async function handleExportArchive() {
+    try {
+      const payload = await exportArchiveRecords();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const date = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.download = `visionguard-archive-export-${date}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      setCopyStatus(`Exported ${payload.record_count} backend_archive records`);
+    } catch {
+      setCopyStatus("Archive export failed");
+    }
+  }
+
   return (
     <main className="flex-1 overflow-y-auto bg-[#f4f7f9] px-4 py-5 lg:px-6">
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5 pb-10">
@@ -145,7 +251,13 @@ export function History48hPage() {
           filters={filters}
           selectedSessionId={filters.sessionId}
           copyStatus={copyStatus}
+          archiveRange={archiveRange}
+          archiveStatus={archiveStatus}
+          activeDataSource={activeDataSource}
           onChange={setFilters}
+          onArchiveRangeChange={handleArchiveRangeChange}
+          onRefreshArchive={refreshArchive}
+          onExportArchive={handleExportArchive}
           onResetDemoData={handleResetDemoData}
           onClearHistory={handleClearHistory}
           onCopySummary={handleCopySummary}
@@ -159,8 +271,8 @@ export function History48hPage() {
         <EventTimelineTable
           events={filteredEvents}
           emptyMessage={
-            store.events.length === 0
-              ? "No local warning-candidate history for this user in the last 48 hours."
+            activeStore.events.length === 0
+              ? "No warning-candidate history records are available for the selected source."
               : "No events match the current filters."
           }
         />

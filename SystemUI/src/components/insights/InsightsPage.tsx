@@ -12,6 +12,11 @@ import { SignalQualityInsights } from "@/components/insights/SignalQualityInsigh
 import { TimeOfDayPattern } from "@/components/insights/TimeOfDayPattern";
 import { WarningCandidateTrend } from "@/components/insights/WarningCandidateTrend";
 import { useVisionGuardAuth } from "@/lib/authStore";
+import {
+  archiveRecordsToHistoryStore,
+  getArchiveHealth,
+  getArchiveRecords,
+} from "@/lib/backendArchiveApi";
 import { loadHistory48hStore } from "@/lib/history48hStorage";
 import type { History48hStore } from "@/lib/history48hTypes";
 import {
@@ -36,6 +41,9 @@ export function InsightsPage() {
   const router = useRouter();
   const { currentUser, isLegacyRecordVisible } = useVisionGuardAuth();
   const [store, setStore] = useState<History48hStore>(EMPTY_STORE);
+  const [archiveStore, setArchiveStore] = useState<History48hStore | null>(null);
+  const [archiveStatus, setArchiveStatus] = useState("Backend archive not checked yet.");
+  const [archiveAvailable, setArchiveAvailable] = useState(false);
   const [referenceNow, setReferenceNow] = useState<Date>(new Date());
   const includeLegacyRecords = currentUser
     ? isLegacyRecordVisible(undefined)
@@ -51,9 +59,35 @@ export function InsightsPage() {
     return () => window.clearTimeout(id);
   }, [currentUser?.id, includeLegacyRecords]);
 
+  useEffect(() => {
+    const id = window.setTimeout(async () => {
+      try {
+        const health = await getArchiveHealth();
+        if (!health.ok || !health.enabled) {
+          setArchiveAvailable(false);
+          setArchiveStore(null);
+          setArchiveStatus("local_only");
+          return;
+        }
+        const response = await getArchiveRecords({ range: "48h", limit: 500 });
+        setArchiveStore(archiveRecordsToHistoryStore(response.records));
+        setArchiveAvailable(response.records.length > 0);
+        setArchiveStatus(response.records.length > 0 ? "backend_archive" : "local_only");
+      } catch {
+        setArchiveAvailable(false);
+        setArchiveStore(null);
+        setArchiveStatus("local_only");
+      }
+    }, 0);
+
+    return () => window.clearTimeout(id);
+  }, []);
+
+  const activeStore = archiveAvailable && archiveStore ? archiveStore : store;
+
   const records = useMemo(
-    () => getInsightRecords(store.events, referenceNow, 48),
-    [referenceNow, store.events]
+    () => getInsightRecords(activeStore.events, referenceNow, 48),
+    [activeStore.events, referenceNow]
   );
   const summary = useMemo(() => getInsightSummary(records), [records]);
   const trend = useMemo(
@@ -70,8 +104,8 @@ export function InsightsPage() {
     [timeOfDay]
   );
   const sessionRows = useMemo(
-    () => getSessionComparison(records, store.sessions),
-    [records, store.sessions]
+    () => getSessionComparison(records, activeStore.sessions),
+    [activeStore.sessions, records]
   );
   const signalQuality = useMemo(
     () => getSignalQualityInsights(records),
@@ -93,6 +127,7 @@ export function InsightsPage() {
         <InsightsHeader
           displayName={currentUser?.displayName}
           recordCount={records.length}
+          dataSource={archiveStatus}
         />
 
         {records.length === 0 ? (

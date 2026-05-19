@@ -62,6 +62,9 @@ export function ManualReviewQueue({
                     <span className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
                       {SOURCE_LABELS[event.source]}
                     </span>
+                    <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-500">
+                      {event.archiveSource ?? "local_only"}
+                    </span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm font-semibold text-slate-800">
                     <span>{formatDateTime(event.timestamp)}</span>

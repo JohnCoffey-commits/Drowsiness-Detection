@@ -24,6 +24,13 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
+from src.backend.local_archive import (  # noqa: E402
+    ArchiveDisabledError,
+    ArchiveValidationError,
+    archive_db_path,
+    get_archive,
+    is_archive_enabled,
+)
 from src.runtime.realtime_temporal_state import REALTIME_RULE_WARNING, RealtimeTemporalState  # noqa: E402
 
 RUNS_ROOT = PROJECT_ROOT / "outputs" / "system_video_upload_runs"
@@ -38,6 +45,7 @@ DEFAULT_CORS_ORIGINS = (
     "http://localhost:3001",
 )
 ALLOWED_ORIGINS_ENV = "VISIONGUARD_ALLOWED_ORIGINS"
+ARCHIVE_WRITE_TOKEN_ENV = "VISIONGUARD_ARCHIVE_WRITE_TOKEN"
 WARNING = (
     "This output is a rule-based drowsiness warning-candidate analysis, "
     "not final system-level drowsiness accuracy."
@@ -48,7 +56,7 @@ REALTIME_SESSIONS: dict[str, dict[str, Any]] = {}
 
 
 try:
-    from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+    from fastapi import FastAPI, File, Form, Header, HTTPException, Query, Request, UploadFile
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Response
     from fastapi.staticfiles import StaticFiles
@@ -56,7 +64,10 @@ except ImportError as exc:  # pragma: no cover - exercised by preflight in minim
     FastAPI = None
     File = None
     Form = None
+    Header = None
     HTTPException = None
+    Query = None
+    Request = None
     UploadFile = None
     CORSMiddleware = None
     FileResponse = None
@@ -122,6 +133,22 @@ def configured_cors_origins() -> list[str]:
         if origin not in origins:
             origins.append(origin)
     return origins
+
+
+def require_archive_write_token(token: str | None) -> None:
+    configured_token = os.environ.get(ARCHIVE_WRITE_TOKEN_ENV)
+    if configured_token and token != configured_token:
+        raise HTTPException(status_code=401, detail="Archive write token is missing or invalid.")
+
+
+async def read_json_object(request: Request) -> dict[str, Any]:
+    try:
+        payload = await request.json()
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail="Request body must be JSON.") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
+    return payload
 
 
 def session_dir(session_id: str) -> Path:
@@ -243,7 +270,7 @@ def create_app():
         CORSMiddleware,
         allow_origins=configured_cors_origins(),
         allow_credentials=False,
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "PATCH"],
         allow_headers=["*"],
     )
     STATIC_DIR.mkdir(parents=True, exist_ok=True)
@@ -303,6 +330,169 @@ def create_app():
         from src.runtime.realtime_frame_inference import get_realtime_service
 
         return JSONResponse(get_realtime_service().health())
+
+    @app.get("/api/archive/health")
+    async def archive_health():
+        if not is_archive_enabled():
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "enabled": False,
+                    "db_path": str(archive_db_path()),
+                    "db_exists": archive_db_path().exists(),
+                    "db_writable": False,
+                    "record_count": 0,
+                    "latest_record_timestamp": None,
+                }
+            )
+        try:
+            return JSONResponse(get_archive().health())
+        except Exception as exc:
+            return JSONResponse(
+                {
+                    "ok": False,
+                    "enabled": True,
+                    "db_path": str(archive_db_path()),
+                    "db_exists": archive_db_path().exists(),
+                    "db_writable": False,
+                    "record_count": 0,
+                    "latest_record_timestamp": None,
+                    "error": str(exc),
+                },
+                status_code=503,
+            )
+
+    @app.get("/api/archive/records")
+    async def archive_records(
+        range_value: str = Query(default="48h", alias="range"),
+        source: str | None = Query(default=None),
+        record_type: str | None = Query(default=None),
+        limit: int = Query(default=200, ge=1, le=1000),
+        offset: int = Query(default=0, ge=0),
+    ):
+        if not is_archive_enabled():
+            return JSONResponse(
+                {
+                    "ok": True,
+                    "enabled": False,
+                    "range": range_value,
+                    "source": source,
+                    "record_type": record_type,
+                    "limit": limit,
+                    "offset": offset,
+                    "total": 0,
+                    "records": [],
+                }
+            )
+        try:
+            return JSONResponse(
+                get_archive().list_records(
+                    range_value=range_value,
+                    source=source,
+                    record_type=record_type,
+                    limit=limit,
+                    offset=offset,
+                )
+            )
+        except ArchiveValidationError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=f"Archive records unavailable: {exc}") from exc
+
+    @app.post("/api/archive/live-event")
+    async def archive_live_event(
+        request: Request,
+        x_visionguard_archive_token: str | None = Header(
+            default=None,
+            alias="X-VisionGuard-Archive-Token",
+        ),
+    ):
+        require_archive_write_token(x_visionguard_archive_token)
+        payload = await read_json_object(request)
+        try:
+            record = get_archive().upsert_record(
+                payload,
+                record_type="live_event",
+                source="live_monitor",
+            )
+            return JSONResponse({"ok": True, "record": record})
+        except ArchiveDisabledError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ArchiveValidationError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=f"Archive save failed: {exc}") from exc
+
+    @app.post("/api/archive/video-run")
+    async def archive_video_run(
+        request: Request,
+        x_visionguard_archive_token: str | None = Header(
+            default=None,
+            alias="X-VisionGuard-Archive-Token",
+        ),
+    ):
+        require_archive_write_token(x_visionguard_archive_token)
+        payload = await read_json_object(request)
+        try:
+            record = get_archive().upsert_record(
+                payload,
+                record_type="video_run",
+                source="video_upload",
+                event_type="upload_analysis",
+            )
+            return JSONResponse({"ok": True, "record": record})
+        except ArchiveDisabledError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ArchiveValidationError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=f"Archive save failed: {exc}") from exc
+
+    @app.patch("/api/archive/records/{record_id}/review")
+    async def archive_record_review(
+        record_id: str,
+        request: Request,
+        x_visionguard_archive_token: str | None = Header(
+            default=None,
+            alias="X-VisionGuard-Archive-Token",
+        ),
+    ):
+        require_archive_write_token(x_visionguard_archive_token)
+        payload = await read_json_object(request)
+        reviewed = payload.get("reviewed")
+        review_note = payload.get("review_note")
+        try:
+            record = get_archive().update_review(
+                record_id,
+                reviewed=bool(reviewed) if reviewed is not None else None,
+                review_note=str(review_note) if review_note is not None else None,
+            )
+            return JSONResponse({"ok": True, "record": record})
+        except ArchiveDisabledError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail=f"Unknown archive record id: {record_id}") from exc
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=f"Archive review update failed: {exc}") from exc
+
+    @app.get("/api/archive/export")
+    async def archive_export():
+        if not is_archive_enabled():
+            return JSONResponse(
+                {
+                    "ok": False,
+                    "enabled": False,
+                    "archive_version": "stage22-local-sqlite-v1",
+                    "exported_at": now_iso(),
+                    "records": [],
+                    "error": "Local archive is disabled.",
+                },
+                status_code=503,
+            )
+        try:
+            return JSONResponse(get_archive().export_records())
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=f"Archive export failed: {exc}") from exc
 
     @app.post("/api/realtime/session/start")
     async def realtime_session_start():
@@ -482,6 +672,8 @@ def run_preflight() -> int:
         "static_dir": str(STATIC_DIR),
         "pipeline_script_exists": str(PROJECT_ROOT / "src/runtime/system_video_upload_pipeline.py"),
         "cors_origins": configured_cors_origins(),
+        "archive_enabled": is_archive_enabled(),
+        "archive_db_path": str(archive_db_path()),
         "warning": WARNING,
     }
     if FASTAPI_IMPORT_ERROR is not None:

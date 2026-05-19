@@ -12,8 +12,9 @@ export function HistoryInterpretationNote() {
           </div>
           <p className="mt-2 text-sm leading-6">
             This page summarizes recent warning-candidate history. Events are
-            frontend-local candidate states produced by stable Live Monitor
-            visual alerts or demo history data. {HISTORY_48H_BOUNDARY_NOTICE}
+            compact candidate states produced by stable Live Monitor visual
+            alerts, uploaded-video summaries, backend_archive records, or local
+            fallback history. {HISTORY_48H_BOUNDARY_NOTICE}
           </p>
         </div>
         <div className="grid gap-3 text-sm sm:grid-cols-3 lg:w-[560px]">
@@ -34,8 +35,9 @@ export function HistoryInterpretationNote() {
         </div>
       </div>
       <p className="mt-4 text-sm leading-6 text-blue-900">
-        Local history stores lightweight records only. It does not save raw
-        frames, webcam images, uploaded videos, blobs, or base64 payloads.
+        Local history and backend archive records are lightweight summaries only.
+        They do not save raw frames, webcam images, uploaded videos, blobs, or
+        base64 payloads.
       </p>
     </section>
   );

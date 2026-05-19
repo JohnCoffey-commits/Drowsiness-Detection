@@ -6,8 +6,8 @@ Routes:
 
 - `/` Live Monitor webcam UI.
 - `/video-upload` uploaded-video evidence review page.
-- `/history-48h` frontend-only history review page.
-- `/insights` frontend-only analytics page.
+- `/history-48h` history review page with backend_archive support and local_only fallback.
+- `/insights` analytics page with backend_archive support and local_only fallback.
 
 The UI keeps the project boundary text for warning-candidate outputs and must not be described as final system-level drowsiness accuracy.
 
@@ -53,6 +53,8 @@ The backend must allow the Vercel frontend origin through `VISIONGUARD_ALLOWED_O
 ```bash
 VISIONGUARD_ALLOWED_ORIGINS=https://<vercel-app-url>,http://localhost:3000,http://127.0.0.1:3000
 ```
+
+Stage 22 local archive records are stored by the FastAPI backend, not by Vercel. The default backend archive database is `data/visionguard_archive.sqlite`; see `../docs/LOCAL_BACKEND_ARCHIVE.md`.
 
 Browser webcam access requires HTTPS in deployed environments.
 

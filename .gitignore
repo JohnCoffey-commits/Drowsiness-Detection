@@ -88,6 +88,15 @@ outputs/stage*.csv
 outputs/stage*.json
 outputs/system_video_upload_runs/
 
+# Local backend archive database
+data/*.sqlite
+data/*.sqlite-*
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+backups/
+visionguard-archive-export-*.json
+
 # Local upload-validation videos and generated upload evidence
 upload_test/*.mp4
 upload_test/results/

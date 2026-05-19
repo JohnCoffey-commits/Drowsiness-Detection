@@ -14,6 +14,8 @@ export type HistorySource =
   | "manual"
   | "webcam_future";
 
+export type HistoryArchiveSource = "backend_archive" | "local_only";
+
 export type ReviewStatus = "pending" | "reviewed" | "not_required";
 
 export type EyeEvidenceStrength =
@@ -35,6 +37,7 @@ export interface DriverHistoryEvent {
   state: HistoryState;
   severity: HistorySeverity;
   source: HistorySource;
+  archiveSource?: HistoryArchiveSource;
   title?: string;
   summary?: string;
   relatedRoute?: "/" | "/video-upload" | "/history-48h";
@@ -92,7 +95,7 @@ export interface StateBreakdownItem {
   color: string;
 }
 
-export type TimeWindowHours = 6 | 12 | 24 | 48;
+export type TimeWindowHours = 6 | 12 | 24 | 48 | 168 | 720 | 876000;
 
 export type EventTypeFilter =
   | "all"

@@ -25,6 +25,9 @@ export const TIME_WINDOW_OPTIONS: Array<{
   { label: "Last 12 hours", value: 12 },
   { label: "Last 24 hours", value: 24 },
   { label: "Last 48 hours", value: 48 },
+  { label: "Last 7 days", value: 168 },
+  { label: "Last 30 days", value: 720 },
+  { label: "All archive", value: 876000 },
 ];
 
 export const EVENT_TYPE_OPTIONS: Array<{
@@ -57,6 +60,7 @@ export const SOURCE_OPTIONS: Array<{
 }> = [
   { label: "All", value: "all" },
   { label: "Live Monitor", value: "live_monitor" },
+  { label: "Video Upload", value: "video_upload" },
   { label: "Demo", value: "demo" },
 ];
 

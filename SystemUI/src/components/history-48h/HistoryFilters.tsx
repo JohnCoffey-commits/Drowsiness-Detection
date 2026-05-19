@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  Database,
+  Download,
   Clipboard,
   Filter,
   RefreshCcw,
@@ -8,6 +10,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import type { BackendArchiveRange } from "@/lib/backendArchiveTypes";
 import type {
   EventTypeFilter,
   HistoryFilters,
@@ -26,7 +29,13 @@ interface HistoryFiltersProps {
   filters: HistoryFilters;
   selectedSessionId?: string;
   copyStatus: string;
+  archiveRange: BackendArchiveRange;
+  archiveStatus: string;
+  activeDataSource: "backend_archive" | "local_only";
   onChange: (filters: HistoryFilters) => void;
+  onArchiveRangeChange: (range: BackendArchiveRange) => void;
+  onRefreshArchive: () => void;
+  onExportArchive: () => void;
   onResetDemoData: () => void;
   onClearHistory: () => void;
   onCopySummary: () => void;
@@ -62,7 +71,13 @@ export function HistoryFilters({
   filters,
   selectedSessionId,
   copyStatus,
+  archiveRange,
+  archiveStatus,
+  activeDataSource,
   onChange,
+  onArchiveRangeChange,
+  onRefreshArchive,
+  onExportArchive,
   onResetDemoData,
   onClearHistory,
   onCopySummary,
@@ -70,8 +85,8 @@ export function HistoryFilters({
 }: HistoryFiltersProps) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-        <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
           <SelectField
             label="Time window"
             value={filters.timeWindowHours}
@@ -130,9 +145,36 @@ export function HistoryFilters({
               </option>
             ))}
           </SelectField>
+
+          <SelectField
+            label="Archive range"
+            value={archiveRange}
+            onChange={(value) => onArchiveRangeChange(value as BackendArchiveRange)}
+          >
+            <option value="48h">48h</option>
+            <option value="7d">7d</option>
+            <option value="30d">30d</option>
+            <option value="all">All</option>
+          </SelectField>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={onRefreshArchive}
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100"
+          >
+            <Database className="h-4 w-4" />
+            Refresh archive
+          </button>
+          <button
+            type="button"
+            onClick={onExportArchive}
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-3 text-sm font-semibold text-emerald-700 shadow-sm transition hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100"
+          >
+            <Download className="h-4 w-4" />
+            Export archive
+          </button>
           <button
             type="button"
             onClick={onResetDemoData}
@@ -163,7 +205,11 @@ export function HistoryFilters({
       <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-600">
         <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-semibold text-slate-700">
           <Filter className="h-3.5 w-3.5" />
-          Current local user data visible
+          Active source: {activeDataSource}
+        </span>
+        <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-semibold text-slate-700">
+          <Database className="h-3.5 w-3.5" />
+          {archiveStatus}
         </span>
         {selectedSessionId && (
           <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 font-semibold text-blue-700">

@@ -21,9 +21,10 @@ interface EventTimelineTableProps {
 }
 
 function DetailPanel({ event }: { event: DriverHistoryEvent }) {
+  const archiveSource = event.archiveSource ?? "local_only";
   return (
     <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm text-slate-700">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(7,minmax(0,1fr))]">
         <div>
           <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
             Session id
@@ -62,6 +63,12 @@ function DetailPanel({ event }: { event: DriverHistoryEvent }) {
           </span>
           {formatCandidateScore(event.candidateSeverityScore)}
         </div>
+        <div>
+          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Archive source
+          </span>
+          {archiveSource}
+        </div>
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
         <p className="leading-6">
@@ -72,6 +79,17 @@ function DetailPanel({ event }: { event: DriverHistoryEvent }) {
           Safe interpretation: this is a frontend-local warning-candidate history
           item, not final system-level drowsiness accuracy.
         </p>
+      </div>
+    </div>
+  );
+}
+
+function SourceLabel({ event }: { event: DriverHistoryEvent }) {
+  return (
+    <div className="leading-5">
+      <div>{SOURCE_LABELS[event.source]}</div>
+      <div className="text-[11px] font-semibold text-slate-400">
+        {event.archiveSource ?? "local_only"}
       </div>
     </div>
   );
@@ -162,7 +180,7 @@ export function EventTimelineTable({
                               {evidenceLabel(event)}
                             </div>
                             <div className="pr-3 text-slate-600">
-                              {SOURCE_LABELS[event.source]}
+                              <SourceLabel event={event} />
                             </div>
                             <div className="pr-3 text-slate-600">
                               {REVIEW_LABELS[event.reviewStatus]}
@@ -234,7 +252,7 @@ export function EventTimelineTable({
                       <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
                         Source
                       </span>
-                      {SOURCE_LABELS[event.source]}
+                      <SourceLabel event={event} />
                     </div>
                     <div>
                       <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">

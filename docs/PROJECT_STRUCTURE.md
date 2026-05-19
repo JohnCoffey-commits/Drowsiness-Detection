@@ -14,6 +14,7 @@ The repository currently supports a modular driver monitoring system rather than
 - FastAPI + Next.js Stage 17 video-upload analysis workstation
 - FastAPI + Next.js Stage 19 Live Monitor realtime webcam warning-candidate prototype with product-style visual warning overlays, default-on sound alerts after camera start, a realtime-bound warning-candidate risk gauge, dashboard widgets bound to stable Live Monitor events/score samples, and a product-style session-window state-derived display severity waveform chart
 - Stage 20A local MVP account/app-shell foundation, Stage 20B frontend-local Live Monitor history ingestion for `/history-48h`, and Stage 21A split between History review and Insights analytics
+- Stage 22 local backend SQLite archive for compact shared Live Monitor and uploaded-video summary records
 - May 19 UI polish for Live Monitor desktop column balance, stronger selected sidebar contrast, collapsed sidebar control alignment, and a cleaner `/history-48h` header
 - Remote deployment-prep for Vercel-hosted `SystemUI/` calling a Cloudflare Tunnel HTTPS URL that forwards to the developer's local FastAPI backend
 
@@ -26,7 +27,8 @@ The repository currently supports a modular driver monitoring system rather than
 | Runtime temporal analysis | Controlled A/B/C/D videos and upload videos | Eye/mouth ROI extraction, timeline generation, rule-based fusion | warning-candidate timelines | Stage 10-15 completed as controlled-validation prototype |
 | Video Upload Analysis MVP | Uploaded local videos through FastAPI + SystemUI | Professional warning-candidate review page | summary, intervals, figures, keyframes, technical files | Stage 17.5 evidence-review UI polished |
 | Live Monitor realtime prototype | Browser webcam sampled frames through SystemUI + FastAPI | Single-frame evidence, session-local temporal warning-candidate state, product-style visual warning overlays, face visibility cue, default-on sound alerts after camera start, realtime-bound warning-candidate risk gauge, event/score-bound dashboard widgets, state-derived session-window waveform chart rendering, and frontend-local 48h history ingestion from stable events | `p_eye_closed`, `p_yawn`, ROI quality, realtime candidate state, product warning overlays, stable frontend warning-candidate events, frontend warning-candidate severity score samples, local history records | Stage 19.7C local prototype plus Stage 20B frontend-local history ingestion |
-| History and Insights frontend | Browser-local history records under `visionguard.history48h.v1` | Event-level review workflow and aggregate current-user analytics | Local warning-candidate records and derived summaries, not backend truth labels | Stage 21A separates `/history-48h` review workstation from `/insights` read-only analytics |
+| History and Insights frontend | Browser-local history records under `visionguard.history48h.v1` plus optional local backend archive records | Event-level review workflow and aggregate current-user/shared-record analytics | Local and backend-archive warning-candidate summary records and derived summaries, not backend truth labels | Stage 21A separates `/history-48h` review workstation from `/insights`; Stage 22 adds backend_archive fallback-aware display and export |
+| Local backend archive | FastAPI + SQLite under `data/visionguard_archive.sqlite` by default | Central compact summary storage for shared remote clients | Stable Live Monitor event summaries, uploaded-video summary records, review state | Stage 22 local archive; no raw webcam frames/images/videos or cloud database |
 | NTHUDDD2 branch | Official NTHU considered; Kaggle extracted-frame version explored | Drowsy/not-drowsy frame classification | Not part of final module direction | Not main direction |
 
 Stage 17 currently produces rule-based drowsiness warning-candidate analysis for uploaded videos. Stage 19.7C adds a local Live Monitor realtime webcam warning-candidate feasibility prototype polish pass with a clean product-style webcam frame, product yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, automatic sampling from Start Camera, default-on sound alerts after the camera user gesture, a Drowsiness Risk card bound to frontend warning-candidate severity state, dashboard widgets bound to stable frontend warning-candidate events/score samples instead of mock data, and a session-window state-derived display severity waveform chart that uses real timestamp-based X-axis positioning. Stage 20A adds a local MVP login gate, user profile menu, manual theme toggle, and notification center. Stage 20B normalizes stable Live Monitor frontend warning-candidate events into `/history-48h` frontend-local history. Stage 21A keeps `/history-48h` focused on event filtering, details, sessions, and manual review workflow, while `/insights` provides read-only aggregate analytics from the same current-user local history records. Current reported accuracies are specialist-module results, not final system-level driver drowsiness accuracy. The project does not currently include browser notification, backend 48h history ingestion from webcam, database storage, production authentication, raw image/video storage, deployment readiness, or final system-level performance claims.
@@ -41,6 +43,7 @@ Drowsiness_Detection/
   checkpoints/
   colab_file/
   dataset/
+  data/
   docs/
   outputs/
   reports/
@@ -57,10 +60,11 @@ Drowsiness_Detection/
 | Path | Purpose |
 | --- | --- |
 | `dataset/` | Raw or locally reconstructed datasets. This is large local data and is ignored by Git. |
+| `data/` | Local runtime data such as the Stage 22 SQLite archive database. SQLite files are ignored by Git. |
 | `artifacts/` | Preprocessing outputs, manifests, split files, visual checks, and intermediate results. |
 | `reports/` | Human-readable reports for dataset inspection, preprocessing, split validation, training summaries, and model selection. |
 | `src/` | Python source code for dataset preparation, preprocessing, training, and runtime checks. |
-| `src/backend/` | FastAPI backend for Stage 17 upload analysis, safe artifact serving, and Stage 19 realtime frame evidence endpoints. |
+| `src/backend/` | FastAPI backend for Stage 17 upload analysis, safe artifact serving, Stage 19 realtime frame evidence endpoints, and Stage 22 local archive endpoints. |
 | `SystemUI/` | Independent Next.js App Router frontend for Live Monitor, Stage 17 video-upload analysis, and Stage 18 history review pages. |
 | `scripts/` | Local helper scripts, currently including the Stage 17 one-command launcher. |
 | `upload_test/` | Local short videos for upload UI/backend validation. |
@@ -213,6 +217,7 @@ FastAPI backend for local upload analysis, safe artifact serving, and realtime f
 | File | Purpose |
 | --- | --- |
 | `src/backend/app.py` | Stage 17 backend entrypoint plus Stage 19 realtime endpoints. Provides `POST /api/analyze-video`, `/api/realtime/health`, `/api/realtime/session/start`, `/api/realtime/frame`, `/api/realtime/session/stop`, and safe session file URLs under `/api/runs/{session_id}/...`. |
+| `src/backend/local_archive.py` | Stage 22 SQLite archive layer for compact shared Live Monitor and uploaded-video summary records. |
 | `src/backend/static/upload_test.html` | Minimal standalone backend-hosted upload test page. The primary frontend is now SystemUI `/video-upload`. |
 
 ## 8. SystemUI Frontend
@@ -224,7 +229,7 @@ Important frontend files:
 | Path | Purpose |
 | --- | --- |
 | `SystemUI/src/app/page.tsx` | Lightweight route entry for `/`; the persistent Live Monitor UI is owned by `AppShell` so camera/session state does not reset on normal in-app navigation. |
-| `SystemUI/src/components/dashboard/LiveMonitorPage.tsx` | Persistent Live Monitor route content; stores the latest frontend warning-candidate risk state emitted by `LiveVideoCard`, records stable dashboard events/score samples, appends stable warning-candidate events to frontend-local 48h history, skips camera-off fake stored chart points, passes real current-drive/today/current-session data into the dashboard widgets, owns the smooth right-column Recent Events overlay state, and keeps the May 19 desktop layout split balanced when the sidebar is expanded. |
+| `SystemUI/src/components/dashboard/LiveMonitorPage.tsx` | Persistent Live Monitor route content; stores the latest frontend warning-candidate risk state emitted by `LiveVideoCard`, records stable dashboard events/score samples, appends stable warning-candidate events to frontend-local 48h history and the Stage 22 local backend archive, skips camera-off fake stored chart points, passes real current-drive/today/current-session data into the dashboard widgets, owns the smooth right-column Recent Events overlay state, and keeps the May 19 desktop layout split balanced when the sidebar is expanded. |
 | `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | Stage 19.7A Live Monitor product UI: clean webcam frame, single Start/Stop Camera button, automatic 2 FPS sampling, product-style yawn/eye warning overlays, concise critical-eye modal, face-not-visible signal-quality overlay, default-on sound after camera start, risk-state callback emission, and stable warning-candidate dashboard event emission. |
 | `SystemUI/src/components/dashboard/DrowsinessRiskCard.tsx` | Stage 19.6B presentational risk gauge bound to the Live Monitor frontend warning-candidate severity state with smooth score and needle animation. |
 | `SystemUI/src/components/dashboard/StatusMetricCard.tsx` | Stage 19.7A top Live Monitor cards showing current-drive EYE/YAWN stable warning-candidate event counts instead of mock counts. |
@@ -237,7 +242,7 @@ Important frontend files:
 | `SystemUI/src/components/dashboard/NotificationCenter.tsx` | Stage 20A clickable local notification center for warning-candidate, system, and review notifications. |
 | `SystemUI/src/components/dashboard/UserProfileMenu.tsx` | Stage 20A current local user profile menu and logout action. |
 | `SystemUI/src/components/auth/LoginScreen.tsx` | Stage 20A local MVP login screen for the assigned local account. |
-| `SystemUI/src/components/video-upload/VideoUploadAnalysis.tsx` | Main Stage 17 upload analysis workstation component. |
+| `SystemUI/src/components/video-upload/VideoUploadAnalysis.tsx` | Main Stage 17 upload analysis workstation component; posts compact completed-analysis summaries to the Stage 22 local backend archive when available. |
 | `SystemUI/src/components/video-upload/AnalysisSummaryCards.tsx` | Summary metric cards for duration, sampled frames, warning-candidate frame counts, yawn events, and suppressed escalation. |
 | `SystemUI/src/components/video-upload/IntervalReviewTable.tsx` | Warning-candidate interval review table. |
 | `SystemUI/src/components/video-upload/KeyframeEvidenceGallery.tsx` | Keyframe evidence gallery with timestamp, frame index, fusion state, probabilities, and reason metadata. |
@@ -249,6 +254,9 @@ Important frontend files:
 | `SystemUI/src/lib/liveMonitorDashboardTypes.ts` | Stage 19.7C lightweight local dashboard event/risk point types for stable warning-candidate events and state-derived display severity samples. |
 | `SystemUI/src/lib/liveMonitorDashboardStore.ts` | Stage 19.7C browser localStorage helper using `visionguard.liveMonitorDashboard.v1`; derives bounded display severity scores, validates and compacts current-session risk points, stores lightweight dashboard events and risk points only, and never stores raw images/video/frame payloads. |
 | `SystemUI/src/lib/liveMonitorHistoryIngestion.ts` | Stage 20B mapper/helper that converts stable Live Monitor dashboard events into `/history-48h` frontend-local history records. |
+| `SystemUI/src/lib/backendArchiveApi.ts` | Stage 22 frontend archive client for health, records, writes, review updates, export, and history-compatible mapping. |
+| `SystemUI/src/lib/backendArchiveTypes.ts` | Stage 22 TypeScript types for archive health, records, writes, and export payloads. |
+| `SystemUI/src/lib/archiveClientId.ts` | Stage 22 stable browser-local client identifier for distinguishing shared clients without user registration. |
 | `SystemUI/src/lib/authStore.tsx` | Stage 20A fixed local MVP account/session state using `visionguard.auth.v1`; not production authentication. |
 | `SystemUI/src/lib/themeStore.tsx` | Stage 20A manual theme state using `visionguard.theme.v1`. |
 | `SystemUI/src/lib/notificationStore.tsx` | Stage 20A local notification state using `visionguard.notifications.v1`. |
@@ -258,6 +266,15 @@ Important frontend files:
 | `SystemUI/src/components/insights/` | Stage 21A read-only analytics components for summary patterns, warning-candidate trend, composition, time-of-day pattern, session comparison, signal quality insights, recommendations, and empty state. |
 | `SystemUI/src/lib/insightsTypes.ts` | Stage 21A TypeScript types for local analytics summaries, trends, composition, sessions, signal-quality summaries, and recommendations. |
 | `SystemUI/src/lib/insightsUtils.ts` | Stage 21A pure helper functions deriving user-scoped local Insights from existing 48h history records without a new storage dataset. |
+
+## Deployment And Archive Docs
+
+| File | Purpose |
+| --- | --- |
+| `docs/DEPLOYMENT_RUNBOOK.md` | Practical Vercel + Cloudflare Tunnel + local FastAPI deployment validation runbook. |
+| `docs/DAILY_STARTUP_CHECKLIST.md` | Concise command checklist for restarting the local backend, Quick Tunnel, Vercel env, and deployment preflight after a Mac restart. |
+| `docs/LOCAL_BACKEND_ARCHIVE.md` | Stage 22 local SQLite archive purpose, storage boundaries, environment variables, startup flow, export/backup, and limitations. |
+| `scripts/deployment_preflight.sh` | Deployment preflight script for realtime health, archive health, optional remote tunnel health, optional CORS preflight, and optional archive write test. |
 | `SystemUI/src/lib/history48hStorage.ts` | Stage 18/20B storage helpers for `visionguard.history48h.v1`, including pruning, deduping, user merge behavior, and Live Monitor append support. |
 | `SystemUI/src/lib/videoUploadTypes.ts` | TypeScript types for backend response, summary, intervals, figures, and keyframes. |
 | `SystemUI/src/lib/videoUploadUtils.ts` | URL, formatting, interval, figure, keyframe, and copy-summary helpers. |

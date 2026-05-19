@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   Coffee,
   Eye,
-  Server,
   ShieldAlert,
   Smile,
   VideoOff,
@@ -36,8 +35,6 @@ import {
 import type { LiveMonitorDashboardEventDraft } from "@/lib/liveMonitorDashboardTypes";
 import { buildApiUrl, getApiBaseUrl } from "@/lib/apiConfig";
 
-const DRIVER_PHOTO_URL =
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1600&auto=format&fit=crop";
 const REALTIME_API_BASE_URL = getApiBaseUrl();
 
 const CRITICAL_EYE_REPEAT_WINDOW_MS = 60_000;
@@ -354,24 +351,6 @@ function formatCameraStatusLabel(status: CameraStatus): string {
   return status;
 }
 
-function realtimeStatusTone(status: RealtimeBackendStatus): string {
-  if (status === "Session ready" || status === "Frame evidence") {
-    return "border-emerald-100 bg-white/90 text-emerald-900";
-  }
-  if (status === "Backend error" || status === "Health check failed") {
-    return "border-rose-100 bg-white/90 text-rose-900";
-  }
-  if (
-    status === "Checking health" ||
-    status === "Starting session" ||
-    status === "Sending frame" ||
-    status === "Stopping session"
-  ) {
-    return "border-blue-100 bg-white/90 text-blue-900";
-  }
-  return "border-white/60 bg-white/85 text-slate-800";
-}
-
 function getFaceVisibilityIssue(
   evidence: RealtimeFrameEvidence | null
 ): FaceVisibilityIssue | null {
@@ -624,6 +603,47 @@ function FaceVisibilityOverlay({ issue }: { issue: FaceVisibilityIssue }) {
   );
 }
 
+function CameraOffPlaceholder() {
+  return (
+    <div className="absolute inset-0 overflow-hidden bg-[linear-gradient(135deg,#020617_0%,#0f172a_48%,#132239_100%)]">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 opacity-[0.14]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(226,232,240,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(226,232,240,0.7) 1px, transparent 1px)",
+          backgroundSize: "42px 42px",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.22),transparent_45%),linear-gradient(to_bottom,rgba(15,23,42,0.08),rgba(2,6,23,0.72))]"
+      />
+
+      <div className="absolute inset-0 flex items-center justify-center px-6 pb-16 text-center sm:pb-12">
+        <div className="flex max-w-md flex-col items-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/15 bg-white/10 text-white shadow-2xl shadow-slate-950/30 backdrop-blur-md">
+            <VideoOff className="h-8 w-8" strokeWidth={2.2} />
+          </div>
+          <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-200 backdrop-blur-md">
+            <span className="h-2 w-2 rounded-full bg-slate-300" />
+            Camera Off
+          </div>
+          <h3 className="mt-4 text-2xl font-black tracking-tight text-white sm:text-3xl">
+            Camera is off
+          </h3>
+          <p className="mt-2 text-sm font-medium leading-6 text-slate-300">
+            Click Start Camera to begin live monitoring.
+          </p>
+          <p className="mt-4 rounded-full border border-white/10 bg-white/[0.08] px-3 py-1.5 text-xs font-semibold text-slate-300 backdrop-blur-md">
+            No webcam frames are stored.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function LiveVideoCard({
   onRiskStateChange,
   onDashboardEvent,
@@ -657,7 +677,7 @@ export function LiveVideoCard({
   const [samplingError, setSamplingError] = useState<string | null>(null);
   const [isStartingRealtime, setIsStartingRealtime] = useState(false);
   const [, setRealtimeSessionId] = useState<string | null>(null);
-  const [backendStatus, setBackendStatus] = useState<RealtimeBackendStatus>("Not connected");
+  const [, setBackendStatus] = useState<RealtimeBackendStatus>("Not connected");
   const [backendError, setBackendError] = useState<string | null>(null);
   const [lastFrameEvidence, setLastFrameEvidence] = useState<RealtimeFrameEvidence | null>(null);
   const [alertController, setAlertController] = useState<LiveAlertControllerState>(() =>
@@ -1391,16 +1411,11 @@ export function LiveVideoCard({
   }, [onRiskStateChange, riskState]);
 
   return (
-    <Card className="group relative col-span-2 row-span-2 flex h-full min-h-[400px] flex-col overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white p-2 shadow-sm transition-all duration-300 hover:shadow-md">
-      <div className="relative min-h-[340px] w-full flex-1 overflow-hidden rounded-[1.5rem] bg-slate-950">
+    <Card className="group relative col-span-2 row-span-2 flex h-full min-h-[400px] flex-col overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white p-2 shadow-sm transition-all duration-300 hover:shadow-md xl:min-h-0">
+      <div className="relative min-h-[340px] w-full flex-1 overflow-hidden rounded-[1.5rem] bg-slate-950 xl:min-h-0">
         <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
 
-        {!isActive && (
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url('${DRIVER_PHOTO_URL}')` }}
-          />
-        )}
+        {!isActive && <CameraOffPlaceholder />}
 
         <video
           ref={videoRef}
@@ -1424,19 +1439,6 @@ export function LiveVideoCard({
 
         <div className="absolute right-5 top-5 z-20 rounded-full border border-white/60 bg-white/85 px-3.5 py-1.5 text-xs font-semibold text-slate-800 shadow-lg backdrop-blur-md">
           {sourceLabel}
-        </div>
-
-        <div
-          className={`absolute bottom-5 left-5 z-20 flex max-w-[calc(100%-13rem)] items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-lg backdrop-blur-md ${realtimeStatusTone(
-            backendStatus
-          )}`}
-          title={`Configured backend: ${REALTIME_API_BASE_URL}`}
-        >
-          <Server className="h-3.5 w-3.5 shrink-0" strokeWidth={2.3} />
-          <span className="shrink-0">Backend: {backendStatus}</span>
-          <span className="hidden min-w-0 truncate font-mono sm:inline">
-            {REALTIME_API_BASE_URL}
-          </span>
         </div>
 
         {activeProductAlert && !visibleCriticalAlert && (

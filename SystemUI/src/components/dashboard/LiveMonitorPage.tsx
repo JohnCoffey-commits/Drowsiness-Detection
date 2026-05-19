@@ -30,6 +30,11 @@ import {
   useVisionGuardNotifications,
 } from "@/lib/notificationStore";
 import { appendLiveMonitorDashboardEventToHistory } from "@/lib/liveMonitorHistoryIngestion";
+import { getArchiveClientId } from "@/lib/archiveClientId";
+import {
+  buildLiveArchiveEventPayload,
+  saveLiveArchiveEvent,
+} from "@/lib/backendArchiveApi";
 import type {
   LiveMonitorDashboardEventDraft,
   LiveMonitorDashboardStore,
@@ -54,6 +59,7 @@ export function LiveMonitorPage() {
   });
   const [referenceNow, setReferenceNow] = useState<Date>(() => new Date());
   const [recentEventsExpanded, setRecentEventsExpanded] = useState(false);
+  const [archiveStatus, setArchiveStatus] = useState("");
   const { authState, currentUser } = useVisionGuardAuth();
   const { addNotification } = useVisionGuardNotifications();
   const lastRiskPointKeyRef = useRef("");
@@ -109,7 +115,24 @@ export function LiveMonitorPage() {
         if (notification) {
           addNotification(notification);
         }
-        appendLiveMonitorDashboardEventToHistory(persistedEvent, currentUser.id);
+        const historyRecord = appendLiveMonitorDashboardEventToHistory(
+          persistedEvent,
+          currentUser.id
+        );
+        if (historyRecord) {
+          const archivePayload = buildLiveArchiveEventPayload(
+            historyRecord,
+            getArchiveClientId(),
+            currentUser.id
+          );
+          void saveLiveArchiveEvent(archivePayload).then((result) => {
+            setArchiveStatus(
+              result.ok
+                ? "Saved stable Live Monitor event to local backend archive."
+                : "Archive save failed for the latest stable Live Monitor event."
+            );
+          });
+        }
       }
     },
     [addNotification, currentDriveSession.id, currentUser, updateDashboardStore]
@@ -357,6 +380,11 @@ export function LiveMonitorPage() {
           <p className="shrink-0 px-1 text-[11px] leading-4 text-slate-500">
             {LIVE_MONITOR_WARNING}
           </p>
+          {archiveStatus ? (
+            <p className="shrink-0 px-1 text-[11px] leading-4 text-slate-500">
+              Archive: {archiveStatus}
+            </p>
+          ) : null}
         </div>
       </main>
   );
