@@ -15,7 +15,7 @@ import type {
 } from "@/lib/history48hTypes";
 
 export const HISTORY_48H_BOUNDARY_NOTICE =
-  "This output is a rule-based drowsiness warning-candidate analysis, not final system-level drowsiness accuracy.";
+  "This page shows frontend-local warning-candidate history for review. It is not final system-level drowsiness accuracy.";
 
 export const TIME_WINDOW_OPTIONS: Array<{
   label: string;
@@ -32,13 +32,13 @@ export const EVENT_TYPE_OPTIONS: Array<{
   value: EventTypeFilter;
 }> = [
   { label: "All", value: "all" },
-  { label: "Eye-warning", value: "eye_warning_candidate" },
-  { label: "Mouth-warning", value: "mouth_warning_candidate" },
+  { label: "Eye warning candidate", value: "eye_warning_candidate" },
+  { label: "Yawn warning candidate", value: "mouth_warning_candidate" },
   {
-    label: "High-confidence",
+    label: "Critical eye warning candidate",
     value: "high_confidence_drowsiness_candidate",
   },
-  { label: "Signal unreliable", value: "signal_unreliable" },
+  { label: "Signal quality issue", value: "signal_unreliable" },
 ];
 
 export const REVIEW_OPTIONS: Array<{
@@ -56,9 +56,8 @@ export const SOURCE_OPTIONS: Array<{
   value: SourceFilter;
 }> = [
   { label: "All", value: "all" },
-  { label: "Demo/local", value: "mock" },
-  { label: "Video upload", value: "video_upload" },
-  { label: "Future webcam", value: "webcam_future" },
+  { label: "Live Monitor", value: "live_monitor" },
+  { label: "Demo", value: "demo" },
 ];
 
 export const STATE_META: Record<
@@ -81,32 +80,32 @@ export const STATE_META: Record<
     dotClass: "bg-emerald-500",
   },
   eye_warning_candidate: {
-    label: "Eye-warning candidate",
-    shortLabel: "Eye-warning",
+    label: "Eye warning candidate",
+    shortLabel: "Eye warning",
     color: "#f97316",
     bgClass: "bg-orange-50 border-orange-100",
     textClass: "text-orange-700",
     dotClass: "bg-orange-500",
   },
   mouth_warning_candidate: {
-    label: "Mouth-warning candidate",
-    shortLabel: "Mouth-warning",
+    label: "Yawn warning candidate",
+    shortLabel: "Yawn warning",
     color: "#ec4899",
     bgClass: "bg-pink-50 border-pink-100",
     textClass: "text-pink-700",
     dotClass: "bg-pink-500",
   },
   high_confidence_drowsiness_candidate: {
-    label: "High-confidence warning candidate",
-    shortLabel: "High-confidence",
+    label: "Critical eye warning candidate",
+    shortLabel: "Critical eye",
     color: "#ef4444",
     bgClass: "bg-red-50 border-red-100",
     textClass: "text-red-700",
     dotClass: "bg-red-500",
   },
   signal_unreliable: {
-    label: "Signal unreliable",
-    shortLabel: "Signal issue",
+    label: "Signal quality issue",
+    shortLabel: "Signal quality",
     color: "#64748b",
     bgClass: "bg-slate-100 border-slate-200",
     textClass: "text-slate-700",
@@ -141,9 +140,11 @@ export const SEVERITY_META: Record<
 };
 
 export const SOURCE_LABELS: Record<HistorySource, string> = {
-  mock: "Demo/local",
-  video_upload: "Video upload",
-  webcam_future: "Future webcam",
+  mock: "Demo",
+  live_monitor: "Live Monitor",
+  video_upload: "Video Upload",
+  manual: "Manual",
+  webcam_future: "Demo",
 };
 
 export const REVIEW_LABELS: Record<ReviewStatus, string> = {
@@ -162,6 +163,8 @@ export interface HistorySummary {
   highConfidenceCount: number;
   signalUnreliableCount: number;
   reviewPendingCount: number;
+  warningCandidateCount: number;
+  highPriorityCount: number;
   normalRatio: number;
   peakCandidateSeverity: number;
   lastEventTime: string | null;
@@ -197,6 +200,7 @@ export function filterHistoryEvents(
 ): DriverHistoryEvent[] {
   return events
     .filter((event) => isEventInWindow(event, now, filters.timeWindowHours))
+    .filter((event) => event.state !== "normal")
     .filter((event) =>
       filters.eventType === "all" ? true : event.state === filters.eventType
     )
@@ -204,7 +208,11 @@ export function filterHistoryEvents(
       filters.review === "all" ? true : event.reviewStatus === filters.review
     )
     .filter((event) =>
-      filters.source === "all" ? true : event.source === filters.source
+      filters.source === "all"
+        ? true
+        : filters.source === "demo"
+          ? event.source === "mock" || event.source === "webcam_future"
+          : event.source === filters.source
     )
     .filter((event) =>
       filters.sessionId ? event.sessionId === filters.sessionId : true
@@ -222,6 +230,14 @@ export function summarizeHistory(
     .reduce((sum, session) => sum + session.durationMin, 0);
   const totalEvents = events.length;
   const normalCount = countByState(events, "normal");
+  const warningCandidateCount = events.filter(
+    (event) => event.state !== "normal"
+  ).length;
+  const highPriorityCount = events.filter(
+    (event) =>
+      event.state === "high_confidence_drowsiness_candidate" ||
+      event.severity === "high"
+  ).length;
   const peakCandidateSeverity = events.reduce(
     (max, event) => Math.max(max, event.candidateSeverityScore ?? 0),
     0
@@ -241,6 +257,8 @@ export function summarizeHistory(
     signalUnreliableCount: countByState(events, "signal_unreliable"),
     reviewPendingCount: events.filter((event) => event.reviewStatus === "pending")
       .length,
+    warningCandidateCount,
+    highPriorityCount,
     normalRatio: totalEvents === 0 ? 0 : normalCount / totalEvents,
     peakCandidateSeverity,
     lastEventTime: events[0]?.timestamp ?? null,
@@ -405,6 +423,48 @@ export function getManualReviewQueue(
   events: DriverHistoryEvent[],
   limit = 8
 ): DriverHistoryEvent[] {
+  const sessionEvents = new Map<string, DriverHistoryEvent[]>();
+  for (const event of events) {
+    const current = sessionEvents.get(event.sessionId) ?? [];
+    current.push(event);
+    sessionEvents.set(event.sessionId, current);
+  }
+
+  function priority(event: DriverHistoryEvent): number {
+    const sameSessionEvents = sessionEvents.get(event.sessionId) ?? [];
+    const yawnCount = countByState(sameSessionEvents, "mouth_warning_candidate");
+    const signalCount = countByState(sameSessionEvents, "signal_unreliable");
+
+    if (
+      event.state === "high_confidence_drowsiness_candidate" ||
+      event.severity === "high"
+    ) {
+      return 500;
+    }
+
+    if (
+      event.state === "eye_warning_candidate" &&
+      (event.eyeEvidenceStrength === "strong" ||
+        event.eyeEvidenceStrength === "moderate")
+    ) {
+      return 400;
+    }
+
+    if (event.state === "mouth_warning_candidate" && yawnCount > 1) {
+      return 300;
+    }
+
+    if (event.state === "signal_unreliable" && signalCount > 1) {
+      return 250;
+    }
+
+    if (event.state === "signal_unreliable") {
+      return 200;
+    }
+
+    return 100;
+  }
+
   return events
     .filter(
       (event) =>
@@ -415,6 +475,8 @@ export function getManualReviewQueue(
         event.eyeEvidenceStrength === "moderate"
     )
     .sort((a, b) => {
+      const priorityDelta = priority(b) - priority(a);
+      if (priorityDelta !== 0) return priorityDelta;
       const pendingDelta =
         Number(b.reviewStatus === "pending") - Number(a.reviewStatus === "pending");
       if (pendingDelta !== 0) return pendingDelta;
@@ -513,10 +575,10 @@ export function formatCandidateScore(value: number | undefined): string {
 export function evidenceLabel(event: DriverHistoryEvent): string {
   if (event.state === "signal_unreliable") return "Signal quality";
   if (event.state === "high_confidence_drowsiness_candidate") {
-    return "Eye + mouth/yawn";
+    return "High-priority evidence";
   }
   if (event.state === "eye_warning_candidate") return "Eye";
-  if (event.state === "mouth_warning_candidate") return "Mouth/yawn";
+  if (event.state === "mouth_warning_candidate") return "Yawn";
   return "Baseline";
 }
 
@@ -531,12 +593,13 @@ export function buildHistorySummaryText(
   return [
     "VisionGuard 48h warning-candidate history summary",
     `Selected window: ${windowLabel}`,
-    `Monitored sessions: ${summary.sessionCount}`,
-    `Monitored time: ${formatMinutes(summary.monitoredTimeMin)}`,
-    `Eye-warning candidates: ${summary.eyeWarningCount}`,
-    `Mouth-warning candidates: ${summary.mouthWarningCount}`,
-    `High-confidence warning candidates: ${summary.highConfidenceCount}`,
-    `Signal-unreliable periods: ${summary.signalUnreliableCount}`,
+    `Sessions with local records: ${summary.sessionCount}`,
+    `Warning-candidate events: ${summary.warningCandidateCount}`,
+    `High-priority candidates: ${summary.highPriorityCount}`,
+    `Eye warning candidates: ${summary.eyeWarningCount}`,
+    `Yawn warning candidates: ${summary.mouthWarningCount}`,
+    `Critical eye warning candidates: ${summary.highConfidenceCount}`,
+    `Signal quality issues: ${summary.signalUnreliableCount}`,
     `Manual review pending: ${summary.reviewPendingCount}`,
     HISTORY_48H_BOUNDARY_NOTICE,
   ].join("\n");

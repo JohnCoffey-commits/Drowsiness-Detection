@@ -7,7 +7,12 @@ export type HistoryState =
 
 export type HistorySeverity = "low" | "medium" | "high" | "unreliable";
 
-export type HistorySource = "mock" | "video_upload" | "webcam_future";
+export type HistorySource =
+  | "mock"
+  | "live_monitor"
+  | "video_upload"
+  | "manual"
+  | "webcam_future";
 
 export type ReviewStatus = "pending" | "reviewed" | "not_required";
 
@@ -20,13 +25,19 @@ export type EyeEvidenceStrength =
 
 export interface DriverHistoryEvent {
   id: string;
+  userId?: string;
   sessionId: string;
+  sourceEventId?: string;
+  ingestionKey?: string;
   timestamp: string;
   endTimestamp?: string;
   durationSec: number;
   state: HistoryState;
   severity: HistorySeverity;
   source: HistorySource;
+  title?: string;
+  summary?: string;
+  relatedRoute?: "/" | "/video-upload" | "/history-48h";
   pEyeClosedMax?: number;
   pYawnMax?: number;
   candidateSeverityScore?: number;
@@ -37,6 +48,7 @@ export interface DriverHistoryEvent {
 
 export interface DriverHistorySession {
   id: string;
+  userId?: string;
   source: HistorySource;
   startedAt: string;
   endedAt: string;
@@ -91,7 +103,7 @@ export type EventTypeFilter =
 
 export type ReviewFilter = "all" | "pending" | "reviewed" | "not_required";
 
-export type SourceFilter = "all" | HistorySource;
+export type SourceFilter = "all" | "demo" | HistorySource;
 
 export interface HistoryFilters {
   timeWindowHours: TimeWindowHours;

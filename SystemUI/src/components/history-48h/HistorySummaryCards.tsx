@@ -1,21 +1,12 @@
 import {
   AlertCircle,
-  BarChart3,
-  CheckCircle2,
   Clock3,
-  Eye,
   FileWarning,
-  Gauge,
-  MessageCircleWarning,
+  History,
   ShieldAlert,
-  Users,
 } from "lucide-react";
 import type { HistorySummary } from "@/lib/history48hUtils";
-import {
-  formatDateTime,
-  formatMinutes,
-  formatPercent,
-} from "@/lib/history48hUtils";
+import { formatDateTime } from "@/lib/history48hUtils";
 
 interface HistorySummaryCardsProps {
   summary: HistorySummary;
@@ -24,51 +15,23 @@ interface HistorySummaryCardsProps {
 export function HistorySummaryCards({ summary }: HistorySummaryCardsProps) {
   const cards = [
     {
-      label: "Monitored sessions",
-      value: String(summary.sessionCount),
-      note: "Sessions in selected window",
-      icon: Users,
+      label: "Warning-candidate events",
+      value: String(summary.warningCandidateCount),
+      note: "Non-normal local history records",
+      icon: History,
       accent: "text-blue-600 bg-blue-50 border-blue-100",
     },
     {
-      label: "Monitored time",
-      value: formatMinutes(summary.monitoredTimeMin),
-      note: "Demo/local session duration",
-      icon: Clock3,
-      accent: "text-slate-700 bg-slate-50 border-slate-200",
-    },
-    {
-      label: "Normal state ratio",
-      value: formatPercent(summary.normalRatio),
-      note: `${summary.normalCount} normal periods`,
-      icon: CheckCircle2,
-      accent: "text-emerald-700 bg-emerald-50 border-emerald-100",
-    },
-    {
-      label: "Eye-warning candidates",
-      value: String(summary.eyeWarningCount),
-      note: "Temporal eye evidence",
-      icon: Eye,
-      accent: "text-orange-700 bg-orange-50 border-orange-100",
-    },
-    {
-      label: "Mouth-warning candidates",
-      value: String(summary.mouthWarningCount),
-      note: "Recent mouth/yawn evidence",
-      icon: MessageCircleWarning,
-      accent: "text-pink-700 bg-pink-50 border-pink-100",
-    },
-    {
-      label: "High-confidence warning candidates",
-      value: String(summary.highConfidenceCount),
-      note: "Candidate intervals for review",
+      label: "High-priority candidates",
+      value: String(summary.highPriorityCount),
+      note: "Critical eye or high severity records",
       icon: ShieldAlert,
       accent: "text-red-700 bg-red-50 border-red-100",
     },
     {
-      label: "Signal-unreliable periods",
+      label: "Signal quality issues",
       value: String(summary.signalUnreliableCount),
-      note: "Quality issue candidates",
+      note: "Camera, face, ROI, or signal uncertainty",
       icon: AlertCircle,
       accent: "text-slate-700 bg-slate-100 border-slate-200",
     },
@@ -80,17 +43,10 @@ export function HistorySummaryCards({ summary }: HistorySummaryCardsProps) {
       accent: "text-amber-700 bg-amber-50 border-amber-100",
     },
     {
-      label: "Peak candidate severity",
-      value: String(summary.peakCandidateSeverity),
-      note: "UI-level display score",
-      icon: Gauge,
-      accent: "text-red-700 bg-red-50 border-red-100",
-    },
-    {
       label: "Last event time",
       value: summary.lastEventTime ? formatDateTime(summary.lastEventTime) : "-",
       note: "Most recent filtered event",
-      icon: BarChart3,
+      icon: Clock3,
       accent: "text-blue-700 bg-blue-50 border-blue-100",
     },
   ];

@@ -7,6 +7,7 @@ import {
   type LiveMonitorRiskSeverity,
   type LiveMonitorRiskState,
 } from "@/lib/liveMonitorRiskUtils";
+import { useVisionGuardTheme } from "@/lib/themeStore";
 
 const riskStyle: Record<
   LiveMonitorRiskSeverity,
@@ -96,13 +97,17 @@ interface DrowsinessRiskCardProps {
 export function DrowsinessRiskCard({
   riskState = IDLE_LIVE_MONITOR_RISK_STATE,
 }: DrowsinessRiskCardProps) {
+  const { theme } = useVisionGuardTheme();
   const animatedScore = useAnimatedNumber(riskState.score);
   const displayScore = Math.round(animatedScore);
   const style = riskStyle[riskState.severity];
   const rotation = (Math.max(0, Math.min(100, animatedScore)) / 100) * 180 - 90;
+  const gaugeTrack = theme === "night" ? "#1f2937" : "#f1f5f9";
+  const hubColor = theme === "night" ? "#e2e8f0" : "#0f172a";
+  const hubDotColor = theme === "night" ? "#020617" : "#ffffff";
 
   return (
-    <Card className="flex h-full min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white p-5 lg:p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+    <Card className="flex h-full min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md lg:p-6 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-slate-950/30">
       <div className="mb-4 lg:mb-6 flex shrink-0 items-center justify-between">
         <h3 className="text-lg font-bold tracking-tight text-slate-800">
           Drowsiness Risk
@@ -118,7 +123,7 @@ export function DrowsinessRiskCard({
             <path
               d="M 20 100 A 80 80 0 0 1 180 100"
               fill="none"
-              stroke="#f1f5f9"
+              stroke={gaugeTrack}
               strokeWidth="24"
               strokeLinecap="round"
             />
@@ -151,8 +156,8 @@ export function DrowsinessRiskCard({
               }}
             >
               <path d="M 96 100 L 100 18 L 104 100 Z" fill={style.needle} />
-              <circle cx="100" cy="100" r="12" fill="#0f172a" />
-              <circle cx="100" cy="100" r="4" fill="#ffffff" />
+              <circle cx="100" cy="100" r="12" fill={hubColor} />
+              <circle cx="100" cy="100" r="4" fill={hubDotColor} />
             </g>
           </svg>
         </div>

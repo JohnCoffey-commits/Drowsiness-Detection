@@ -1,36 +1,29 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CandidateSeverityTrend } from "@/components/history-48h/CandidateSeverityTrend";
-import { EventDistributionChart } from "@/components/history-48h/EventDistributionChart";
 import { EventTimelineTable } from "@/components/history-48h/EventTimelineTable";
-import { HighRiskCandidates } from "@/components/history-48h/HighRiskCandidates";
 import { HistoryFilters } from "@/components/history-48h/HistoryFilters";
 import { HistoryHeader } from "@/components/history-48h/HistoryHeader";
 import { HistoryInterpretationNote } from "@/components/history-48h/HistoryInterpretationNote";
 import { HistorySummaryCards } from "@/components/history-48h/HistorySummaryCards";
 import { ManualReviewQueue } from "@/components/history-48h/ManualReviewQueue";
 import { RecentSessionsSummary } from "@/components/history-48h/RecentSessionsSummary";
-import { StateBreakdownChart } from "@/components/history-48h/StateBreakdownChart";
 import {
   clearHistory48hStore,
   loadHistory48hStore,
   resetHistory48hDemoData,
-  saveHistory48hStore,
+  saveHistory48hUserStore,
 } from "@/lib/history48hStorage";
+import { useVisionGuardAuth } from "@/lib/authStore";
 import type {
   History48hStore,
   HistoryFilters as HistoryFilterState,
   ReviewStatus,
 } from "@/lib/history48hTypes";
 import {
-  aggregateEventDistribution,
-  aggregateSeverityTrend,
   buildHistorySummaryText,
   buildSessionRows,
-  buildStateBreakdown,
   filterHistoryEvents,
-  getHighRiskCandidates,
   getManualReviewQueue,
   summarizeHistory,
   updateHistoryEventReviewStatus,
@@ -54,16 +47,22 @@ export function History48hPage() {
   const [filters, setFilters] = useState<HistoryFilterState>(DEFAULT_FILTERS);
   const [referenceNow, setReferenceNow] = useState<Date>(new Date());
   const [copyStatus, setCopyStatus] = useState("");
+  const { currentUser, isLegacyRecordVisible } = useVisionGuardAuth();
+  const includeLegacyRecords = currentUser
+    ? isLegacyRecordVisible(undefined)
+    : false;
 
   useEffect(() => {
     const id = window.setTimeout(() => {
       const now = new Date();
       setReferenceNow(now);
-      setStore(loadHistory48hStore(now));
+      setStore(
+        loadHistory48hStore(now, currentUser?.id, includeLegacyRecords)
+      );
     }, 0);
 
     return () => window.clearTimeout(id);
-  }, []);
+  }, [currentUser?.id, includeLegacyRecords]);
 
   const filteredEvents = useMemo(
     () => filterHistoryEvents(store.events, filters, referenceNow),
@@ -73,36 +72,6 @@ export function History48hPage() {
   const summary = useMemo(
     () => summarizeHistory(filteredEvents, store.sessions),
     [filteredEvents, store.sessions]
-  );
-
-  const trendData = useMemo(
-    () =>
-      aggregateSeverityTrend(
-        filteredEvents,
-        referenceNow,
-        filters.timeWindowHours
-      ),
-    [filteredEvents, filters.timeWindowHours, referenceNow]
-  );
-
-  const distributionData = useMemo(
-    () =>
-      aggregateEventDistribution(
-        filteredEvents,
-        referenceNow,
-        filters.timeWindowHours
-      ),
-    [filteredEvents, filters.timeWindowHours, referenceNow]
-  );
-
-  const stateBreakdown = useMemo(
-    () => buildStateBreakdown(filteredEvents),
-    [filteredEvents]
-  );
-
-  const highRiskCandidates = useMemo(
-    () => getHighRiskCandidates(filteredEvents),
-    [filteredEvents]
   );
 
   const sessionRows = useMemo(
@@ -116,8 +85,13 @@ export function History48hPage() {
   );
 
   function persistStore(nextStore: History48hStore) {
-    setStore(nextStore);
-    saveHistory48hStore(nextStore);
+    setStore(
+      saveHistory48hUserStore(
+        nextStore,
+        currentUser?.id,
+        includeLegacyRecords
+      )
+    );
   }
 
   function handleSetReviewStatus(eventId: string, status: ReviewStatus) {
@@ -133,16 +107,16 @@ export function History48hPage() {
     const now = new Date();
     setReferenceNow(now);
     setFilters(DEFAULT_FILTERS);
-    setStore(resetHistory48hDemoData(now));
-    setCopyStatus("Demo data reset");
+    setStore(resetHistory48hDemoData(now, currentUser?.id, includeLegacyRecords));
+    setCopyStatus("Demo data reset for this local user");
   }
 
   function handleClearHistory() {
     const now = new Date();
     setReferenceNow(now);
     setFilters(DEFAULT_FILTERS);
-    setStore(clearHistory48hStore(now));
-    setCopyStatus("History cleared");
+    setStore(clearHistory48hStore(now, currentUser?.id, includeLegacyRecords));
+    setCopyStatus("History cleared for this local user");
   }
 
   async function handleCopySummary() {
@@ -178,20 +152,21 @@ export function History48hPage() {
           onClearSessionFilter={handleClearSessionFilter}
         />
         <HistorySummaryCards summary={summary} />
-        <CandidateSeverityTrend data={trendData} />
-        <div className="grid gap-5 xl:grid-cols-[1.2fr_0.8fr]">
-          <EventDistributionChart data={distributionData} />
-          <StateBreakdownChart data={stateBreakdown} />
-        </div>
-        <HighRiskCandidates events={highRiskCandidates} />
-        <EventTimelineTable events={filteredEvents} />
-        <RecentSessionsSummary
-          sessions={sessionRows}
-          onViewEvents={handleViewSession}
-        />
         <ManualReviewQueue
           events={reviewQueue}
           onSetReviewStatus={handleSetReviewStatus}
+        />
+        <EventTimelineTable
+          events={filteredEvents}
+          emptyMessage={
+            store.events.length === 0
+              ? "No local warning-candidate history for this user in the last 48 hours."
+              : "No events match the current filters."
+          }
+        />
+        <RecentSessionsSummary
+          sessions={sessionRows}
+          onViewEvents={handleViewSession}
         />
         <HistoryInterpretationNote />
       </div>

@@ -1,5 +1,7 @@
 # Project Structure Guide
 
+Last reviewed: 2026-05-19
+
 ## 1. Purpose of This Document
 
 This document explains how the repository is organized for the modular driver drowsiness project. It is intended as a living guide for teammates who need to find datasets, preprocessing outputs, training scripts, reports, model outputs, and current analysis artifacts quickly.
@@ -10,7 +12,9 @@ The repository currently supports a modular driver monitoring system rather than
 - MRL Eye open/closed specialist -> `p_eye_closed`
 - Runtime video analysis and rule-based fusion -> warning-candidate states
 - FastAPI + Next.js Stage 17 video-upload analysis workstation
-- FastAPI + Next.js Stage 19 Live Monitor realtime webcam warning-candidate prototype with product-style visual warning overlays, default-on sound alerts after camera start, and a realtime-bound warning-candidate risk gauge
+- FastAPI + Next.js Stage 19 Live Monitor realtime webcam warning-candidate prototype with product-style visual warning overlays, default-on sound alerts after camera start, a realtime-bound warning-candidate risk gauge, dashboard widgets bound to stable Live Monitor events/score samples, and a product-style session-window state-derived display severity waveform chart
+- Stage 20A local MVP account/app-shell foundation, Stage 20B frontend-local Live Monitor history ingestion for `/history-48h`, and Stage 21A split between History review and Insights analytics
+- May 19 UI polish for Live Monitor desktop column balance, stronger selected sidebar contrast, collapsed sidebar control alignment, and a cleaner `/history-48h` header
 
 ## 2. High-Level Project Architecture
 
@@ -20,10 +24,11 @@ The repository currently supports a modular driver monitoring system rather than
 | Eye open/closed module | MRL Eye | Binary eye-state classification | `p_eye_closed` | Stage 9 and Stage 9B completed |
 | Runtime temporal analysis | Controlled A/B/C/D videos and upload videos | Eye/mouth ROI extraction, timeline generation, rule-based fusion | warning-candidate timelines | Stage 10-15 completed as controlled-validation prototype |
 | Video Upload Analysis MVP | Uploaded local videos through FastAPI + SystemUI | Professional warning-candidate review page | summary, intervals, figures, keyframes, technical files | Stage 17.5 evidence-review UI polished |
-| Live Monitor realtime prototype | Browser webcam sampled frames through SystemUI + FastAPI | Single-frame evidence, session-local temporal warning-candidate state, product-style visual warning overlays, face visibility cue, default-on sound alerts after camera start, and realtime-bound warning-candidate risk gauge | `p_eye_closed`, `p_yawn`, ROI quality, realtime candidate state, product warning overlays, frontend warning-candidate severity score | Stage 19.6B local prototype with clean product-style webcam frame, automatic sampling from Start Camera, and dynamic risk gauge binding |
+| Live Monitor realtime prototype | Browser webcam sampled frames through SystemUI + FastAPI | Single-frame evidence, session-local temporal warning-candidate state, product-style visual warning overlays, face visibility cue, default-on sound alerts after camera start, realtime-bound warning-candidate risk gauge, event/score-bound dashboard widgets, state-derived session-window waveform chart rendering, and frontend-local 48h history ingestion from stable events | `p_eye_closed`, `p_yawn`, ROI quality, realtime candidate state, product warning overlays, stable frontend warning-candidate events, frontend warning-candidate severity score samples, local history records | Stage 19.7C local prototype plus Stage 20B frontend-local history ingestion |
+| History and Insights frontend | Browser-local history records under `visionguard.history48h.v1` | Event-level review workflow and aggregate current-user analytics | Local warning-candidate records and derived summaries, not backend truth labels | Stage 21A separates `/history-48h` review workstation from `/insights` read-only analytics |
 | NTHUDDD2 branch | Official NTHU considered; Kaggle extracted-frame version explored | Drowsy/not-drowsy frame classification | Not part of final module direction | Not main direction |
 
-Stage 17 currently produces rule-based drowsiness warning-candidate analysis for uploaded videos. Stage 19.6B adds a local Live Monitor realtime webcam warning-candidate feasibility prototype polish pass with a clean product-style webcam frame, product yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, automatic sampling from Start Camera, default-on sound alerts after the camera user gesture, and a Drowsiness Risk card bound to frontend warning-candidate severity state. Current reported accuracies are specialist-module results, not final system-level driver drowsiness accuracy. The project does not currently include browser notification, 48h history ingestion from webcam, database storage, final drowsiness truth, deployment readiness, or final system-level performance claims.
+Stage 17 currently produces rule-based drowsiness warning-candidate analysis for uploaded videos. Stage 19.7C adds a local Live Monitor realtime webcam warning-candidate feasibility prototype polish pass with a clean product-style webcam frame, product yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, automatic sampling from Start Camera, default-on sound alerts after the camera user gesture, a Drowsiness Risk card bound to frontend warning-candidate severity state, dashboard widgets bound to stable frontend warning-candidate events/score samples instead of mock data, and a session-window state-derived display severity waveform chart that uses real timestamp-based X-axis positioning. Stage 20A adds a local MVP login gate, user profile menu, manual theme toggle, and notification center. Stage 20B normalizes stable Live Monitor frontend warning-candidate events into `/history-48h` frontend-local history. Stage 21A keeps `/history-48h` focused on event filtering, details, sessions, and manual review workflow, while `/insights` provides read-only aggregate analytics from the same current-user local history records. Current reported accuracies are specialist-module results, not final system-level driver drowsiness accuracy. The project does not currently include browser notification, backend 48h history ingestion from webcam, database storage, production authentication, raw image/video storage, deployment readiness, or final system-level performance claims.
 
 ## 3. Repository Layout
 
@@ -217,12 +222,20 @@ Important frontend files:
 
 | Path | Purpose |
 | --- | --- |
-| `SystemUI/src/app/page.tsx` | Route entry for `/` Live Monitor; stores the latest frontend warning-candidate risk state emitted by `LiveVideoCard` and passes it into the Drowsiness Risk card. |
-| `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | Stage 19.6B Live Monitor product UI: clean webcam frame, single Start/Stop Camera button, automatic 2 FPS sampling, product-style yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, default-on sound after camera start, and risk-state callback emission. |
+| `SystemUI/src/app/page.tsx` | Lightweight route entry for `/`; the persistent Live Monitor UI is owned by `AppShell` so camera/session state does not reset on normal in-app navigation. |
+| `SystemUI/src/components/dashboard/LiveMonitorPage.tsx` | Persistent Live Monitor route content; stores the latest frontend warning-candidate risk state emitted by `LiveVideoCard`, records stable dashboard events/score samples, appends stable warning-candidate events to frontend-local 48h history, skips camera-off fake stored chart points, passes real current-drive/today/current-session data into the dashboard widgets, owns the smooth right-column Recent Events overlay state, and keeps the May 19 desktop layout split balanced when the sidebar is expanded. |
+| `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | Stage 19.7A Live Monitor product UI: clean webcam frame, single Start/Stop Camera button, automatic 2 FPS sampling, product-style yawn/eye warning overlays, concise critical-eye modal, face-not-visible signal-quality overlay, default-on sound after camera start, risk-state callback emission, and stable warning-candidate dashboard event emission. |
 | `SystemUI/src/components/dashboard/DrowsinessRiskCard.tsx` | Stage 19.6B presentational risk gauge bound to the Live Monitor frontend warning-candidate severity state with smooth score and needle animation. |
+| `SystemUI/src/components/dashboard/StatusMetricCard.tsx` | Stage 19.7A top Live Monitor cards showing current-drive EYE/YAWN stable warning-candidate event counts instead of mock counts. |
+| `SystemUI/src/components/dashboard/RecentEventsList.tsx` | Stage 19.7A today-only Recent Events card using real stable Live Monitor events, a fixed `Today` badge, and compact/expanded rendering for the smooth right-column overlay that does not navigate to `/history-48h`. |
+| `SystemUI/src/components/dashboard/DrowsinessLevelChart.tsx` | Stage 19.7C product-style session-window state-derived display severity waveform chart using current-session throttled state samples, numeric timestamp X-axis binding, display-only time labels, gray Idle baseline, Low/Medium/High segmented line colors, soft area fill, dynamic session-start-to-1-hour windowing with no artificial minimum duration, and bucket compaction instead of mock chart data. |
 | `SystemUI/src/app/video-upload/page.tsx` | Route entry for `/video-upload`. |
-| `SystemUI/src/components/dashboard/Sidebar.tsx` | Sidebar menu; Live Monitor, Video Upload Analysis, 48h History, and Insights navigation. |
-| `SystemUI/src/components/dashboard/AppShell.tsx` | Shared dashboard app shell/layout wrapper. |
+| `SystemUI/src/components/dashboard/Sidebar.tsx` | Sidebar menu; Live Monitor, Video Upload Analysis, 48h History, and Insights navigation with Stage 20A day/night styling, high-contrast white active labels/icons, and a collapsed top control row where the logo and expand button remain aligned and uncut. |
+| `SystemUI/src/components/dashboard/AppShell.tsx` | Shared dashboard app shell/layout wrapper with the Stage 20A local login gate and app-level providers. |
+| `SystemUI/src/components/dashboard/ThemeToggle.tsx` | Stage 20A manual Day/Night theme toggle. |
+| `SystemUI/src/components/dashboard/NotificationCenter.tsx` | Stage 20A clickable local notification center for warning-candidate, system, and review notifications. |
+| `SystemUI/src/components/dashboard/UserProfileMenu.tsx` | Stage 20A current local user profile menu and logout action. |
+| `SystemUI/src/components/auth/LoginScreen.tsx` | Stage 20A local MVP login screen for the assigned local account. |
 | `SystemUI/src/components/video-upload/VideoUploadAnalysis.tsx` | Main Stage 17 upload analysis workstation component. |
 | `SystemUI/src/components/video-upload/AnalysisSummaryCards.tsx` | Summary metric cards for duration, sampled frames, warning-candidate frame counts, yawn events, and suppressed escalation. |
 | `SystemUI/src/components/video-upload/IntervalReviewTable.tsx` | Warning-candidate interval review table. |
@@ -230,8 +243,21 @@ Important frontend files:
 | `SystemUI/src/components/video-upload/TechnicalEvidencePanel.tsx` | Collapsible technical evidence/download links. |
 | `SystemUI/src/components/video-upload/InterpretationNotice.tsx` | Permanent safe interpretation warning and Stage 17 explanation text. |
 | `SystemUI/src/lib/liveMonitorAlertUtils.ts` | Stage 19.5 frontend-only visual alert mapping, debounce, normal-clear, cooldown, and session-local alert event helper. |
-| `SystemUI/src/lib/liveMonitorSoundUtils.ts` | Stage 19.6A Web Audio helper for Live Monitor warning sounds after the camera user gesture. |
+| `SystemUI/src/lib/liveMonitorSoundUtils.ts` | Stage 19.6A Web Audio helper for Live Monitor warning sounds after the camera user gesture, including gentle one-shot normal warning cues and repeated urgent critical-eye cues until confirmation. |
 | `SystemUI/src/lib/liveMonitorRiskUtils.ts` | Stage 19.6B frontend utility mapping camera/sampling, alert kind, temporal state, and face/signal quality into a product-facing warning-candidate severity score. |
+| `SystemUI/src/lib/liveMonitorDashboardTypes.ts` | Stage 19.7C lightweight local dashboard event/risk point types for stable warning-candidate events and state-derived display severity samples. |
+| `SystemUI/src/lib/liveMonitorDashboardStore.ts` | Stage 19.7C browser localStorage helper using `visionguard.liveMonitorDashboard.v1`; derives bounded display severity scores, validates and compacts current-session risk points, stores lightweight dashboard events and risk points only, and never stores raw images/video/frame payloads. |
+| `SystemUI/src/lib/liveMonitorHistoryIngestion.ts` | Stage 20B mapper/helper that converts stable Live Monitor dashboard events into `/history-48h` frontend-local history records. |
+| `SystemUI/src/lib/authStore.tsx` | Stage 20A fixed local MVP account/session state using `visionguard.auth.v1`; not production authentication. |
+| `SystemUI/src/lib/themeStore.tsx` | Stage 20A manual theme state using `visionguard.theme.v1`. |
+| `SystemUI/src/lib/notificationStore.tsx` | Stage 20A local notification state using `visionguard.notifications.v1`. |
+| `SystemUI/src/app/history-48h/page.tsx` | Stage 18/20B/21A route entry for frontend-local 48h History. |
+| `SystemUI/src/components/history-48h/` | Stage 21A event-level history/review workstation components: focused header, filters, compact summary, prioritized review queue, event timeline/details, recent sessions, and interpretation note. |
+| `SystemUI/src/app/insights/page.tsx` | Stage 21A route entry for user-scoped local Insights. |
+| `SystemUI/src/components/insights/` | Stage 21A read-only analytics components for summary patterns, warning-candidate trend, composition, time-of-day pattern, session comparison, signal quality insights, recommendations, and empty state. |
+| `SystemUI/src/lib/insightsTypes.ts` | Stage 21A TypeScript types for local analytics summaries, trends, composition, sessions, signal-quality summaries, and recommendations. |
+| `SystemUI/src/lib/insightsUtils.ts` | Stage 21A pure helper functions deriving user-scoped local Insights from existing 48h history records without a new storage dataset. |
+| `SystemUI/src/lib/history48hStorage.ts` | Stage 18/20B storage helpers for `visionguard.history48h.v1`, including pruning, deduping, user merge behavior, and Live Monitor append support. |
 | `SystemUI/src/lib/videoUploadTypes.ts` | TypeScript types for backend response, summary, intervals, figures, and keyframes. |
 | `SystemUI/src/lib/videoUploadUtils.ts` | URL, formatting, interval, figure, keyframe, and copy-summary helpers. |
 
@@ -259,7 +285,24 @@ Permanent wording boundary for Live Monitor:
 This output is a realtime rule-based warning-candidate analysis, not final system-level drowsiness accuracy.
 ```
 
-Current Stage 19.6B Live Monitor includes webcam capture, mirrored preview for frontend display only, automatic 2 FPS frame sampling after Start Camera, single-frame backend evidence, session-local temporal warning-candidate state, a frontend visual alert debounce layer, product-style yawn/eye/critical-eye warning overlays, a face-not-visible signal-quality overlay, a right-side Drowsiness Risk card bound to frontend warning-candidate severity state, smooth score/needle animation, session-local alert events kept out of the default video frame, no default in-card diagnostic panel, and default-on sound alerts initialized by the camera user gesture. It still does not include browser notifications, 48h history ingestion, database storage, final system-level drowsiness accuracy, deployment readiness, or final system-level performance claims.
+Current Stage 19.7C Live Monitor includes webcam capture, mirrored preview for frontend display only, automatic 2 FPS frame sampling after Start Camera, single-frame backend evidence, session-local temporal warning-candidate state, a frontend visual alert debounce layer, product-style yawn/eye warning overlays, a concise critical-eye modal, a face-not-visible signal-quality overlay, a right-side Drowsiness Risk card bound to frontend warning-candidate severity state, smooth score/needle animation, current-drive EYES CLOSED/YAWN warning-candidate event counts, today-only Recent Events with a smooth right-column overlay expansion, current-session state-derived display severity waveform chart data, real timestamp-based chart X-axis positioning, dynamic session-start-to-1-hour chart windowing with no artificial minimum duration, render-only gray Idle baseline only outside active monitoring segments, 5-second risk-point bucket compaction, session-local alert events kept out of the default video frame, no default in-card diagnostic panel, and default-on sound alerts initialized by the camera user gesture. Normal warning-candidate events play gentle one-shot sound cues; the critical-eye modal repeats an urgent multi-beep cue until confirmation. The Live Monitor component remains mounted during normal in-app navigation so the camera/session state and current-drive counts do not reset when visiting `/video-upload` or `/history-48h`. Dashboard widgets avoid raw frame counting and use stable frontend events/score samples only. Stage 20B additionally writes stable warning-candidate events to `/history-48h` frontend-local history. May 19 layout polish reserves a comfortable right information column on desktop when the sidebar is expanded, while keeping the video/chart column visually dominant and preserving stacked behavior on narrower screens. It still does not include backend 48h history ingestion, database storage, raw image/video storage, final system-level drowsiness accuracy, deployment readiness, or final system-level performance claims.
+
+Stage 20A — Local Account, Theme, and Notification Foundation adds a local MVP login gate using one assigned local username/password account, current-user profile menu, user-scoped frontend Live Monitor dashboard records and notifications where implemented, manual Day/Night theme toggle, light day sidebar, coherent night app-shell styling, white active sidebar label/icon treatment, an aligned collapsed sidebar logo/expand-control row, and a clickable notification center for warning-candidate, system, and review notifications. This does not add production authentication, backend user-owned persisted history, database-backed history, model changes, final system-level claims, or deployment readiness; true multi-user isolation requires backend persistence and server-side ownership checks in a future stage.
+
+Stage 20B — Live Monitor Local History Ingestion normalizes stable Live Monitor frontend warning-candidate events into `/history-48h` frontend-local records under `visionguard.history48h.v1`, scoped to the current local MVP user where Stage 20A auth is available. It uses stable debounced/cooldown events only, not raw frames, raw probabilities, pending debounce states, display-only reminders, or chart display points. It stores no raw image/video/blob payloads and does not add backend database storage, production authentication, backend user-owned persisted history, browser notification API, model changes, final system-level claims, or deployment readiness.
+
+Stage 21A — History / Insights Separation and User-Scoped Local Insights Dashboard makes `/history-48h` the event-level frontend-local warning-candidate history and review workstation, with filtering, details, sessions, and manual review workflow. `/insights` is now the user-scoped aggregate analytics page derived from the same local records, including trend, composition, time-of-day pattern, session comparison, signal-quality insights, and review recommendations. The two pages intentionally avoid duplicating the same charts and event lists. May 19 History polish removes the extra top explanatory notice block from `/history-48h` while keeping safe interpretation wording in the event/review surfaces. This remains frontend-local warning-candidate review and analytics only; it does not add backend database storage, production authentication, model changes, raw image/video storage, deployment readiness, or final system-level claims.
+
+Stage 19.7C — Product-Style Drowsiness Level Waveform Chart:
+
+- The Drowsiness Level chart now uses a state-derived display severity trend.
+- The waveform is derived from stable realtime warning-candidate states.
+- Small deterministic bounded visual variation is used for readability only and does not affect backend logic, warning overlays, sound alerts, event counts, or `/history-48h`.
+- Low, Medium, and High colors match the Drowsiness Risk gauge.
+- The chart now renders only the current browser-run Live Monitor session, starts at the session start with no artificial minimum duration, grows toward 1 hour, then rolls forward as a standard 1-hour view.
+- Camera-off and pre-camera gaps use a render-only gray `Idle` baseline at the Low-height display level; those idle scaffold points are not persisted as alert events or backend/history records.
+- The chart avoids raw frame-level plotting, formatted-time X-axis collisions, duplicate timestamp clusters, and mock data.
+- The project still has no backend database, no production authentication, no raw image/video storage, no browser notification, and no final system-level drowsiness accuracy claim.
 
 ## 9. Colab Notebooks
 
@@ -390,21 +433,30 @@ Stage 17 video-upload MVP:
 | `Makefile` | Includes `make stage17-ui` target for the one-command launcher. |
 | `artifacts/audits/stage17_video_upload_mvp_2026-05-09/stage17_systemui_backend_audit.md` | SystemUI/backend audit for Stage 17. |
 
-Stage 18 and Stage 19 frontend/realtime additions:
+Stage 18, Stage 19, and Stage 20 frontend/realtime additions:
 
 | Path | Purpose |
 | --- | --- |
-| `SystemUI/src/app/history-48h/page.tsx` | Stage 18 frontend-only 48h History page. |
-| `SystemUI/src/components/history-48h/` | Stage 18 demo/local history charts, timeline, sessions, and review queue components. |
-| `SystemUI/src/lib/history48hTypes.ts` | Stage 18 history event/session types. |
-| `SystemUI/src/lib/history48hStorage.ts` | Stage 18 browser localStorage load/save/reset/clear helpers. |
+| `SystemUI/src/app/history-48h/page.tsx` | Stage 18/20B frontend-only 48h History page. |
+| `SystemUI/src/components/history-48h/` | Stage 18/20B demo/local and Live Monitor local history charts, timeline, source badges, sessions, and review queue components. |
+| `SystemUI/src/lib/history48hTypes.ts` | Stage 18/20B history event/session types with frontend-local source and optional user scoping fields. |
+| `SystemUI/src/lib/history48hStorage.ts` | Stage 18/20B browser localStorage load/save/reset/clear/append helpers with user merge behavior, pruning, deduping, and compatibility normalization. |
+| `SystemUI/src/lib/liveMonitorHistoryIngestion.ts` | Stage 20B mapper/helper for converting stable Live Monitor dashboard events into frontend-local history records. |
+| `SystemUI/src/lib/authStore.tsx` | Stage 20A fixed local MVP account/session state; not production authentication. |
+| `SystemUI/src/lib/themeStore.tsx` | Stage 20A manual Day/Night theme state. |
+| `SystemUI/src/lib/notificationStore.tsx` | Stage 20A local notification state for warning-candidate, system, and review notifications. |
 | `src/runtime/realtime_frame_inference.py` | Stage 19 single-frame webcam evidence service. |
 | `src/runtime/realtime_temporal_state.py` | Stage 19 realtime warning-candidate temporal state with yawn context/reminder and conservative eye active/reminder semantics. |
 | `SystemUI/src/lib/liveMonitorAlertUtils.ts` | Stage 19.5 frontend visual alert debounce/cooldown state helper for Live Monitor. |
-| `SystemUI/src/lib/liveMonitorSoundUtils.ts` | Stage 19.6A Web Audio sound pattern and playback helper for Live Monitor warning sounds after the camera user gesture. |
+| `SystemUI/src/lib/liveMonitorSoundUtils.ts` | Stage 19.6A Web Audio sound pattern and playback helper for Live Monitor warning sounds after the camera user gesture, with gentle one-shot normal warning cues and repeated urgent critical-eye cues. |
 | `SystemUI/src/lib/liveMonitorRiskUtils.ts` | Stage 19.6B frontend risk mapping for idle, normal, yawn warning, eye warning, critical eye warning, and signal-quality states. |
-| `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | Stage 19.6B Live Monitor UI for webcam capture, automatic sampling, clean video frame, product yawn/eye/critical-eye warning overlays, face visibility cue, single Start/Stop Camera button, and risk-state callback emission. |
+| `SystemUI/src/lib/liveMonitorDashboardTypes.ts` | Stage 19.7C lightweight local dashboard event/risk point types. |
+| `SystemUI/src/lib/liveMonitorDashboardStore.ts` | Stage 19.7C localStorage helper for stable Live Monitor warning-candidate events and timestamp-clean, bucketed state-derived display severity points. |
+| `SystemUI/src/components/dashboard/LiveVideoCard.tsx` | Stage 19.7A Live Monitor UI for webcam capture, automatic sampling, clean video frame, product yawn/eye warning overlays, concise critical-eye modal, face visibility cue, single Start/Stop Camera button, risk-state callback emission, and stable dashboard event emission. |
 | `SystemUI/src/components/dashboard/DrowsinessRiskCard.tsx` | Stage 19.6B dynamic Drowsiness Risk gauge with animated frontend warning-candidate severity score and needle. |
+| `SystemUI/src/components/dashboard/StatusMetricCard.tsx` | Stage 19.7A current-drive EYE/YAWN stable warning-candidate event count cards. |
+| `SystemUI/src/components/dashboard/RecentEventsList.tsx` | Stage 19.7A real today-only event list with `Today` badge, no mock rows, and compact/expanded rendering for the Live Monitor right-column overlay. |
+| `SystemUI/src/components/dashboard/DrowsinessLevelChart.tsx` | Stage 19.7C real current-session state-derived display severity waveform with numeric timestamp X-axis positioning, gray Idle baseline, dynamic session-start-to-1-hour windowing, Low/Medium/High segmented colors, and no formatted-time coordinate collisions. |
 
 Expected C upload validation markers recorded for Stage 17.4:
 
@@ -450,10 +502,13 @@ Checkpoint locations:
 | Stage 17.4 launcher and acceptance/demo docs | Completed; `make stage17-ui` starts local backend and frontend. |
 | Stage 17.5 `/video-upload` evidence review cleanup | Completed; compact evidence review UI with safe optional-field handling. |
 | Stage 18 `/history-48h` frontend history page | Completed frontend-only; uses demo/local browser history data. |
-| Stage 19 Live Monitor realtime prototype | Completed through Stage 19.6B with local webcam preview, automatic 2 FPS sampling from Start Camera, realtime frame evidence, rule-based temporal warning-candidate state, conservative yawn/eye semantics, product-style yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, default-on sound after camera start, dynamic Drowsiness Risk gauge binding, and no default in-card diagnostic panel. |
+| Stage 19 Live Monitor realtime prototype | Completed through Stage 19.7C with local webcam preview, automatic 2 FPS sampling from Start Camera, realtime frame evidence, rule-based temporal warning-candidate state, conservative yawn/eye semantics, product-style yawn/eye/critical-eye warning overlays, face-not-visible signal-quality overlay, default-on sound after camera start, dynamic Drowsiness Risk gauge binding, current-drive EYE/YAWN stable event counts, today-only Recent Events, real timestamp-based current-session state-derived display severity waveform chart, frame-level overplotting protection, and no default in-card diagnostic panel. |
+| Stage 20A local account/app shell | Completed local MVP login gate for one assigned local account, user-aware profile menu, manual Day/Night theme toggle, redesigned day/night shell, local notification center, high-contrast active sidebar state, and aligned collapsed sidebar controls. |
+| Stage 20B Live Monitor local history ingestion | Completed frontend-local ingestion from stable Live Monitor warning-candidate events into `/history-48h`, scoped to the current local MVP user where available. |
+| Stage 21A History / Insights split | Completed event-level `/history-48h` review workstation and user-scoped `/insights` aggregate analytics page; latest polish keeps the History header concise while retaining warning-candidate boundaries in lower-level notes. |
 | Safety-prioritized MRL Eye reference | ResNet18 with validation-selected threshold around `0.30`. |
 | NTHUDDD2 branch | Explored but no longer the main system direction. |
-| Current claim boundary | Local warning-candidate prototypes only; no browser notification, no history ingestion from webcam, no database storage, no final system-level performance, and no deployment-readiness claim. |
+| Current claim boundary | Local warning-candidate prototypes only; no browser notification, no backend history ingestion from webcam, no production authentication, no database storage, no raw image/video storage, no final system-level performance, and no deployment-readiness claim. |
 
 ## 13. What Should and Should Not Be Committed to GitHub
 

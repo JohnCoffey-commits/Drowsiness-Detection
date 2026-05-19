@@ -31,8 +31,8 @@ export interface DashboardData {
 
 export const dashboardData: DashboardData = {
   driver: {
-    name: "John Carter",
-    initials: "JC",
+    name: "Local Driver",
+    initials: "LD",
     sessionStartedSecondsAgo: 12 * 60 + 45,
   },
   status: {
@@ -45,7 +45,7 @@ export const dashboardData: DashboardData = {
     level: "Medium",
     score: 62,
   },
-  notifications: 2,
+  notifications: 0,
   events: [
     { secondsAgo: 95, type: "Normal" },
     { secondsAgo: 168, type: "Eyes Closed" },

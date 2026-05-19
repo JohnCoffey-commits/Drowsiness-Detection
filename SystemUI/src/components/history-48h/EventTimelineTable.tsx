@@ -17,17 +17,26 @@ import {
 
 interface EventTimelineTableProps {
   events: DriverHistoryEvent[];
+  emptyMessage?: string;
 }
 
 function DetailPanel({ event }: { event: DriverHistoryEvent }) {
   return (
     <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm text-slate-700">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
         <div>
           <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
             Session id
           </span>
           <span className="font-semibold text-slate-800">{event.sessionId}</span>
+        </div>
+        <div>
+          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Source event id
+          </span>
+          <span className="font-semibold text-slate-800">
+            {event.sourceEventId ?? "-"}
+          </span>
         </div>
         <div>
           <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -47,6 +56,12 @@ function DetailPanel({ event }: { event: DriverHistoryEvent }) {
           </span>
           {event.eyeEvidenceStrength ?? "unknown"}
         </div>
+        <div>
+          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Candidate severity score
+          </span>
+          {formatCandidateScore(event.candidateSeverityScore)}
+        </div>
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
         <p className="leading-6">
@@ -54,8 +69,8 @@ function DetailPanel({ event }: { event: DriverHistoryEvent }) {
           {event.reason}
         </p>
         <p className="leading-6 text-slate-600">
-          Safe interpretation: this row is a warning-candidate history item for
-          review. It is not final system-level drowsiness accuracy.
+          Safe interpretation: this is a frontend-local warning-candidate history
+          item, not final system-level drowsiness accuracy.
         </p>
       </div>
     </div>
@@ -83,7 +98,10 @@ function SeverityPill({ event }: { event: DriverHistoryEvent }) {
   );
 }
 
-export function EventTimelineTable({ events }: EventTimelineTableProps) {
+export function EventTimelineTable({
+  events,
+  emptyMessage = "No events match the current filters.",
+}: EventTimelineTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
@@ -98,7 +116,7 @@ export function EventTimelineTable({ events }: EventTimelineTableProps) {
 
       {events.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm font-medium text-slate-500">
-          No events match the current filters.
+          {emptyMessage}
         </div>
       ) : (
         <>

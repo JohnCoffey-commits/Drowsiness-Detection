@@ -148,13 +148,13 @@ export function formatOptionalTextCompact(
 export function fusionStateLabel(state?: string): string {
   switch (state) {
     case "high_confidence_drowsiness_candidate":
-      return "High-confidence warning candidate";
+      return "Critical eye warning candidate";
     case "eye_warning_candidate":
-      return "Eye-warning candidate";
+      return "Eye warning candidate";
     case "mouth_warning_candidate":
-      return "Mouth-warning candidate";
+      return "Yawn warning candidate";
     case "signal_unreliable":
-      return "Signal unreliable";
+      return "Signal quality issue";
     case "normal":
       return "Normal";
     default:
@@ -165,13 +165,13 @@ export function fusionStateLabel(state?: string): string {
 export function fusionStateDescription(state?: string): string {
   switch (state) {
     case "high_confidence_drowsiness_candidate":
-      return "Recent mouth/yawn evidence overlapped with sustained eye-warning evidence. This is still a warning candidate, not final drowsiness truth.";
+      return "Recent mouth/yawn evidence overlapped with sustained eye warning evidence. This is still a warning candidate, not final system output.";
     case "eye_warning_candidate":
-      return "Eye temporal rule produced an eye-warning candidate. This may reflect reduced eye openness, blink-like activity, possible closure, or ROI-sensitive evidence.";
+      return "Eye temporal rule produced an eye warning candidate. This may reflect reduced eye openness, blink-like activity, possible closure, or ROI-sensitive evidence.";
     case "mouth_warning_candidate":
-      return "Recent mouth/yawn evidence is active. This alone is not final drowsiness truth.";
+      return "Recent mouth/yawn evidence is active. This alone is not final system output.";
     case "signal_unreliable":
-      return "Face/eye ROI signal quality may be unreliable. This is not treated as drowsiness evidence.";
+      return "Face/eye ROI signal quality may be uncertain. This is not treated as warning-candidate evidence.";
     default:
       return "Backend output prepared for manual warning-candidate review.";
   }
@@ -316,7 +316,7 @@ export function eyeEvidenceBadgeText(strength?: string): string {
   if (normalized.includes("moderate")) return "Moderate";
   if (normalized.includes("strong")) return "Strong";
   if (normalized.includes("uncertain") || normalized.includes("unreliable")) {
-    return "Signal unreliable";
+    return "Signal quality issue";
   }
   if (normalized.includes("normal") || normalized.includes("open")) {
     return "Normal-open evidence";
@@ -348,7 +348,7 @@ export function compactEyeEvidenceLabel(
     normalizedStrength?.includes("unreliable") ||
     label.includes("unreliable")
   ) {
-    return "Signal unreliable";
+    return "Signal quality issue";
   }
   const expanded = eyeEvidenceLabel(level, strength, providedLabel);
   return expanded === "Not provided" ? "—" : expanded;
@@ -390,7 +390,7 @@ export function eyeEvidenceLabel(
     normalizedStrength?.includes("unreliable") ||
     normalizedLevel?.includes("roi")
   ) {
-    return "Signal unreliable";
+    return "Signal quality issue";
   }
   if (
     normalizedStrength?.includes("normal") ||
@@ -418,7 +418,7 @@ export function eyeEvidenceDescription(
       return "Eye evidence is stronger than weak reduced-openness evidence and should be reviewed manually.";
     case "Strong - strong eye-closure candidate":
       return "Eye evidence is marked as a strong eye-closure candidate for manual review.";
-    case "Signal unreliable":
+    case "Signal quality issue":
       return "Eye evidence may be affected by ROI or signal quality and should not be treated as proof.";
     case "Normal-open evidence":
       return "The available eye evidence is consistent with normal-open evidence.";
@@ -434,7 +434,7 @@ export function manualReviewLabel(
 }
 
 export function stage175MetricScopeNote(): string {
-  return "Stage 17.5 calibration fields describe eye-evidence strength, not final fusion-state counts. Weak eye evidence is counted within eye-warning candidate rows in the current backend summary, while moderate and strong eye-evidence counts are across sampled timeline rows. These counts may not equal eye-warning candidate frames because fusion states and eye-evidence calibration are separate backend outputs.";
+  return "Stage 17.5 calibration fields describe eye-evidence strength, not final fusion-state counts. Weak eye evidence is counted within eye warning candidate rows in the current backend summary, while moderate and strong eye-evidence counts are across sampled timeline rows. These counts may not equal eye warning candidate frames because fusion states and eye-evidence calibration are separate backend outputs.";
 }
 
 export function keyframeGroupLabel(keyframe: VideoUploadKeyframe): string {
@@ -442,13 +442,13 @@ export function keyframeGroupLabel(keyframe: VideoUploadKeyframe): string {
   if (stateLabel !== "Warning candidate") return stateLabel;
   switch (keyframe.warning_type) {
     case "high_confidence":
-      return "High-confidence warning candidate";
+      return "Critical eye warning candidate";
     case "eye_warning":
-      return "Eye-warning candidate";
+      return "Eye warning candidate";
     case "mouth_warning":
-      return "Mouth-warning candidate";
+      return "Yawn warning candidate";
     case "signal_unreliable":
-      return "Signal unreliable";
+      return "Signal quality issue";
     default:
       return "Warning candidate";
   }
@@ -511,10 +511,10 @@ export function buildCopySummary(response: VideoUploadResponse): string {
     `Analyzed duration: ${formatSeconds(summary.duration_sec)} (sampled timeline timestamps)`,
     "Fusion state counts:",
     `- Normal frames: ${formatNumber(summary.normal_frames)}`,
-    `- Eye-warning candidate frames: ${formatNumber(summary.eye_warning_candidate_frames)}`,
-    `- Mouth-warning candidate frames: ${formatNumber(summary.mouth_warning_candidate_frames)}`,
-    `- High-confidence warning candidate frames: ${formatNumber(summary.high_confidence_drowsiness_candidate_frames)}`,
-    `- Signal-unreliable frames: ${formatNumber(summary.signal_unreliable_frames)}`,
+    `- Eye warning candidate frames: ${formatNumber(summary.eye_warning_candidate_frames)}`,
+    `- Yawn warning candidate frames: ${formatNumber(summary.mouth_warning_candidate_frames)}`,
+    `- Critical eye warning candidate frames: ${formatNumber(summary.high_confidence_drowsiness_candidate_frames)}`,
+    `- Signal quality issue frames: ${formatNumber(summary.signal_unreliable_frames)}`,
     `Yawn event count: ${formatNumber(summary.yawn_event_count)}`,
     `Recent-yawn count: ${formatNumber(summary.recent_yawn_event_count)}`,
     `Suppressed brief-eye escalation frames: ${formatNumber(summary.suppressed_high_confidence_brief_eye_warning_frames)}`,
@@ -548,10 +548,10 @@ export function resultMessage(summary?: VideoUploadSummary): string {
     (summary.mouth_warning_candidate_frames ?? 0) +
     high +
     unreliable;
-  if (high > 0) return "High-confidence warning candidate intervals are present.";
-  if (unreliable > 0) return "Signal-unreliable intervals are present.";
+  if (high > 0) return "Critical eye warning candidate intervals are present.";
+  if (unreliable > 0) return "Signal quality issue intervals are present.";
   if (warning > 0) {
     return "Warning-candidate states were produced for manual review.";
   }
-  return "No high-confidence warning candidate was returned.";
+  return "No critical eye warning candidate was returned.";
 }

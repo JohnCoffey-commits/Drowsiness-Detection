@@ -147,7 +147,7 @@ export function HistoryFilters({
             className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100"
           >
             <Trash2 className="h-4 w-4" />
-            Clear history
+            Clear current user history
           </button>
           <button
             type="button"
@@ -163,7 +163,7 @@ export function HistoryFilters({
       <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-slate-600">
         <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 font-semibold text-slate-700">
           <Filter className="h-3.5 w-3.5" />
-          Demo/local data visible
+          Current local user data visible
         </span>
         {selectedSessionId && (
           <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 font-semibold text-blue-700">

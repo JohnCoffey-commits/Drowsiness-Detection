@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   Camera,
   CheckCircle2,
+  Coffee,
   Eye,
   ShieldAlert,
   Smile,
@@ -28,13 +29,17 @@ import {
   getLiveMonitorRiskStateKey,
   type LiveMonitorRiskState,
 } from "@/lib/liveMonitorRiskUtils";
+import {
+  dashboardEventDraftFromLiveAlertEvent,
+} from "@/lib/liveMonitorDashboardStore";
+import type { LiveMonitorDashboardEventDraft } from "@/lib/liveMonitorDashboardTypes";
 import { buildApiUrl, DEFAULT_BACKEND_URL } from "@/lib/videoUploadUtils";
 
 const DRIVER_PHOTO_URL =
   "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1600&auto=format&fit=crop";
 
 const CRITICAL_EYE_REPEAT_WINDOW_MS = 60_000;
-const CRITICAL_SOUND_REPEAT_MS = 9_000;
+const CRITICAL_SOUND_REPEAT_MS = 2_200;
 
 type CameraStatus =
   | "Idle"
@@ -164,6 +169,7 @@ interface FaceVisibilityIssue {
 
 interface LiveVideoCardProps {
   onRiskStateChange?: (riskState: LiveMonitorRiskState) => void;
+  onDashboardEvent?: (event: LiveMonitorDashboardEventDraft) => void;
 }
 
 const PRODUCT_ALERT_COPY: Record<LiveAlertKind, ProductAlertCopy> = {
@@ -179,7 +185,7 @@ const PRODUCT_ALERT_COPY: Record<LiveAlertKind, ProductAlertCopy> = {
   },
   high_confidence: {
     title: "Critical Eye Warning",
-    body: "Sustained or repeated eye-warning candidate evidence was observed. Please stop and rest when safe.",
+    body: "Sustained or repeated eye warning candidate evidence was observed. Please stop and rest when safe.",
     label: "High-priority warning-candidate alert",
   },
   signal_quality: {
@@ -407,7 +413,7 @@ function getCriticalReason(
   }
 
   if (temporal?.sustained_eye_warning === true) {
-    return "Sustained eye-warning candidate evidence is active in the current realtime window.";
+    return "Sustained eye warning candidate evidence is active in the current realtime window.";
   }
 
   const recentEyeWarningCount = events.filter(
@@ -417,7 +423,7 @@ function getCriticalReason(
   ).length;
 
   if (recentEyeWarningCount >= 2) {
-    return "Repeated eye-warning candidate events occurred within the recent monitoring window.";
+    return "Repeated eye warning candidate events occurred within the recent monitoring window.";
   }
 
   return null;
@@ -462,31 +468,59 @@ function CriticalEyeModal({
   alert: CriticalEyeAlert;
   onAcknowledge: () => void;
 }) {
-  const copy = PRODUCT_ALERT_COPY.high_confidence;
+  const titleId = `${alert.id}-title`;
 
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/55 p-5 backdrop-blur-[2px]">
-      <div className="w-full max-w-md rounded-2xl border border-rose-200 bg-white p-5 text-slate-950 shadow-2xl">
-        <div className="flex gap-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-600 text-white shadow-lg shadow-rose-950/20">
-            <ShieldAlert className="h-6 w-6" strokeWidth={2.3} />
+    <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/62 p-5 backdrop-blur-[3px]">
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="w-full max-w-[720px] overflow-hidden rounded-[2rem] border border-rose-200 bg-white text-slate-950 shadow-2xl shadow-slate-950/35"
+      >
+        <div className="grid gap-6 px-6 py-7 sm:grid-cols-[180px_1fr] sm:px-8 sm:py-9">
+          <div className="flex items-center justify-center">
+            <div className="relative flex h-36 w-36 items-center justify-center rounded-full bg-rose-100">
+              <div className="absolute inset-4 rounded-full bg-rose-200/70" />
+              <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-rose-600 text-white shadow-2xl shadow-rose-600/30">
+                <ShieldAlert className="h-12 w-12" strokeWidth={2.2} />
+              </div>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">
-              {copy.label}
+
+          <div className="flex min-w-0 flex-col justify-center text-center sm:text-left">
+            <div className="mx-auto inline-flex w-fit items-center gap-2 rounded-full bg-rose-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-rose-700 sm:mx-0">
+              <AlertTriangle className="h-4 w-4" strokeWidth={2.4} />
+              High Priority
+            </div>
+
+            <h3
+              id={titleId}
+              className="mt-5 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl"
+            >
+              <span className="text-rose-600">Critical</span> Eye Warning
+            </h3>
+
+            <p className="mt-3 text-lg font-semibold text-slate-400">
+              Sustained eye warning candidate
             </p>
-            <h3 className="mt-1 text-xl font-semibold">{copy.title}</h3>
-            <p className="mt-2 text-sm leading-5 text-slate-700">{copy.body}</p>
-            <p className="mt-2 text-xs leading-5 text-slate-500">{alert.reason}</p>
+
+            <div className="mx-auto mt-6 flex w-full max-w-sm items-center justify-center gap-4 rounded-2xl bg-slate-100/80 px-5 py-4 text-left text-base font-semibold leading-6 text-slate-600 sm:mx-0">
+              <Coffee className="h-7 w-7 shrink-0 text-slate-500" strokeWidth={2.2} />
+              <span>Please stop and rest when safe.</span>
+            </div>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={onAcknowledge}
-          className="mt-5 inline-flex h-10 w-full items-center justify-center rounded-full bg-rose-600 px-4 text-sm font-semibold text-white shadow-lg shadow-rose-950/20 outline-none transition hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-300"
-        >
-          Acknowledge
-        </button>
+
+        <div className="bg-rose-600 px-6 py-5 sm:px-8">
+          <button
+            type="button"
+            onClick={onAcknowledge}
+            className="mx-auto flex h-14 w-full max-w-sm items-center justify-center rounded-full bg-white/18 px-6 text-lg font-bold text-white shadow-lg shadow-rose-950/20 outline-none ring-1 ring-white/20 transition hover:bg-white/24 focus-visible:ring-2 focus-visible:ring-white"
+          >
+            Got it
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -543,7 +577,10 @@ function FaceVisibilityOverlay({ issue }: { issue: FaceVisibilityIssue }) {
   );
 }
 
-export function LiveVideoCard({ onRiskStateChange }: LiveVideoCardProps) {
+export function LiveVideoCard({
+  onRiskStateChange,
+  onDashboardEvent,
+}: LiveVideoCardProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -729,6 +766,9 @@ export function LiveVideoCard({ onRiskStateChange }: LiveVideoCardProps) {
         alertEventsRef.current = nextEvents;
 
         if (criticalReason) {
+          onDashboardEvent?.(
+            dashboardEventDraftFromLiveAlertEvent(alertEvent, "critical_eye_warning")
+          );
           setCriticalEyeAlert({
             id: `${alertEvent.id}-critical`,
             createdAt: alertEvent.timestamp,
@@ -739,10 +779,11 @@ export function LiveVideoCard({ onRiskStateChange }: LiveVideoCardProps) {
           return;
         }
 
+        onDashboardEvent?.(dashboardEventDraftFromLiveAlertEvent(alertEvent));
         void playSoundForAlertKind(alertEvent.kind, samplingRunId);
       }
     },
-    [playSoundForAlertKind]
+    [onDashboardEvent, playSoundForAlertKind]
   );
 
   const clearSamplingInterval = useCallback(() => {

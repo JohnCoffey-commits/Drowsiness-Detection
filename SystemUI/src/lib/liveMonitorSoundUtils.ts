@@ -91,16 +91,16 @@ export function getSoundPatternForAlertKind(kind: LiveAlertKind): SoundPattern {
     return {
       steps: [
         {
-          frequency: 660,
-          durationMs: 110,
-          gapAfterMs: 65,
-          gain: 0.05,
+          frequency: 440,
+          durationMs: 150,
+          gapAfterMs: 70,
+          gain: 0.035,
           type: "sine",
         },
         {
-          frequency: 720,
-          durationMs: 115,
-          gain: 0.05,
+          frequency: 560,
+          durationMs: 150,
+          gain: 0.032,
           type: "sine",
         },
       ],
@@ -111,10 +111,17 @@ export function getSoundPatternForAlertKind(kind: LiveAlertKind): SoundPattern {
     return {
       steps: [
         {
-          frequency: 520,
-          durationMs: 130,
-          gain: 0.045,
-          type: "triangle",
+          frequency: 392,
+          durationMs: 170,
+          gapAfterMs: 55,
+          gain: 0.032,
+          type: "sine",
+        },
+        {
+          frequency: 494,
+          durationMs: 135,
+          gain: 0.03,
+          type: "sine",
         },
       ],
     };
@@ -124,23 +131,30 @@ export function getSoundPatternForAlertKind(kind: LiveAlertKind): SoundPattern {
     return {
       steps: [
         {
-          frequency: 760,
-          durationMs: 110,
-          gapAfterMs: 70,
-          gain: 0.06,
+          frequency: 720,
+          durationMs: 95,
+          gapAfterMs: 55,
+          gain: 0.07,
           type: "triangle",
         },
         {
-          frequency: 760,
-          durationMs: 110,
-          gapAfterMs: 70,
-          gain: 0.06,
+          frequency: 920,
+          durationMs: 95,
+          gapAfterMs: 55,
+          gain: 0.075,
           type: "triangle",
         },
         {
-          frequency: 880,
-          durationMs: 120,
-          gain: 0.055,
+          frequency: 720,
+          durationMs: 95,
+          gapAfterMs: 55,
+          gain: 0.07,
+          type: "triangle",
+        },
+        {
+          frequency: 980,
+          durationMs: 130,
+          gain: 0.08,
           type: "triangle",
         },
       ],

@@ -9,11 +9,11 @@ import type {
 } from "@/lib/history48hTypes";
 
 const REASONS = {
-  normal: "Normal sampled period in demo/local history.",
-  eye_warning_candidate: "Eye-warning candidate from temporal eye evidence.",
+  normal: "Normal sampled period in demo history.",
+  eye_warning_candidate: "Eye warning candidate from temporal eye evidence.",
   mouth_warning_candidate: "Recent mouth/yawn evidence active.",
   high_confidence_drowsiness_candidate:
-    "Recent mouth/yawn evidence overlapped with eye-warning candidate.",
+    "Recent mouth/yawn evidence overlapped with eye warning candidate.",
   signal_unreliable: "Face/ROI signal quality may be unreliable.",
 } satisfies Record<HistoryState, string>;
 
@@ -61,7 +61,7 @@ const SESSION_PLANS: Array<{
     id: "demo-session-48h-03",
     hoursAgo: 31.5,
     durationMin: 48,
-    source: "video_upload",
+    source: "mock",
     pattern: [
       "normal",
       "normal",
@@ -111,7 +111,7 @@ const SESSION_PLANS: Array<{
     id: "demo-session-48h-06",
     hoursAgo: 9.25,
     durationMin: 82,
-    source: "webcam_future",
+    source: "mock",
     pattern: [
       "normal",
       "eye_warning_candidate",
@@ -217,8 +217,26 @@ function countState(
 export function createDemoHistory48hStore(now = new Date()): History48hStore {
   const events: DriverHistoryEvent[] = [];
   const sessions: DriverHistorySession[] = [];
+  return createDemoHistory48hStoreForUser(now, undefined, events, sessions);
+}
+
+export function createUserDemoHistory48hStore(
+  now = new Date(),
+  userId?: string
+): History48hStore {
+  return createDemoHistory48hStoreForUser(now, userId, [], []);
+}
+
+function createDemoHistory48hStoreForUser(
+  now: Date,
+  userId: string | undefined,
+  events: DriverHistoryEvent[],
+  sessions: DriverHistorySession[]
+): History48hStore {
+  const userIdSuffix = userId ? `-${userId.replace(/[^a-zA-Z0-9_-]/g, "-")}` : "";
 
   SESSION_PLANS.forEach((plan, sessionIndex) => {
+    const sessionId = `${plan.id}${userIdSuffix}`;
     const startedAt = new Date(now.getTime() - plan.hoursAgo * 60 * 60_000);
     const endedAt = addMinutes(startedAt, plan.durationMin);
     const eventSpacingMin = plan.durationMin / (plan.pattern.length + 1);
@@ -236,8 +254,9 @@ export function createDemoHistory48hStore(now = new Date()): History48hStore {
             ? 18 + (eventIndex % 3) * 11
             : 22 + ((eventIndex + sessionIndex) % 5) * 14;
       const event: DriverHistoryEvent = {
-        id: `${plan.id}-event-${String(eventIndex + 1).padStart(2, "0")}`,
-        sessionId: plan.id,
+        id: `${sessionId}-event-${String(eventIndex + 1).padStart(2, "0")}`,
+        userId,
+        sessionId,
         timestamp: timestamp.toISOString(),
         endTimestamp: addSeconds(timestamp, durationSec).toISOString(),
         durationSec,
@@ -260,7 +279,8 @@ export function createDemoHistory48hStore(now = new Date()): History48hStore {
     });
 
     sessions.push({
-      id: plan.id,
+      id: sessionId,
+      userId,
       source: plan.source,
       startedAt: startedAt.toISOString(),
       endedAt: endedAt.toISOString(),

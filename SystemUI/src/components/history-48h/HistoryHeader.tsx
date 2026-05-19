@@ -1,11 +1,9 @@
-import { AlertTriangle, Database, History, ShieldCheck } from "lucide-react";
-import { HISTORY_48H_BOUNDARY_NOTICE } from "@/lib/history48hUtils";
+import { Database, History, ShieldCheck } from "lucide-react";
 
 const badges = [
   "Last 48 hours",
-  "Candidate states",
-  "Future webcam-ready",
-  "Demo/local data",
+  "Local warning-candidate history",
+  "Current user data",
 ];
 
 export function HistoryHeader() {
@@ -38,7 +36,7 @@ export function HistoryHeader() {
           <div className="grid gap-2 text-sm text-blue-50 sm:grid-cols-2 lg:w-[420px]">
             <div className="rounded-xl border border-white/10 bg-white/10 p-3">
               <Database className="mb-2 h-4 w-4 text-blue-100" />
-              Demo/local history data
+              Local history records
             </div>
             <div className="rounded-xl border border-white/10 bg-white/10 p-3">
               <ShieldCheck className="mb-2 h-4 w-4 text-blue-100" />
@@ -46,14 +44,6 @@ export function HistoryHeader() {
             </div>
           </div>
         </div>
-      </div>
-      <div className="flex gap-3 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900 sm:px-6">
-        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
-        <p>
-          This page summarizes warning-candidate history for the recent 48-hour
-          window. Current data may come from local demo history until real
-          webcam/upload history storage is connected. {HISTORY_48H_BOUNDARY_NOTICE}
-        </p>
       </div>
     </section>
   );

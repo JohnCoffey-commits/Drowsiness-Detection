@@ -106,7 +106,7 @@ const LIVE_ALERT_META: Record<LiveAlertKind, LiveAlertMeta> = {
     severity: "high",
     title: "Critical Eye Warning",
     message:
-      "Sustained or repeated eye-warning candidate evidence was observed. Please stop and rest when safe.",
+      "Sustained or repeated eye warning candidate evidence was observed. Please stop and rest when safe.",
   },
   signal_quality: {
     kind: "signal_quality",

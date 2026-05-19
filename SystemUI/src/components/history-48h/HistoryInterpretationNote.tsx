@@ -12,19 +12,20 @@ export function HistoryInterpretationNote() {
           </div>
           <p className="mt-2 text-sm leading-6">
             This page summarizes recent warning-candidate history. Events are
-            candidate states produced by rule-based logic or demo/local history
-            data. {HISTORY_48H_BOUNDARY_NOTICE}
+            frontend-local candidate states produced by stable Live Monitor
+            visual alerts or demo history data. {HISTORY_48H_BOUNDARY_NOTICE}
           </p>
         </div>
         <div className="grid gap-3 text-sm sm:grid-cols-3 lg:w-[560px]">
           <div className="rounded-xl border border-blue-100 bg-white/70 p-3">
             <ShieldAlert className="mb-2 h-4 w-4 text-red-600" />
-            High-confidence warning candidate is still a review cue, not final
-            truth.
+            High-priority warning candidate is still a review cue, not final
+            system output.
           </div>
           <div className="rounded-xl border border-blue-100 bg-white/70 p-3">
             <Signal className="mb-2 h-4 w-4 text-slate-600" />
-            Signal unreliable means quality issue or ROI uncertainty.
+            Signal quality issue means camera, face visibility, ROI, or signal
+            uncertainty.
           </div>
           <div className="rounded-xl border border-blue-100 bg-white/70 p-3">
             <SlidersHorizontal className="mb-2 h-4 w-4 text-blue-700" />
@@ -33,8 +34,8 @@ export function HistoryInterpretationNote() {
         </div>
       </div>
       <p className="mt-4 text-sm leading-6 text-blue-900">
-        Future webcam data can later write into this history model, but this page
-        does not start camera access or create backend storage.
+        Local history stores lightweight records only. It does not save raw
+        frames, webcam images, uploaded videos, blobs, or base64 payloads.
       </p>
     </section>
   );

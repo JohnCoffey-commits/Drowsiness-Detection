@@ -47,6 +47,8 @@ import {
   sanitizeBrowserText,
   validateBackendUrl,
 } from "@/lib/videoUploadUtils";
+import { useVisionGuardAuth } from "@/lib/authStore";
+import { useVisionGuardNotifications } from "@/lib/notificationStore";
 
 const ACCEPTED_EXTENSIONS = [".mp4", ".mov", ".avi", ".m4v"];
 
@@ -361,6 +363,8 @@ function ResultOverview({
 }
 
 export function VideoUploadAnalysis() {
+  const { currentUser } = useVisionGuardAuth();
+  const { addNotification } = useVisionGuardNotifications();
   const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("unchecked");
   const [file, setFile] = useState<File | null>(null);
@@ -492,6 +496,19 @@ export function VideoUploadAnalysis() {
       setResponse(payload);
       setStatus("completed");
       setBackendStatus("connected");
+      if (currentUser) {
+        addNotification({
+          id: `video-upload-${currentUser.id}-${payload.session_id || Date.now()}`,
+          userId: currentUser.id,
+          category: "review",
+          severity: "success",
+          title: "Video upload analysis completed",
+          message:
+            "Uploaded-video warning-candidate analysis finished and is ready for review.",
+          source: "video_upload",
+          relatedRoute: "/video-upload",
+        });
+      }
     } catch {
       if (analyzingTimerRef.current) clearTimeout(analyzingTimerRef.current);
       setStatus("backend-unavailable");

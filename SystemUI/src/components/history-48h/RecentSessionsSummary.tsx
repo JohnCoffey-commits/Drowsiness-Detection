@@ -70,10 +70,8 @@ export function RecentSessionsSummary({
                 {formatTimeRange(session.startedAt, session.endedAt)}
               </p>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
                 <Metric label="Warning candidates" value={session.warningCandidateCount} />
-                <Metric label="High-confidence" value={session.highConfidenceCount} />
-                <Metric label="Signal unreliable" value={session.signalUnreliableCount} />
                 <Metric label="Review pending" value={session.reviewPendingCount} />
               </div>
             </article>

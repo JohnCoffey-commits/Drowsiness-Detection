@@ -6,12 +6,12 @@ import { PERMANENT_WARNING } from "@/lib/videoUploadTypes";
 
 const details = [
   "This page is for uploaded-video analysis, not webcam or real-time monitoring.",
-  "The output is a rule-based warning-candidate analysis, not final system-level accuracy.",
+  "This output is a rule-based drowsiness warning-candidate analysis, not final system-level drowsiness accuracy.",
   "p_eye_closed and p_yawn are specialist model outputs that support technical review.",
   "eye_warning_candidate is not verified sustained eye closure.",
-  "high-confidence warning candidate is not final drowsiness truth.",
-  "signal_unreliable is a quality condition, not drowsiness evidence.",
-  "Stage 17.1 suppresses brief blink-like escalation before high-confidence warning candidates are retained.",
+  "Critical eye warning candidate is not final system output.",
+  "Signal quality issue is a quality condition, not warning-candidate evidence.",
+  "Stage 17.1 suppresses brief blink-like escalation before critical eye warning candidates are retained.",
   "Stage 17.5 optional fields may distinguish weak, moderate, and strong eye evidence when available.",
 ];
 

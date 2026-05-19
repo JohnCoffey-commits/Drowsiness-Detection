@@ -34,11 +34,11 @@ export function StatusMetricCard({ type, events }: StatusMetricCardProps) {
         aria-hidden
       />
 
-      <div className="relative flex h-full items-center gap-3.5 px-4 py-4 sm:px-5">
+      <div className="relative flex h-full items-center gap-3 px-4 py-4 2xl:gap-3.5 2xl:px-5">
         <div
-          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ring-1 ${theme.iconBg} ${theme.iconRing}`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 2xl:h-14 2xl:w-14 ${theme.iconBg} ${theme.iconRing}`}
         >
-          <div className="relative h-9 w-9">
+          <div className="relative h-8 w-8 2xl:h-9 2xl:w-9">
             <Image
               src={imgSrc}
               alt={title}
@@ -52,17 +52,19 @@ export function StatusMetricCard({ type, events }: StatusMetricCardProps) {
 
         <div className="flex h-14 min-w-0 flex-1 flex-col justify-between py-0.5">
           <h3
-            className={`whitespace-nowrap text-[0.95rem] font-extrabold uppercase leading-none tracking-[0.05em] ${theme.title}`}
+            className={`whitespace-nowrap text-[0.84rem] font-extrabold uppercase leading-none tracking-[0.03em] 2xl:text-[0.95rem] 2xl:tracking-[0.05em] ${theme.title}`}
           >
             {title}
           </h3>
           <div className="flex items-baseline gap-1.5">
             <span
-              className={`text-[2.75rem] font-extrabold leading-none tracking-tight tabular-nums ${theme.number}`}
+              className={`text-[2.35rem] font-extrabold leading-none tracking-tight tabular-nums 2xl:text-[2.75rem] ${theme.number}`}
             >
               {events}
             </span>
-            <span className="text-xs font-medium text-slate-400">events</span>
+            <span className="text-sm font-semibold text-slate-400 2xl:text-base">
+              events
+            </span>
           </div>
         </div>
       </div>

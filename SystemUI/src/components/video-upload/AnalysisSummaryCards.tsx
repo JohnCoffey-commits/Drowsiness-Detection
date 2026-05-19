@@ -96,22 +96,22 @@ export function AnalysisSummaryCards({ response }: AnalysisSummaryCardsProps) {
           tone: "green",
         },
         {
-          label: "Eye-warning candidate frames",
+          label: "Eye warning candidate frames",
           value: formatNumber(summary.eye_warning_candidate_frames),
           tone: "orange",
         },
         {
-          label: "Mouth-warning candidate frames",
+          label: "Yawn warning candidate frames",
           value: formatNumber(summary.mouth_warning_candidate_frames),
           tone: "pink",
         },
         {
-          label: "High-confidence warning candidate frames",
+          label: "Critical eye warning candidate frames",
           value: formatNumber(summary.high_confidence_drowsiness_candidate_frames),
           tone: "red",
         },
         {
-          label: "Signal-unreliable frames",
+          label: "Signal quality issue frames",
           value: formatNumber(summary.signal_unreliable_frames),
           tone: "slate",
         },
@@ -143,7 +143,7 @@ export function AnalysisSummaryCards({ response }: AnalysisSummaryCardsProps) {
     },
     {
       title: "Eye Metrics",
-      description: "Specialist eye model evidence and eye-warning candidate counts.",
+      description: "Specialist eye model evidence and eye warning candidate counts.",
       items: [
         {
           label: "Mean p_eye_closed",
@@ -155,12 +155,12 @@ export function AnalysisSummaryCards({ response }: AnalysisSummaryCardsProps) {
           note: "Specialist model output",
         },
         {
-          label: "Eye-warning candidate frames",
+          label: "Eye warning candidate frames",
           value: formatNumber(summary.eye_warning_candidate_frames),
           tone: "orange",
         },
         {
-          label: "Signal-unreliable frames",
+          label: "Signal quality issue frames",
           value: formatNumber(summary.signal_unreliable_frames),
           tone: "slate",
         },
@@ -169,7 +169,7 @@ export function AnalysisSummaryCards({ response }: AnalysisSummaryCardsProps) {
     {
       title: "Stage 17.1 Sustained-Eye Gate",
       description:
-        "Rule-based gate that suppresses brief blink-like escalation before high-confidence warning candidates are retained.",
+        "Rule-based gate that suppresses brief blink-like escalation before critical eye warning candidates are retained.",
       items: [
         {
           label: "Suppressed brief-eye escalation frames",
@@ -202,7 +202,7 @@ export function AnalysisSummaryCards({ response }: AnalysisSummaryCardsProps) {
           summary.weak_eye_warning_candidate_frames ??
             summary.weak_eye_warning_evidence_frames,
         ),
-        note: "Within eye-warning candidate rows",
+        note: "Within eye warning candidate rows",
         tone: "orange",
       },
       {

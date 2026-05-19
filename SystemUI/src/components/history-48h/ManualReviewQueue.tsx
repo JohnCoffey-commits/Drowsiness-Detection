@@ -5,8 +5,11 @@ import type { DriverHistoryEvent, ReviewStatus } from "@/lib/history48hTypes";
 import {
   REVIEW_LABELS,
   SEVERITY_META,
+  SOURCE_LABELS,
   STATE_META,
+  evidenceLabel,
   formatDateTime,
+  formatDuration,
 } from "@/lib/history48hUtils";
 
 interface ManualReviewQueueProps {
@@ -21,9 +24,9 @@ export function ManualReviewQueue({
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
       <div className="mb-4">
-        <h2 className="text-base font-bold text-slate-900">Manual review queue</h2>
+        <h2 className="text-base font-bold text-slate-900">Review Queue</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Local review actions update browser storage only.
+          Prioritized local warning-candidate records for manual review.
         </p>
       </div>
 
@@ -39,7 +42,7 @@ export function ManualReviewQueue({
             return (
               <article
                 key={event.id}
-                className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4 lg:grid-cols-[1.2fr_1fr_auto]"
+                className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4 lg:grid-cols-[1.1fr_1fr_auto]"
               >
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -56,13 +59,24 @@ export function ManualReviewQueue({
                     <span className="inline-flex rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
                       {REVIEW_LABELS[event.reviewStatus]}
                     </span>
+                    <span className="inline-flex rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">
+                      {SOURCE_LABELS[event.source]}
+                    </span>
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-slate-800">
-                    {formatDateTime(event.timestamp)}
-                  </p>
+                  <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm font-semibold text-slate-800">
+                    <span>{formatDateTime(event.timestamp)}</span>
+                    <span className="text-slate-500">
+                      {formatDuration(event.durationSec)}
+                    </span>
+                  </div>
                 </div>
 
-                <p className="text-sm leading-6 text-slate-600">{event.reason}</p>
+                <div className="text-sm leading-6 text-slate-600">
+                  <p className="font-semibold text-slate-800">
+                    {evidenceLabel(event)}
+                  </p>
+                  <p>{event.reason}</p>
+                </div>
 
                 <div className="flex flex-wrap items-center gap-2 lg:justify-end">
                   <button
