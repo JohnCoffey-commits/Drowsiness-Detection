@@ -1489,7 +1489,7 @@ export function LiveVideoCard({
           type="button"
           onClick={handleCameraToggle}
           disabled={isCameraTransitioning}
-          className={`absolute bottom-5 right-5 z-40 inline-flex h-11 items-center gap-2 rounded-full border px-5 text-sm font-semibold shadow-xl outline-none transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60 ${
+          className={`absolute bottom-5 right-5 z-30 inline-flex h-11 items-center gap-2 rounded-full border px-5 text-sm font-semibold shadow-xl outline-none transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60 ${
             isActive
               ? "border-rose-200/30 bg-rose-600 text-white shadow-rose-950/25 hover:bg-rose-700 focus-visible:ring-rose-200"
               : "border-white/20 bg-gradient-to-r from-blue-600 to-emerald-500 text-white shadow-blue-950/25 hover:from-blue-700 hover:to-emerald-600 focus-visible:ring-blue-200"

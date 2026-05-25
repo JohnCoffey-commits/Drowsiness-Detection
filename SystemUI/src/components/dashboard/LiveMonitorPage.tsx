@@ -27,10 +27,7 @@ import {
   summarizeCurrentDriveEvents,
 } from "@/lib/liveMonitorDashboardStore";
 import { useVisionGuardAuth } from "@/lib/authStore";
-import {
-  notificationFromLiveMonitorDashboardEvent,
-  useVisionGuardNotifications,
-} from "@/lib/notificationStore";
+import { useVisionGuardNotifications } from "@/lib/notificationStore";
 import { appendLiveMonitorDashboardEventToHistory } from "@/lib/liveMonitorHistoryIngestion";
 import { getArchiveClientId } from "@/lib/archiveClientId";
 import {
@@ -102,7 +99,7 @@ export function LiveMonitorPage() {
   const [recentEventsExpanded, setRecentEventsExpanded] = useState(false);
   const [archiveStatus, setArchiveStatus] = useState("");
   const { authState, currentUser } = useVisionGuardAuth();
-  const { addNotification } = useVisionGuardNotifications();
+  const { upsertDrivingDigestNotification } = useVisionGuardNotifications();
   const lastRiskPointKeyRef = useRef("");
   const previousRiskSeverityRef = useRef(riskState.severity);
   const lastNormalEventAtRef = useRef(0);
@@ -205,13 +202,7 @@ export function LiveMonitorPage() {
           source: "live_monitor_prototype" as const,
           userId: currentUser.id,
         };
-        const notification = notificationFromLiveMonitorDashboardEvent(
-          persistedEvent,
-          currentUser.id
-        );
-        if (notification) {
-          addNotification(notification);
-        }
+        upsertDrivingDigestNotification(persistedEvent);
         const historyRecord = appendLiveMonitorDashboardEventToHistory(
           persistedEvent,
           currentUser.id
@@ -232,7 +223,7 @@ export function LiveMonitorPage() {
         }
       }
     },
-    [addNotification, currentUser, updateDashboardStore]
+    [currentUser, updateDashboardStore, upsertDrivingDigestNotification]
   );
 
   const recordRiskPoint = useCallback(

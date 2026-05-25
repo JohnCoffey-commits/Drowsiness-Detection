@@ -1,4 +1,6 @@
 export type VisionGuardNotificationCategory =
+  | "driving"
+  | "uploads"
   | "warning_candidate"
   | "system"
   | "review";
@@ -31,4 +33,6 @@ export interface VisionGuardNotification {
   readAt?: string;
   source: VisionGuardNotificationSource;
   relatedRoute?: VisionGuardNotificationRoute;
+  dedupeKey?: string;
+  metadata?: Record<string, unknown>;
 }

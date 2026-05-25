@@ -27,7 +27,7 @@ export function TopBar() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b border-slate-200/60 bg-[#f8fafc]/80 px-4 py-3 backdrop-blur-md transition-colors duration-300 lg:px-6 dark:border-slate-800/80 dark:bg-slate-950/80">
+    <header className="sticky top-0 z-[900] flex items-center justify-between gap-3 border-b border-slate-200/60 bg-[#f8fafc]/80 px-4 py-3 backdrop-blur-md transition-colors duration-300 lg:px-6 dark:border-slate-800/80 dark:bg-slate-950/80">
       <h2 className="min-w-0 truncate text-lg font-bold tracking-tight text-slate-800 xl:text-xl">
         <span>{title}</span>
       </h2>

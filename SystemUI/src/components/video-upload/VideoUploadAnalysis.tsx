@@ -175,6 +175,17 @@ function usefulBackendError(payload: unknown, fallback: string): string {
   return sanitizeBrowserText(record.error || detail || record.message || fallback);
 }
 
+function uploadSessionKey(payload: unknown, file: File): string {
+  if (payload && typeof payload === "object") {
+    const sessionId = (payload as { session_id?: unknown }).session_id;
+    if (typeof sessionId === "string" && sessionId.trim()) {
+      return sessionId.trim();
+    }
+  }
+
+  return `file-${file.name}-${file.size}-${file.lastModified}`;
+}
+
 function backendReachabilityMessage(backendUrl: string): string {
   return `Backend unavailable. Check that the local FastAPI server and Cloudflare Tunnel are running. Verify NEXT_PUBLIC_API_BASE_URL uses the current backend URL (${normalizeBackendUrl(
     backendUrl,
@@ -469,7 +480,7 @@ function ResultSectionNav() {
 
 export function VideoUploadAnalysis() {
   const { currentUser } = useVisionGuardAuth();
-  const { addNotification } = useVisionGuardNotifications();
+  const { upsertNotificationByDedupeKey } = useVisionGuardNotifications();
   const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
   const [backendUrlLoaded, setBackendUrlLoaded] = useState(false);
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("unchecked");
@@ -488,6 +499,12 @@ export function VideoUploadAnalysis() {
   const [archiveMessage, setArchiveMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const analyzingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const previousBackendNotificationStatusRef = useRef<
+    "connected" | "disconnected" | null
+  >(null);
+  const previousArchiveNotificationStatusRef = useRef<
+    "available" | "unavailable" | null
+  >(null);
 
   useEffect(() => {
     return () => {
@@ -521,6 +538,145 @@ export function VideoUploadAnalysis() {
     (backendStatus === "connected" || allowBackendOverride) &&
     status !== "uploading" &&
     status !== "analyzing";
+
+  const notifyUploadCompleted = useCallback(
+    (payload: VideoUploadResponse, analyzedFile: File) => {
+      if (!currentUser) return;
+      const sessionKey = uploadSessionKey(payload, analyzedFile);
+      upsertNotificationByDedupeKey({
+        id: `upload-${currentUser.id}-${sessionKey}-completed`,
+        userId: currentUser.id,
+        category: "uploads",
+        severity: "success",
+        title: "Video analysis completed",
+        message: "Evidence and summary are ready.",
+        source: "video_upload",
+        relatedRoute: "/video-upload",
+        dedupeKey: `upload:${sessionKey}:completed`,
+        metadata: {
+          notificationKind: "upload_completed",
+          sessionId: sessionKey,
+          requiresAttention: false,
+        },
+      });
+    },
+    [currentUser, upsertNotificationByDedupeKey],
+  );
+
+  const notifyUploadFailed = useCallback(
+    (sessionKey: string) => {
+      if (!currentUser) return;
+      upsertNotificationByDedupeKey({
+        id: `upload-${currentUser.id}-${sessionKey}-failed`,
+        userId: currentUser.id,
+        category: "uploads",
+        severity: "warning",
+        title: "Video analysis failed",
+        message: "The backend could not complete this analysis.",
+        source: "video_upload",
+        relatedRoute: "/video-upload",
+        dedupeKey: `upload:${sessionKey}:failed`,
+        metadata: {
+          notificationKind: "upload_failed",
+          sessionId: sessionKey,
+          requiresAttention: true,
+        },
+      });
+    },
+    [currentUser, upsertNotificationByDedupeKey],
+  );
+
+  const notifySystemTransition = useCallback(
+    (
+      key: "backend-disconnected" | "backend-restored" | "archive-unavailable" | "archive-restored",
+    ) => {
+      if (!currentUser) return;
+
+      const copy = {
+        "backend-disconnected": {
+          dedupeKey: "system:backend:disconnected",
+          severity: "warning" as const,
+          title: "Backend disconnected",
+          message: "Live Monitor and video upload analysis may be unavailable.",
+          requiresAttention: true,
+        },
+        "backend-restored": {
+          dedupeKey: "system:backend:restored",
+          severity: "success" as const,
+          title: "Backend restored",
+          message: "Live Monitor and video upload analysis are available again.",
+          requiresAttention: false,
+        },
+        "archive-unavailable": {
+          dedupeKey: "system:archive:unavailable",
+          severity: "warning" as const,
+          title: "Archive unavailable",
+          message: "History and saved analysis records may be temporarily unavailable.",
+          requiresAttention: true,
+        },
+        "archive-restored": {
+          dedupeKey: "system:archive:restored",
+          severity: "success" as const,
+          title: "Archive restored",
+          message: "History and saved analysis records are available again.",
+          requiresAttention: false,
+        },
+      }[key];
+
+      upsertNotificationByDedupeKey({
+        id: `${copy.dedupeKey}:${currentUser.id}`,
+        userId: currentUser.id,
+        category: "system",
+        severity: copy.severity,
+        title: copy.title,
+        message: copy.message,
+        source: "system",
+        relatedRoute: "/video-upload",
+        dedupeKey: copy.dedupeKey,
+        metadata: {
+          notificationKind: key,
+          requiresAttention: copy.requiresAttention,
+        },
+      });
+    },
+    [currentUser, upsertNotificationByDedupeKey],
+  );
+
+  useEffect(() => {
+    if (backendStatus !== "connected" && backendStatus !== "disconnected") {
+      return;
+    }
+
+    const previous = previousBackendNotificationStatusRef.current;
+    previousBackendNotificationStatusRef.current = backendStatus;
+
+    if (!previous || previous === backendStatus) {
+      return;
+    }
+
+    notifySystemTransition(
+      backendStatus === "disconnected"
+        ? "backend-disconnected"
+        : "backend-restored",
+    );
+  }, [backendStatus, notifySystemTransition]);
+
+  const recordArchiveAvailability = useCallback(
+    (available: boolean) => {
+      const nextStatus = available ? "available" : "unavailable";
+      const previous = previousArchiveNotificationStatusRef.current;
+      previousArchiveNotificationStatusRef.current = nextStatus;
+
+      if (!previous || previous === nextStatus) {
+        return;
+      }
+
+      notifySystemTransition(
+        available ? "archive-restored" : "archive-unavailable",
+      );
+    },
+    [notifySystemTransition],
+  );
 
   const setSelectedFile = useCallback(
     (nextFile: File | null) => {
@@ -629,6 +785,7 @@ export function VideoUploadAnalysis() {
         },
       );
       const result = await saveVideoArchiveRun(archivePayload);
+      recordArchiveAvailability(result.ok);
       if (result.ok) {
         setArchiveState("saved");
         setArchiveMessage("Saved compact video analysis summary.");
@@ -640,7 +797,7 @@ export function VideoUploadAnalysis() {
         );
       }
     },
-    [currentUser?.id, file, normalizedBackendUrl, videoDuration],
+    [currentUser?.id, file, normalizedBackendUrl, recordArchiveAvailability, videoDuration],
   );
 
   const analyzeVideo = async () => {
@@ -688,6 +845,7 @@ export function VideoUploadAnalysis() {
           payload,
           `Backend returned HTTP ${result.status}.`,
         );
+        notifyUploadFailed(uploadSessionKey(payload, file));
         setStatus(result.status >= 500 ? "failed" : "backend-unavailable");
         setBackendStatus("connected");
         setBackendCheckedAt(new Date().toISOString());
@@ -701,21 +859,10 @@ export function VideoUploadAnalysis() {
       setBackendStatus("connected");
       setBackendCheckedAt(new Date().toISOString());
       void saveVideoResultToArchive(payload);
-      if (currentUser) {
-        addNotification({
-          id: `video-upload-${currentUser.id}-${payload.session_id || Date.now()}`,
-          userId: currentUser.id,
-          category: "review",
-          severity: "success",
-          title: "Video upload analysis completed",
-          message:
-            "Uploaded-video analysis finished and evidence is ready to inspect.",
-          source: "video_upload",
-          relatedRoute: "/video-upload",
-        });
-      }
+      notifyUploadCompleted(payload, file);
     } catch {
       if (analyzingTimerRef.current) clearTimeout(analyzingTimerRef.current);
+      notifyUploadFailed(uploadSessionKey(null, file));
       setStatus("backend-unavailable");
       setBackendStatus("disconnected");
       setBackendCheckedAt(new Date().toISOString());

@@ -1,32 +1,33 @@
 "use client";
 
 import {
-  AlertTriangle,
   Bell,
+  Car,
   CheckCheck,
-  ClipboardList,
   Server,
   Trash2,
+  UploadCloud,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
+  getNotificationProductCategory,
+  type ProductNotificationCategory,
   useVisionGuardNotifications,
 } from "@/lib/notificationStore";
 import type {
   VisionGuardNotification,
-  VisionGuardNotificationCategory,
   VisionGuardNotificationSeverity,
 } from "@/lib/notificationTypes";
 
-type NotificationFilter = "all" | VisionGuardNotificationCategory;
+type NotificationFilter = "all" | ProductNotificationCategory;
 
 const FILTERS: Array<{ id: NotificationFilter; label: string }> = [
   { id: "all", label: "All" },
-  { id: "warning_candidate", label: "Warnings" },
+  { id: "driving", label: "Driving" },
+  { id: "uploads", label: "Uploads" },
   { id: "system", label: "System" },
-  { id: "review", label: "Review" },
 ];
 
 const severityStyle: Record<
@@ -76,18 +77,20 @@ function NotificationIcon({
     severityStyle[notification.severity].icon
   );
 
-  if (notification.category === "warning_candidate") {
+  const category = getNotificationProductCategory(notification);
+
+  if (category === "driving") {
     return (
       <span className={className}>
-        <AlertTriangle className="h-4 w-4" strokeWidth={2.3} />
+        <Car className="h-4 w-4" strokeWidth={2.3} />
       </span>
     );
   }
 
-  if (notification.category === "review") {
+  if (category === "uploads") {
     return (
       <span className={className}>
-        <ClipboardList className="h-4 w-4" strokeWidth={2.3} />
+        <UploadCloud className="h-4 w-4" strokeWidth={2.3} />
       </span>
     );
   }
@@ -115,9 +118,15 @@ export function NotificationCenter() {
   const visibleNotifications = useMemo(
     () =>
       notifications.filter(
-        (notification) => filter === "all" || notification.category === filter
+        (notification) =>
+          filter === "all" ||
+          getNotificationProductCategory(notification) === filter
       ),
     [filter, notifications]
+  );
+  const totalUnreadCount = useMemo(
+    () => notifications.filter((notification) => !notification.readAt).length,
+    [notifications]
   );
 
   useEffect(() => {
@@ -160,7 +169,7 @@ export function NotificationCenter() {
       <button
         type="button"
         aria-label={`Notifications${
-          unreadCount ? ` (${unreadCount} unread)` : ""
+          unreadCount ? ` (${unreadCount} attention unread)` : ""
         }`}
         aria-haspopup="dialog"
         aria-expanded={open}
@@ -178,7 +187,7 @@ export function NotificationCenter() {
       <div
         role="region"
         aria-label="Notifications"
-        className={`absolute right-0 top-12 z-50 w-[min(92vw,420px)] origin-top-right rounded-2xl border border-slate-200 bg-white p-3 text-slate-900 shadow-2xl shadow-slate-950/15 outline-none transition duration-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:shadow-black/35 ${
+        className={`absolute right-0 top-12 z-[1000] w-[min(92vw,420px)] origin-top-right rounded-2xl border border-slate-200 bg-white p-3 text-slate-900 shadow-2xl shadow-slate-950/15 outline-none transition duration-200 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:shadow-black/35 ${
           open
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none -translate-y-1 scale-95 opacity-0"
@@ -188,7 +197,7 @@ export function NotificationCenter() {
           <div>
             <h2 className="text-sm font-black tracking-tight">Notifications</h2>
             <p className="mt-0.5 text-xs font-medium text-slate-500 dark:text-slate-400">
-              {unreadCount} unread
+              {totalUnreadCount} unread
             </p>
           </div>
           <div className="flex items-center gap-1">

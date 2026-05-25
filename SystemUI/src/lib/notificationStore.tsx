@@ -27,12 +27,19 @@ export type VisionGuardNotificationDraft = Omit<
   "createdAt" | "readAt"
 > & {
   createdAt?: string;
+  readAt?: string;
 };
 
 interface VisionGuardNotificationsContextValue {
   notifications: VisionGuardNotification[];
   unreadCount: number;
   addNotification: (notification: VisionGuardNotificationDraft) => void;
+  upsertNotificationByDedupeKey: (
+    notification: VisionGuardNotificationDraft
+  ) => void;
+  upsertDrivingDigestNotification: (
+    event: LiveMonitorDashboardEvent
+  ) => void;
   markNotificationRead: (notificationId: string) => void;
   markAllRead: () => void;
   clearRead: () => void;
@@ -51,7 +58,11 @@ function normalizeText(value: unknown): string {
 
 function isCategory(value: unknown): value is VisionGuardNotificationCategory {
   return (
-    value === "warning_candidate" || value === "system" || value === "review"
+    value === "driving" ||
+    value === "uploads" ||
+    value === "warning_candidate" ||
+    value === "system" ||
+    value === "review"
   );
 }
 
@@ -81,6 +92,49 @@ function normalizeDate(value: unknown): string {
   const text = normalizeText(value);
   const parsed = new Date(text).getTime();
   return Number.isFinite(parsed) ? new Date(parsed).toISOString() : new Date().toISOString();
+}
+
+function normalizeMetadata(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function localDateKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function metadataStringArray(
+  metadata: Record<string, unknown> | undefined,
+  key: string
+): string[] {
+  const value = metadata?.[key];
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === "string");
+}
+
+function metadataNumber(
+  metadata: Record<string, unknown> | undefined,
+  key: string
+): number {
+  const value = metadata?.[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function metadataBoolean(
+  metadata: Record<string, unknown> | undefined,
+  key: string
+): boolean {
+  return metadata?.[key] === true;
 }
 
 function normalizeNotification(value: unknown): VisionGuardNotification | null {
@@ -119,6 +173,16 @@ function normalizeNotification(value: unknown): VisionGuardNotification | null {
 
   if (record.readAt) {
     notification.readAt = normalizeDate(record.readAt);
+  }
+
+  const dedupeKey = normalizeText(record.dedupeKey);
+  if (dedupeKey) {
+    notification.dedupeKey = dedupeKey;
+  }
+
+  const metadata = normalizeMetadata(record.metadata);
+  if (metadata) {
+    notification.metadata = metadata;
   }
 
   if (isRoute(record.relatedRoute)) {
@@ -188,7 +252,7 @@ function createSeedNotifications(userId: string, now = new Date()) {
     {
       id: `seed-${userId}-review-history`,
       userId,
-      category: "review",
+      category: "system",
       severity: "info",
       title: "Open History",
       message:
@@ -211,77 +275,235 @@ function ensureSeedNotifications(
   return sortNotifications([...createSeedNotifications(userId), ...notifications]);
 }
 
-function upsertNotification(
-  notifications: VisionGuardNotification[],
+function notificationFromDraft(
   draft: VisionGuardNotificationDraft
-): VisionGuardNotification[] {
+): VisionGuardNotification {
   const notification: VisionGuardNotification = {
     ...draft,
     createdAt: draft.createdAt ?? new Date().toISOString(),
   };
 
-  if (notifications.some((candidate) => candidate.id === notification.id)) {
+  if (draft.readAt) {
+    notification.readAt = normalizeDate(draft.readAt);
+  }
+
+  return notification;
+}
+
+function appendNotification(
+  notifications: VisionGuardNotification[],
+  draft: VisionGuardNotificationDraft
+): VisionGuardNotification[] {
+  const notification = notificationFromDraft(draft);
+
+  if (
+    notifications.some(
+      (candidate) =>
+        candidate.userId === notification.userId &&
+        candidate.id === notification.id
+    )
+  ) {
     return notifications;
   }
 
   return sortNotifications([notification, ...notifications]).slice(0, 80);
 }
 
+function upsertNotification(
+  notifications: VisionGuardNotification[],
+  draft: VisionGuardNotificationDraft
+): VisionGuardNotification[] {
+  const notification = notificationFromDraft(draft);
+  const matchIndex = notifications.findIndex(
+    (candidate) =>
+      candidate.userId === notification.userId &&
+      ((notification.dedupeKey &&
+        candidate.dedupeKey === notification.dedupeKey) ||
+        candidate.id === notification.id)
+  );
+
+  if (matchIndex === -1) {
+    return sortNotifications([notification, ...notifications]).slice(0, 80);
+  }
+
+  const existing = notifications[matchIndex];
+  const next = [...notifications];
+  next[matchIndex] = {
+    ...existing,
+    ...notification,
+    id: existing.id,
+    readAt: existing.readAt ?? notification.readAt,
+  };
+
+  return sortNotifications(next).slice(0, 80);
+}
+
+function drivingDigestPattern(metadata: Record<string, unknown>): string {
+  const highRiskEyeAlerts = metadataNumber(metadata, "highRiskEyeAlerts");
+  const yawnAlerts = metadataNumber(metadata, "yawnAlerts");
+  const signalInterruptions = metadataNumber(metadata, "signalInterruptions");
+
+  if (
+    highRiskEyeAlerts > 0 &&
+    highRiskEyeAlerts >= yawnAlerts &&
+    highRiskEyeAlerts >= signalInterruptions
+  ) {
+    return "High-risk eye alerts were the dominant pattern.";
+  }
+
+  if (yawnAlerts > 0 && yawnAlerts >= signalInterruptions) {
+    return "Yawn alerts were the dominant pattern.";
+  }
+
+  if (signalInterruptions > 0) {
+    return "Signal interruptions were the dominant pattern.";
+  }
+
+  return "No dominant alert pattern was detected.";
+}
+
+function drivingDigestMessage(metadata: Record<string, unknown>): string {
+  const totalAlerts = metadataNumber(metadata, "totalAlerts");
+  const driveCount = metadataStringArray(metadata, "driveSessionIds").length;
+  return `Today's Live Monitor history recorded ${pluralize(
+    totalAlerts,
+    "alert"
+  )} across ${pluralize(driveCount, "drive")}. ${drivingDigestPattern(metadata)}`;
+}
+
+function upsertDrivingDigest(
+  notifications: VisionGuardNotification[],
+  event: LiveMonitorDashboardEvent,
+  userId: string
+): VisionGuardNotification[] {
+  if (event.kind === "normal") {
+    return notifications;
+  }
+
+  const eventDate = new Date(event.timestamp);
+  if (!Number.isFinite(eventDate.getTime())) {
+    return notifications;
+  }
+
+  const dateKey = localDateKey(eventDate);
+  const dedupeKey = `driving-digest:${userId}:${dateKey}`;
+  const existing = notifications.find(
+    (notification) =>
+      notification.userId === userId && notification.dedupeKey === dedupeKey
+  );
+  const existingMetadata = existing?.metadata;
+  const eventIds = new Set(metadataStringArray(existingMetadata, "eventIds"));
+
+  if (eventIds.has(event.id)) {
+    return notifications;
+  }
+
+  eventIds.add(event.id);
+  const driveSessionIds = new Set(
+    metadataStringArray(existingMetadata, "driveSessionIds")
+  );
+  if (event.sessionId) {
+    driveSessionIds.add(event.sessionId);
+  }
+
+  const nextMetadata: Record<string, unknown> = {
+    notificationKind: "driving_digest",
+    eventIds: Array.from(eventIds),
+    driveSessionIds: Array.from(driveSessionIds),
+    dateKey,
+    totalAlerts: metadataNumber(existingMetadata, "totalAlerts") + 1,
+    highRiskEyeAlerts:
+      metadataNumber(existingMetadata, "highRiskEyeAlerts") +
+      (event.kind === "eye_warning" || event.kind === "critical_eye_warning"
+        ? 1
+        : 0),
+    yawnAlerts:
+      metadataNumber(existingMetadata, "yawnAlerts") +
+      (event.kind === "yawn_warning" ? 1 : 0),
+    signalInterruptions:
+      metadataNumber(existingMetadata, "signalInterruptions") +
+      (event.kind === "signal_quality" ? 1 : 0),
+  };
+
+  nextMetadata.requiresAttention =
+    metadataNumber(nextMetadata, "highRiskEyeAlerts") > 0 ||
+    metadataNumber(nextMetadata, "signalInterruptions") > 0;
+
+  return upsertNotification(notifications, {
+    id: existing?.id ?? `driving-digest-${userId}-${dateKey}`,
+    userId,
+    category: "driving",
+    severity: metadataBoolean(nextMetadata, "requiresAttention")
+      ? "warning"
+      : "info",
+    title: "Driving alerts summary",
+    message: drivingDigestMessage(nextMetadata),
+    createdAt: event.timestamp,
+    source: "live_monitor",
+    relatedRoute: "/",
+    dedupeKey,
+    metadata: nextMetadata,
+  });
+}
+
+export type ProductNotificationCategory = "driving" | "uploads" | "system";
+
+export function getNotificationProductCategory(
+  notification: VisionGuardNotification
+): ProductNotificationCategory {
+  if (
+    notification.category === "driving" ||
+    notification.category === "warning_candidate" ||
+    notification.source === "live_monitor"
+  ) {
+    return "driving";
+  }
+
+  if (
+    notification.category === "uploads" ||
+    notification.source === "video_upload" ||
+    (notification.category === "review" &&
+      notification.relatedRoute === "/video-upload")
+  ) {
+    return "uploads";
+  }
+
+  return "system";
+}
+
+function requiresNotificationAttention(
+  notification: VisionGuardNotification
+): boolean {
+  if (notification.readAt) {
+    return false;
+  }
+
+  if (metadataBoolean(notification.metadata, "requiresAttention")) {
+    return true;
+  }
+
+  const productCategory = getNotificationProductCategory(notification);
+
+  if (productCategory === "uploads") {
+    return notification.severity === "warning" || notification.severity === "critical";
+  }
+
+  if (productCategory === "system") {
+    return notification.severity === "warning" || notification.severity === "critical";
+  }
+
+  return notification.metadata?.notificationKind === "driving_digest"
+    ? metadataBoolean(notification.metadata, "requiresAttention")
+    : false;
+}
+
 export function notificationFromLiveMonitorDashboardEvent(
   event: LiveMonitorDashboardEvent,
   userId: string
 ): VisionGuardNotificationDraft | null {
-  if (event.kind === "normal") {
-    return null;
-  }
-
-  const common = {
-    id: `live-monitor-${userId}-${event.id}`,
-    userId,
-    category: "warning_candidate" as const,
-    createdAt: event.timestamp,
-    source: "live_monitor" as const,
-    relatedRoute: "/" as const,
-  };
-
-  if (event.kind === "critical_eye_warning") {
-    return {
-      ...common,
-      severity: "critical",
-      title: "Critical eye warning candidate",
-      message:
-        "A stable high-priority eye warning-candidate alert was emitted in Live Monitor.",
-    };
-  }
-
-  if (event.kind === "eye_warning") {
-    return {
-      ...common,
-      severity: "warning",
-      title: "Eye warning candidate",
-      message:
-        "A stable eye warning-candidate alert was emitted in Live Monitor.",
-    };
-  }
-
-  if (event.kind === "yawn_warning") {
-    return {
-      ...common,
-      severity: "warning",
-      title: "Yawn warning candidate",
-      message:
-        "A stable yawn warning-candidate alert was emitted in Live Monitor.",
-    };
-  }
-
-  return {
-    ...common,
-    category: "system",
-    severity: "info",
-    title: "Camera signal quality issue",
-    message:
-      "Live Monitor reported a face, eye, mouth, or camera signal quality issue.",
-  };
+  void event;
+  void userId;
+  return null;
 }
 
 export function VisionGuardNotificationsProvider({
@@ -310,10 +532,20 @@ export function VisionGuardNotificationsProvider({
     return () => window.clearTimeout(id);
   }, [currentUser]);
 
-  const persist = useCallback((nextNotifications: VisionGuardNotification[]) => {
-    setAllNotifications(nextNotifications);
-    saveNotifications(nextNotifications);
-  }, []);
+  const updatePersistedNotifications = useCallback(
+    (
+      updater: (
+        currentNotifications: VisionGuardNotification[]
+      ) => VisionGuardNotification[]
+    ) => {
+      setAllNotifications((currentNotifications) => {
+        const nextNotifications = updater(currentNotifications);
+        saveNotifications(nextNotifications);
+        return nextNotifications;
+      });
+    },
+    []
+  );
 
   const notifications = useMemo(
     () =>
@@ -328,23 +560,46 @@ export function VisionGuardNotificationsProvider({
   );
 
   const unreadCount = useMemo(
-    () => notifications.filter((notification) => !notification.readAt).length,
+    () => notifications.filter(requiresNotificationAttention).length,
     [notifications]
   );
 
   const addNotification = useCallback(
     (notification: VisionGuardNotificationDraft) => {
-      persist(upsertNotification(allNotifications, notification));
+      updatePersistedNotifications((currentNotifications) =>
+        notification.dedupeKey
+          ? upsertNotification(currentNotifications, notification)
+          : appendNotification(currentNotifications, notification)
+      );
     },
-    [allNotifications, persist]
+    [updatePersistedNotifications]
+  );
+
+  const upsertNotificationByDedupeKey = useCallback(
+    (notification: VisionGuardNotificationDraft) => {
+      updatePersistedNotifications((currentNotifications) =>
+        upsertNotification(currentNotifications, notification)
+      );
+    },
+    [updatePersistedNotifications]
+  );
+
+  const upsertDrivingDigestNotification = useCallback(
+    (event: LiveMonitorDashboardEvent) => {
+      if (!currentUser) return;
+      updatePersistedNotifications((currentNotifications) =>
+        upsertDrivingDigest(currentNotifications, event, currentUser.id)
+      );
+    },
+    [currentUser, updatePersistedNotifications]
   );
 
   const markNotificationRead = useCallback(
     (notificationId: string) => {
       if (!currentUser) return;
       const readAt = new Date().toISOString();
-      persist(
-        allNotifications.map((notification) =>
+      updatePersistedNotifications((currentNotifications) =>
+        currentNotifications.map((notification) =>
           notification.userId === currentUser.id &&
           notification.id === notificationId &&
           !notification.readAt
@@ -353,36 +608,38 @@ export function VisionGuardNotificationsProvider({
         )
       );
     },
-    [allNotifications, currentUser, persist]
+    [currentUser, updatePersistedNotifications]
   );
 
   const markAllRead = useCallback(() => {
     if (!currentUser) return;
     const readAt = new Date().toISOString();
-    persist(
-      allNotifications.map((notification) =>
+    updatePersistedNotifications((currentNotifications) =>
+      currentNotifications.map((notification) =>
         notification.userId === currentUser.id && !notification.readAt
           ? { ...notification, readAt }
           : notification
       )
     );
-  }, [allNotifications, currentUser, persist]);
+  }, [currentUser, updatePersistedNotifications]);
 
   const clearRead = useCallback(() => {
     if (!currentUser) return;
-    persist(
-      allNotifications.filter(
+    updatePersistedNotifications((currentNotifications) =>
+      currentNotifications.filter(
         (notification) =>
           notification.userId !== currentUser.id || !notification.readAt
       )
     );
-  }, [allNotifications, currentUser, persist]);
+  }, [currentUser, updatePersistedNotifications]);
 
   const value = useMemo<VisionGuardNotificationsContextValue>(
     () => ({
       notifications,
       unreadCount,
       addNotification,
+      upsertNotificationByDedupeKey,
+      upsertDrivingDigestNotification,
       markNotificationRead,
       markAllRead,
       clearRead,
@@ -393,6 +650,8 @@ export function VisionGuardNotificationsProvider({
       markAllRead,
       markNotificationRead,
       notifications,
+      upsertDrivingDigestNotification,
+      upsertNotificationByDedupeKey,
       unreadCount,
     ]
   );

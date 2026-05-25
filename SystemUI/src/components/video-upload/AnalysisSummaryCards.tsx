@@ -188,25 +188,6 @@ export function AnalysisSummaryCards({ response }: AnalysisSummaryCardsProps) {
       note: "Across sampled timeline",
       tone: "red",
     },
-    {
-      label: "Reduced eye openness candidate frames",
-      value: formatNumber(summary.reduced_eye_openness_candidate_frames),
-      note: "Backend-provided if available",
-    },
-    {
-      label: "Eye frames flagged for careful interpretation",
-      value: formatNumber(summary.manual_review_recommended_eye_frames),
-      note: "Backend-provided if available",
-    },
-    {
-      label: "Suppressed weak-eye escalation frames",
-      value: formatNumber(
-        summary.high_confidence_suppressed_by_weak_eye_evidence_frames ??
-          summary.suppressed_high_confidence_weak_eye_evidence_frames,
-      ),
-      note: "Suppressed from high-risk by calibrated weak eye evidence",
-      tone: "slate",
-    },
   ];
 
   return (
