@@ -441,6 +441,26 @@ export function filterHistory48hStoreForUser(
   };
 }
 
+export function filterHistory48hStoreBySource(
+  store: History48hStore,
+  source: HistorySource
+): History48hStore {
+  const events = store.events.filter((event) => event.source === source);
+  const sessionKeys = new Set(
+    events.map((event) => `${userKey(event.userId)}:${event.sessionId}`)
+  );
+
+  return {
+    events,
+    sessions: store.sessions.filter(
+      (session) =>
+        session.source === source &&
+        sessionKeys.has(`${userKey(session.userId)}:${session.id}`)
+    ),
+    updatedAt: store.updatedAt,
+  };
+}
+
 export function loadHistory48hStore(
   now = new Date(),
   userId?: string,

@@ -15,7 +15,9 @@ import type {
 } from "@/lib/history48hTypes";
 
 export const HISTORY_48H_BOUNDARY_NOTICE =
-  "This page shows frontend-local warning-candidate history for review. It is not final system-level drowsiness accuracy.";
+  "VisionGuard history shows alerts based on visual cues such as eye closure, yawning, and camera signal quality.";
+
+export const HISTORY_EVENT_PAGE_SIZE = 5;
 
 export const TIME_WINDOW_OPTIONS: Array<{
   label: string;
@@ -27,7 +29,7 @@ export const TIME_WINDOW_OPTIONS: Array<{
   { label: "Last 48 hours", value: 48 },
   { label: "Last 7 days", value: 168 },
   { label: "Last 30 days", value: 720 },
-  { label: "All archive", value: 876000 },
+  { label: "All time", value: 876000 },
 ];
 
 export const EVENT_TYPE_OPTIONS: Array<{
@@ -35,13 +37,13 @@ export const EVENT_TYPE_OPTIONS: Array<{
   value: EventTypeFilter;
 }> = [
   { label: "All", value: "all" },
-  { label: "Eye warning candidate", value: "eye_warning_candidate" },
-  { label: "Yawn warning candidate", value: "mouth_warning_candidate" },
+  { label: "Eye-closure alert", value: "eye_warning_candidate" },
+  { label: "Yawn alert", value: "mouth_warning_candidate" },
   {
-    label: "Critical eye warning candidate",
+    label: "High-risk eye alert",
     value: "high_confidence_drowsiness_candidate",
   },
-  { label: "Signal quality issue", value: "signal_unreliable" },
+  { label: "Camera signal interruption", value: "signal_unreliable" },
 ];
 
 export const REVIEW_OPTIONS: Array<{
@@ -84,32 +86,32 @@ export const STATE_META: Record<
     dotClass: "bg-emerald-500",
   },
   eye_warning_candidate: {
-    label: "Eye warning candidate",
-    shortLabel: "Eye warning",
+    label: "Eye-closure alert",
+    shortLabel: "Eye closure",
     color: "#f97316",
     bgClass: "bg-orange-50 border-orange-100",
     textClass: "text-orange-700",
     dotClass: "bg-orange-500",
   },
   mouth_warning_candidate: {
-    label: "Yawn warning candidate",
-    shortLabel: "Yawn warning",
+    label: "Yawn alert",
+    shortLabel: "Yawn",
     color: "#ec4899",
     bgClass: "bg-pink-50 border-pink-100",
     textClass: "text-pink-700",
     dotClass: "bg-pink-500",
   },
   high_confidence_drowsiness_candidate: {
-    label: "Critical eye warning candidate",
-    shortLabel: "Critical eye",
+    label: "High-risk eye alert",
+    shortLabel: "High-risk eye",
     color: "#ef4444",
     bgClass: "bg-red-50 border-red-100",
     textClass: "text-red-700",
     dotClass: "bg-red-500",
   },
   signal_unreliable: {
-    label: "Signal quality issue",
-    shortLabel: "Signal quality",
+    label: "Camera signal interruption",
+    shortLabel: "Camera signal",
     color: "#64748b",
     bgClass: "bg-slate-100 border-slate-200",
     textClass: "text-slate-700",
@@ -177,6 +179,7 @@ export interface HistorySummary {
 export interface SessionSummaryRow extends DriverHistorySession {
   warningCandidateCount: number;
   reviewPendingCount: number;
+  highestSeverity: HistorySeverity;
 }
 
 function dateValue(value: string): number {
@@ -425,7 +428,7 @@ export function getHighRiskCandidates(
 
 export function getManualReviewQueue(
   events: DriverHistoryEvent[],
-  limit = 8
+  limit?: number
 ): DriverHistoryEvent[] {
   const sessionEvents = new Map<string, DriverHistoryEvent[]>();
   for (const event of events) {
@@ -469,7 +472,7 @@ export function getManualReviewQueue(
     return 100;
   }
 
-  return events
+  const queue = events
     .filter(
       (event) =>
         event.reviewStatus === "pending" ||
@@ -489,7 +492,29 @@ export function getManualReviewQueue(
       if (severityDelta !== 0) return severityDelta;
       return dateValue(b.timestamp) - dateValue(a.timestamp);
     })
-    .slice(0, limit);
+  return typeof limit === "number" ? queue.slice(0, limit) : queue;
+}
+
+export function getPageCount(totalItems: number, pageSize = HISTORY_EVENT_PAGE_SIZE): number {
+  return Math.max(1, Math.ceil(totalItems / pageSize));
+}
+
+export function clampPage(
+  page: number,
+  totalItems: number,
+  pageSize = HISTORY_EVENT_PAGE_SIZE
+): number {
+  return Math.min(Math.max(1, page), getPageCount(totalItems, pageSize));
+}
+
+export function paginateItems<T>(
+  items: T[],
+  page: number,
+  pageSize = HISTORY_EVENT_PAGE_SIZE
+): T[] {
+  const safePage = clampPage(page, items.length, pageSize);
+  const start = (safePage - 1) * pageSize;
+  return items.slice(start, start + pageSize);
 }
 
 export function buildSessionRows(
@@ -502,6 +527,13 @@ export function buildSessionRows(
     .filter((session) => eventSessionIds.has(session.id))
     .map((session) => {
       const sessionEvents = events.filter((event) => event.sessionId === session.id);
+      const highestSeverity = sessionEvents.reduce<HistorySeverity>(
+        (highest, event) =>
+          SEVERITY_META[event.severity].rank > SEVERITY_META[highest].rank
+            ? event.severity
+            : highest,
+        "low"
+      );
       return {
         ...session,
         normalCount: countByState(sessionEvents, "normal"),
@@ -518,6 +550,7 @@ export function buildSessionRows(
         warningCandidateCount: sessionEvents.filter(
           (event) => event.state !== "normal"
         ).length,
+        highestSeverity,
       };
     })
     .sort((a, b) => dateValue(b.startedAt) - dateValue(a.startedAt));
@@ -534,20 +567,22 @@ export function updateHistoryEventReviewStatus(
 }
 
 export function formatDateTime(value: string): string {
-  return new Date(value).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const date = new Date(value);
+  return `${formatDayLabel(date)}, ${formatClockTime(date)}`;
 }
 
 export function formatTimeRange(start: string, end: string): string {
+  const startDate = new Date(start);
   const endDate = new Date(end);
-  return `${formatDateTime(start)} - ${endDate.toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  })}`;
+  if (
+    startDate.getFullYear() === endDate.getFullYear() &&
+    startDate.getMonth() === endDate.getMonth() &&
+    startDate.getDate() === endDate.getDate()
+  ) {
+    return `${formatDayLabel(startDate)}, ${formatClockTime(startDate)}-${formatClockTime(endDate)}`;
+  }
+
+  return `${formatDateTime(start)}-${formatDateTime(end)}`;
 }
 
 export function formatDuration(seconds: number): string {
@@ -577,11 +612,11 @@ export function formatCandidateScore(value: number | undefined): string {
 }
 
 export function evidenceLabel(event: DriverHistoryEvent): string {
-  if (event.state === "signal_unreliable") return "Signal quality";
+  if (event.state === "signal_unreliable") return "Camera signal";
   if (event.state === "high_confidence_drowsiness_candidate") {
-    return "High-priority evidence";
+    return "Strong fatigue indicator";
   }
-  if (event.state === "eye_warning_candidate") return "Eye";
+  if (event.state === "eye_warning_candidate") return "Eye closure";
   if (event.state === "mouth_warning_candidate") return "Yawn";
   return "Baseline";
 }
@@ -595,16 +630,42 @@ export function buildHistorySummaryText(
       ?.label ?? `Last ${filters.timeWindowHours} hours`;
 
   return [
-    "VisionGuard 48h warning-candidate history summary",
+    "VisionGuard 48h driving alert history summary",
     `Selected window: ${windowLabel}`,
-    `Sessions with local records: ${summary.sessionCount}`,
-    `Warning-candidate events: ${summary.warningCandidateCount}`,
-    `High-priority candidates: ${summary.highPriorityCount}`,
-    `Eye warning candidates: ${summary.eyeWarningCount}`,
-    `Yawn warning candidates: ${summary.mouthWarningCount}`,
-    `Critical eye warning candidates: ${summary.highConfidenceCount}`,
-    `Signal quality issues: ${summary.signalUnreliableCount}`,
-    `Manual review pending: ${summary.reviewPendingCount}`,
+    `Drives: ${summary.sessionCount}`,
+    `Total alerts: ${summary.warningCandidateCount}`,
+    `High-risk alerts: ${summary.highPriorityCount}`,
+    `Eye-closure alerts: ${summary.eyeWarningCount}`,
+    `Yawn alerts: ${summary.mouthWarningCount}`,
+    `High-risk eye alerts: ${summary.highConfidenceCount}`,
+    `Camera signal interruptions: ${summary.signalUnreliableCount}`,
     HISTORY_48H_BOUNDARY_NOTICE,
   ].join("\n");
+}
+
+function formatClockTime(date: Date): string {
+  const text = date.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+  return text.replace(/\s?(am|pm)$/i, (_, period: string) =>
+    ` ${period.toUpperCase()}`
+  );
+}
+
+function formatDayLabel(date: Date): string {
+  const now = new Date();
+  if (
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  ) {
+    return "Today";
+  }
+
+  return date.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+  });
 }

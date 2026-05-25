@@ -17,7 +17,10 @@ import {
   getArchiveHealth,
   getArchiveRecords,
 } from "@/lib/backendArchiveApi";
-import { loadHistory48hStore } from "@/lib/history48hStorage";
+import {
+  filterHistory48hStoreBySource,
+  loadHistory48hStore,
+} from "@/lib/history48hStorage";
 import type { History48hStore } from "@/lib/history48hTypes";
 import {
   describeTimeOfDayPattern,
@@ -37,12 +40,36 @@ const EMPTY_STORE: History48hStore = {
   updatedAt: "",
 };
 
+function liveMonitorOnly(store: History48hStore): History48hStore {
+  return filterHistory48hStoreBySource(store, "live_monitor");
+}
+
+type ArchiveConnectionState =
+  | "unchecked"
+  | "checking"
+  | "connected"
+  | "disconnected";
+
+function formatArchiveCheckedAt(value: string | null): string {
+  if (!value) return "Not checked";
+  return new Date(value).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
 export function InsightsPage() {
   const router = useRouter();
   const { currentUser, isLegacyRecordVisible } = useVisionGuardAuth();
   const [store, setStore] = useState<History48hStore>(EMPTY_STORE);
   const [archiveStore, setArchiveStore] = useState<History48hStore | null>(null);
-  const [archiveStatus, setArchiveStatus] = useState("Backend archive not checked yet.");
+  const [archiveDataSource, setArchiveDataSource] = useState("local_only");
+  const [archiveConnection, setArchiveConnection] =
+    useState<ArchiveConnectionState>("unchecked");
+  const [archiveCheckedAt, setArchiveCheckedAt] = useState<string | null>(null);
   const [archiveAvailable, setArchiveAvailable] = useState(false);
   const [referenceNow, setReferenceNow] = useState<Date>(new Date());
   const includeLegacyRecords = currentUser
@@ -53,7 +80,11 @@ export function InsightsPage() {
     const id = window.setTimeout(() => {
       const now = new Date();
       setReferenceNow(now);
-      setStore(loadHistory48hStore(now, currentUser?.id, includeLegacyRecords));
+      setStore(
+        liveMonitorOnly(
+          loadHistory48hStore(now, currentUser?.id, includeLegacyRecords)
+        )
+      );
     }, 0);
 
     return () => window.clearTimeout(id);
@@ -61,27 +92,49 @@ export function InsightsPage() {
 
   useEffect(() => {
     const id = window.setTimeout(async () => {
+      setArchiveConnection("checking");
       try {
         const health = await getArchiveHealth();
-        if (!health.ok || !health.enabled) {
+        const checkedAt = new Date().toISOString();
+        setArchiveCheckedAt(checkedAt);
+        if (!health.ok) {
           setArchiveAvailable(false);
           setArchiveStore(null);
-          setArchiveStatus("local_only");
+          setArchiveDataSource("local_only");
+          setArchiveConnection("disconnected");
           return;
         }
-        const response = await getArchiveRecords({ range: "48h", limit: 500 });
-        setArchiveStore(archiveRecordsToHistoryStore(response.records));
-        setArchiveAvailable(response.records.length > 0);
-        setArchiveStatus(response.records.length > 0 ? "backend_archive" : "local_only");
+        setArchiveConnection("connected");
+        if (!health.enabled) {
+          setArchiveAvailable(false);
+          setArchiveStore(null);
+          setArchiveDataSource("local_only");
+          return;
+        }
+        const response = await getArchiveRecords({
+          range: "48h",
+          source: "live_monitor",
+          limit: 500,
+        });
+        const nextStore = liveMonitorOnly(
+          archiveRecordsToHistoryStore(response.records)
+        );
+        setArchiveStore(nextStore);
+        setArchiveAvailable(nextStore.events.length > 0);
+        setArchiveDataSource(
+          nextStore.events.length > 0 ? "backend_archive" : "local_only"
+        );
       } catch {
         setArchiveAvailable(false);
         setArchiveStore(null);
-        setArchiveStatus("local_only");
+        setArchiveDataSource("local_only");
+        setArchiveConnection("disconnected");
+        setArchiveCheckedAt(new Date().toISOString());
       }
     }, 0);
 
     return () => window.clearTimeout(id);
-  }, []);
+  }, [currentUser?.id]);
 
   const activeStore = archiveAvailable && archiveStore ? archiveStore : store;
 
@@ -116,9 +169,12 @@ export function InsightsPage() {
     [records]
   );
 
-  function handleViewInHistory() {
-    // TODO: add query-based session filtering when /history-48h supports URL filters.
-    router.push("/history-48h");
+  function handleViewInHistory(sessionId: string) {
+    const params = new URLSearchParams({
+      sessionId,
+      timeWindowHours: "48",
+    });
+    router.push(`/history-48h?${params.toString()}`);
   }
 
   return (
@@ -127,7 +183,9 @@ export function InsightsPage() {
         <InsightsHeader
           displayName={currentUser?.displayName}
           recordCount={records.length}
-          dataSource={archiveStatus}
+          dataSource={archiveDataSource}
+          archiveConnection={archiveConnection}
+          archiveCheckedAt={formatArchiveCheckedAt(archiveCheckedAt)}
         />
 
         {records.length === 0 ? (

@@ -1,48 +1,57 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { EventTimelineTable } from "@/components/history-48h/EventTimelineTable";
 import { HistoryFilters } from "@/components/history-48h/HistoryFilters";
 import { HistoryHeader } from "@/components/history-48h/HistoryHeader";
 import { HistoryInterpretationNote } from "@/components/history-48h/HistoryInterpretationNote";
 import { HistorySummaryCards } from "@/components/history-48h/HistorySummaryCards";
-import { ManualReviewQueue } from "@/components/history-48h/ManualReviewQueue";
 import { RecentSessionsSummary } from "@/components/history-48h/RecentSessionsSummary";
 import {
-  clearHistory48hStore,
+  filterHistory48hStoreBySource,
   loadHistory48hStore,
-  resetHistory48hDemoData,
-  saveHistory48hUserStore,
 } from "@/lib/history48hStorage";
 import { useVisionGuardAuth } from "@/lib/authStore";
 import {
   archiveRecordsToHistoryStore,
-  exportArchiveRecords,
   getArchiveHealth,
   getArchiveRecords,
-  updateArchiveRecordReview,
 } from "@/lib/backendArchiveApi";
 import type { BackendArchiveRange } from "@/lib/backendArchiveTypes";
 import type {
   History48hStore,
   HistoryFilters as HistoryFilterState,
-  ReviewStatus,
   TimeWindowHours,
 } from "@/lib/history48hTypes";
 import {
+  EVENT_TYPE_OPTIONS,
+  HISTORY_EVENT_PAGE_SIZE,
+  TIME_WINDOW_OPTIONS,
   buildHistorySummaryText,
   buildSessionRows,
+  clampPage,
   filterHistoryEvents,
-  getManualReviewQueue,
+  formatTimeRange,
+  paginateItems,
   summarizeHistory,
-  updateHistoryEventReviewStatus,
 } from "@/lib/history48hUtils";
+import {
+  buildHistoryCsv,
+  buildHistorySummaryHtml,
+  buildRawHistoryJson,
+  downloadTextFile,
+  historyCsvFilename,
+  historyRawJsonFilename,
+  historySummaryFilename,
+  type HistoryExportPayload,
+} from "@/lib/history48hExportUtils";
 
 const DEFAULT_FILTERS: HistoryFilterState = {
   timeWindowHours: 48,
   eventType: "all",
   review: "all",
-  source: "all",
+  source: "live_monitor",
 };
 
 const EMPTY_STORE: History48hStore = {
@@ -51,69 +60,127 @@ const EMPTY_STORE: History48hStore = {
   updatedAt: "",
 };
 
-const ARCHIVE_RANGE_TO_WINDOW: Record<BackendArchiveRange, TimeWindowHours> = {
-  "48h": 48,
-  "7d": 168,
-  "30d": 720,
-  all: 876000,
-};
+function archiveRangeFromTimeWindow(
+  timeWindowHours: TimeWindowHours
+): BackendArchiveRange {
+  if (timeWindowHours <= 48) return "48h";
+  if (timeWindowHours <= 168) return "7d";
+  if (timeWindowHours <= 720) return "30d";
+  return "all";
+}
+
+function liveMonitorOnly(store: History48hStore): History48hStore {
+  return filterHistory48hStoreBySource(store, "live_monitor");
+}
+
+function scopeFreeFilters(filters: HistoryFilterState): HistoryFilterState {
+  return {
+    ...filters,
+    review: "all",
+    source: "live_monitor",
+    sessionId: undefined,
+  };
+}
 
 export function History48hPage() {
+  const searchParams = useSearchParams();
   const [store, setStore] = useState<History48hStore>(EMPTY_STORE);
   const [archiveStore, setArchiveStore] = useState<History48hStore | null>(null);
-  const [archiveRange, setArchiveRange] = useState<BackendArchiveRange>("48h");
-  const [archiveStatus, setArchiveStatus] = useState("Backend archive not checked yet.");
   const [archiveAvailable, setArchiveAvailable] = useState(false);
   const [filters, setFilters] = useState<HistoryFilterState>(DEFAULT_FILTERS);
+  const [eventListPage, setEventListPage] = useState(1);
   const [referenceNow, setReferenceNow] = useState<Date>(new Date());
   const [copyStatus, setCopyStatus] = useState("");
   const { currentUser, isLegacyRecordVisible } = useVisionGuardAuth();
+  const currentUserId = currentUser?.id;
   const includeLegacyRecords = currentUser
     ? isLegacyRecordVisible(undefined)
     : false;
+  const searchParamsKey = searchParams.toString();
+
+  const resetListPages = useCallback(() => {
+    setEventListPage(1);
+  }, []);
+
+  const handleFilterChange = useCallback(
+    (nextFilters: HistoryFilterState) => {
+      setFilters({
+        ...nextFilters,
+        review: "all",
+        source: "live_monitor",
+      });
+      resetListPages();
+    },
+    [resetListPages]
+  );
+
+  useEffect(() => {
+    const query = searchParamsKey;
+    if (!query) return;
+
+    const id = window.setTimeout(() => {
+      const params = new URLSearchParams(query);
+      const nextFilters: HistoryFilterState = { ...DEFAULT_FILTERS };
+      const sessionId = params.get("sessionId")?.trim();
+      const eventType = params.get("eventType");
+      const timeWindowHours = Number(params.get("timeWindowHours"));
+
+      if (sessionId) nextFilters.sessionId = sessionId;
+      if (EVENT_TYPE_OPTIONS.some((option) => option.value === eventType)) {
+        nextFilters.eventType = eventType as HistoryFilterState["eventType"];
+      }
+      if (
+        TIME_WINDOW_OPTIONS.some((option) => option.value === timeWindowHours)
+      ) {
+        nextFilters.timeWindowHours = timeWindowHours as TimeWindowHours;
+      }
+
+      setFilters(nextFilters);
+      resetListPages();
+    }, 0);
+
+    return () => window.clearTimeout(id);
+  }, [resetListPages, searchParamsKey]);
 
   useEffect(() => {
     const id = window.setTimeout(() => {
       const now = new Date();
       setReferenceNow(now);
       setStore(
-        loadHistory48hStore(now, currentUser?.id, includeLegacyRecords)
+        liveMonitorOnly(
+          loadHistory48hStore(now, currentUserId, includeLegacyRecords)
+        )
       );
     }, 0);
 
     return () => window.clearTimeout(id);
-  }, [currentUser?.id, includeLegacyRecords]);
+  }, [currentUserId, includeLegacyRecords]);
 
   const refreshArchive = useCallback(async () => {
-    setArchiveStatus("Checking backend archive.");
     try {
       const health = await getArchiveHealth();
       if (!health.ok || !health.enabled) {
         setArchiveAvailable(false);
         setArchiveStore(null);
-        setArchiveStatus("Backend archive unavailable; showing local_only history.");
         return;
       }
+
+      const archiveRange = archiveRangeFromTimeWindow(filters.timeWindowHours);
       const response = await getArchiveRecords({
         range: archiveRange,
+        source: "live_monitor",
         limit: 500,
       });
-      const nextStore = archiveRecordsToHistoryStore(response.records);
-      setArchiveStore(nextStore);
-      setArchiveAvailable(response.enabled && response.records.length > 0);
-      setArchiveStatus(
-        response.records.length > 0
-          ? `backend_archive loaded ${response.records.length} records from ${archiveRange}.`
-          : "Backend archive is reachable but has no records in this range; showing local_only history.",
+      const nextStore = liveMonitorOnly(
+        archiveRecordsToHistoryStore(response.records)
       );
+      setArchiveStore(nextStore);
+      setArchiveAvailable(response.enabled && nextStore.events.length > 0);
     } catch {
       setArchiveAvailable(false);
       setArchiveStore(null);
-      setArchiveStatus(
-        "Backend archive unavailable. Check FastAPI, Cloudflare Tunnel, NEXT_PUBLIC_API_BASE_URL, and CORS.",
-      );
     }
-  }, [archiveRange]);
+  }, [filters.timeWindowHours]);
 
   useEffect(() => {
     const id = window.setTimeout(() => {
@@ -124,81 +191,84 @@ export function History48hPage() {
   }, [refreshArchive]);
 
   const activeStore = archiveAvailable && archiveStore ? archiveStore : store;
-  const activeDataSource = archiveAvailable && archiveStore ? "backend_archive" : "local_only";
+  const baseFilters = useMemo(() => scopeFreeFilters(filters), [filters]);
 
-  const filteredEvents = useMemo(
-    () => filterHistoryEvents(activeStore.events, filters, referenceNow),
-    [activeStore.events, filters, referenceNow]
+  const driveScopeEvents = useMemo(
+    () => filterHistoryEvents(activeStore.events, baseFilters, referenceNow),
+    [activeStore.events, baseFilters, referenceNow]
   );
 
-  const summary = useMemo(
-    () => summarizeHistory(filteredEvents, activeStore.sessions),
-    [activeStore.sessions, filteredEvents]
+  const visibleEvents = useMemo(
+    () =>
+      filters.sessionId
+        ? driveScopeEvents.filter((event) => event.sessionId === filters.sessionId)
+        : driveScopeEvents,
+    [driveScopeEvents, filters.sessionId]
   );
 
   const sessionRows = useMemo(
-    () => buildSessionRows(activeStore.sessions, filteredEvents),
-    [activeStore.sessions, filteredEvents]
+    () => buildSessionRows(activeStore.sessions, driveScopeEvents),
+    [activeStore.sessions, driveScopeEvents]
   );
 
-  const reviewQueue = useMemo(
-    () => getManualReviewQueue(filteredEvents),
-    [filteredEvents]
+  const scopedSessionRows = useMemo(
+    () =>
+      filters.sessionId
+        ? sessionRows.filter((session) => session.id === filters.sessionId)
+        : sessionRows,
+    [filters.sessionId, sessionRows]
   );
 
-  function persistStore(nextStore: History48hStore) {
-    setStore(
-      saveHistory48hUserStore(
-        nextStore,
-        currentUser?.id,
-        includeLegacyRecords
-      )
-    );
-  }
+  const selectedSession = useMemo(
+    () => sessionRows.find((session) => session.id === filters.sessionId),
+    [filters.sessionId, sessionRows]
+  );
 
-  function handleSetReviewStatus(eventId: string, status: ReviewStatus) {
-    if (activeDataSource === "backend_archive" && archiveStore) {
-      const nextStore = {
-        ...archiveStore,
-        events: updateHistoryEventReviewStatus(archiveStore.events, eventId, status),
-        updatedAt: new Date().toISOString(),
-      };
-      setArchiveStore(nextStore);
-      void updateArchiveRecordReview(eventId, {
-        reviewed: status === "reviewed",
-      }).then((result) => {
-        if (!result.ok) {
-          setCopyStatus("Archive review update failed");
-        }
-      });
+  const driveLabels = useMemo(
+    () =>
+      Object.fromEntries(
+        sessionRows.map((session) => [
+          session.id,
+          formatTimeRange(session.startedAt, session.endedAt),
+        ])
+      ),
+    [sessionRows]
+  );
+
+  const summary = useMemo(
+    () => summarizeHistory(visibleEvents, scopedSessionRows),
+    [scopedSessionRows, visibleEvents]
+  );
+
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setEventListPage((page) =>
+        clampPage(page, visibleEvents.length, HISTORY_EVENT_PAGE_SIZE)
+      );
+    }, 0);
+
+    return () => window.clearTimeout(id);
+  }, [visibleEvents.length]);
+
+  const paginatedVisibleEvents = useMemo(
+    () => paginateItems(visibleEvents, eventListPage, HISTORY_EVENT_PAGE_SIZE),
+    [eventListPage, visibleEvents]
+  );
+
+  const handleSelectSession = useCallback(
+    (sessionId?: string) => {
+      setFilters((current) => ({ ...current, sessionId }));
+      resetListPages();
+    },
+    [resetListPages]
+  );
+
+  async function handleCopySummary() {
+    if (visibleEvents.length === 0) {
+      setCopyStatus("No alert summary to copy");
       return;
     }
 
-    const nextStore = {
-      ...store,
-      events: updateHistoryEventReviewStatus(store.events, eventId, status),
-      updatedAt: new Date().toISOString(),
-    };
-    persistStore(nextStore);
-  }
-
-  function handleResetDemoData() {
-    const now = new Date();
-    setReferenceNow(now);
-    setFilters(DEFAULT_FILTERS);
-    setStore(resetHistory48hDemoData(now, currentUser?.id, includeLegacyRecords));
-    setCopyStatus("Demo data reset for this local user");
-  }
-
-  function handleClearHistory() {
-    const now = new Date();
-    setReferenceNow(now);
-    setFilters(DEFAULT_FILTERS);
-    setStore(clearHistory48hStore(now, currentUser?.id, includeLegacyRecords));
-    setCopyStatus("History cleared for this local user");
-  }
-
-  async function handleCopySummary() {
     const text = buildHistorySummaryText(summary, filters);
     try {
       await navigator.clipboard.writeText(text);
@@ -208,40 +278,83 @@ export function History48hPage() {
     }
   }
 
-  function handleViewSession(sessionId: string) {
-    setFilters((current) => ({ ...current, sessionId }));
+  function createExportPayload(): HistoryExportPayload {
+    return {
+      exportedAt: new Date().toISOString(),
+      filters,
+      summary,
+      events: visibleEvents,
+      sessions: scopedSessionRows,
+    };
   }
 
-  function handleClearSessionFilter() {
-    setFilters((current) => ({ ...current, sessionId: undefined }));
-  }
+  function handleDownloadSummary() {
+    if (visibleEvents.length === 0) {
+      setCopyStatus("No alert summary to download");
+      return;
+    }
 
-  function handleArchiveRangeChange(nextRange: BackendArchiveRange) {
-    setArchiveRange(nextRange);
-    setFilters((current) => ({
-      ...current,
-      timeWindowHours: ARCHIVE_RANGE_TO_WINDOW[nextRange],
-    }));
-  }
-
-  async function handleExportArchive() {
     try {
-      const payload = await exportArchiveRecords();
-      const blob = new Blob([JSON.stringify(payload, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      const date = new Date().toISOString().slice(0, 10);
-      link.href = url;
-      link.download = `visionguard-archive-export-${date}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
-      setCopyStatus(`Exported ${payload.record_count} backend_archive records`);
+      const payload = createExportPayload();
+      downloadTextFile(
+        historySummaryFilename(filters),
+        buildHistorySummaryHtml(payload),
+        "text/html;charset=utf-8"
+      );
+      setCopyStatus("Summary downloaded");
     } catch {
-      setCopyStatus("Archive export failed");
+      setCopyStatus("Summary download failed");
     }
   }
+
+  function handleDownloadCsv() {
+    if (visibleEvents.length === 0) {
+      setCopyStatus("No alert table to download");
+      return;
+    }
+
+    try {
+      downloadTextFile(
+        historyCsvFilename(),
+        buildHistoryCsv(createExportPayload()),
+        "text/csv;charset=utf-8"
+      );
+      setCopyStatus("CSV downloaded");
+    } catch {
+      setCopyStatus("CSV download failed");
+    }
+  }
+
+  function handleExportRawData() {
+    if (visibleEvents.length === 0) {
+      setCopyStatus("No raw history data to export");
+      return;
+    }
+
+    try {
+      downloadTextFile(
+        historyRawJsonFilename(),
+        buildRawHistoryJson(createExportPayload()),
+        "application/json;charset=utf-8"
+      );
+      setCopyStatus("Raw data exported");
+    } catch {
+      setCopyStatus("Raw data export failed");
+    }
+  }
+
+  const scopeText = selectedSession
+    ? `Showing alerts from ${formatTimeRange(
+        selectedSession.startedAt,
+        selectedSession.endedAt
+      )}.`
+    : "Showing all alerts from the selected time window.";
+
+  const emptyMessage = filters.sessionId
+    ? "No matching alerts for this drive. Try another drive or show all drives."
+    : filters.eventType === "all"
+      ? "No alerts in this time window. Try a wider time window."
+      : "No matching alerts. Try a different alert type or time window.";
 
   return (
     <main className="flex-1 overflow-y-auto bg-[#f4f7f9] px-4 py-5 lg:px-6">
@@ -249,36 +362,32 @@ export function History48hPage() {
         <HistoryHeader />
         <HistoryFilters
           filters={filters}
-          selectedSessionId={filters.sessionId}
           copyStatus={copyStatus}
-          archiveRange={archiveRange}
-          archiveStatus={archiveStatus}
-          activeDataSource={activeDataSource}
-          onChange={setFilters}
-          onArchiveRangeChange={handleArchiveRangeChange}
-          onRefreshArchive={refreshArchive}
-          onExportArchive={handleExportArchive}
-          onResetDemoData={handleResetDemoData}
-          onClearHistory={handleClearHistory}
+          eventCount={visibleEvents.length}
+          onChange={handleFilterChange}
+          onDownloadSummary={handleDownloadSummary}
           onCopySummary={handleCopySummary}
-          onClearSessionFilter={handleClearSessionFilter}
+          onDownloadCsv={handleDownloadCsv}
+          onExportRawData={handleExportRawData}
         />
         <HistorySummaryCards summary={summary} />
-        <ManualReviewQueue
-          events={reviewQueue}
-          onSetReviewStatus={handleSetReviewStatus}
-        />
-        <EventTimelineTable
-          events={filteredEvents}
-          emptyMessage={
-            activeStore.events.length === 0
-              ? "No warning-candidate history records are available for the selected source."
-              : "No events match the current filters."
-          }
-        />
         <RecentSessionsSummary
           sessions={sessionRows}
-          onViewEvents={handleViewSession}
+          selectedSessionId={filters.sessionId}
+          totalAlertCount={driveScopeEvents.length}
+          onSelectSession={handleSelectSession}
+        />
+        <EventTimelineTable
+          events={paginatedVisibleEvents}
+          totalCount={visibleEvents.length}
+          scopeText={scopeText}
+          selectedSessionId={filters.sessionId}
+          driveLabels={driveLabels}
+          page={eventListPage}
+          pageSize={HISTORY_EVENT_PAGE_SIZE}
+          onPageChange={setEventListPage}
+          onShowAllDrives={() => handleSelectSession(undefined)}
+          emptyMessage={emptyMessage}
         />
         <HistoryInterpretationNote />
       </div>

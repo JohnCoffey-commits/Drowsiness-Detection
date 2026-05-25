@@ -18,7 +18,7 @@ import type {
 } from "@/lib/insightsTypes";
 
 export const INSIGHTS_BOUNDARY_NOTICE =
-  "This page summarizes frontend-local warning-candidate history for review. It is not final system-level drowsiness accuracy.";
+  "This page summarizes Live Monitor warning-candidate history for review. It is not final system-level drowsiness accuracy.";
 
 export const INSIGHT_KIND_META: Record<InsightEventKind, InsightKindMeta> = {
   eye_warning_candidate: {
@@ -354,6 +354,11 @@ export function getSessionComparison(
           : "No dominant pattern",
       };
     })
+    .filter(
+      (row) =>
+        row.sessionId.trim().length > 0 &&
+        Number.isFinite(new Date(row.startedAt).getTime())
+    )
     .sort((a, b) => dateValue(b.startedAt) - dateValue(a.startedAt));
 }
 

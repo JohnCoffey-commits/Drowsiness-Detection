@@ -1,12 +1,11 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { PaginationControls } from "@/components/history-48h/PaginationControls";
 import type { DriverHistoryEvent } from "@/lib/history48hTypes";
 import {
-  REVIEW_LABELS,
   SEVERITY_META,
-  SOURCE_LABELS,
   STATE_META,
   evidenceLabel,
   formatCandidateScore,
@@ -17,80 +16,140 @@ import {
 
 interface EventTimelineTableProps {
   events: DriverHistoryEvent[];
+  totalCount: number;
+  scopeText: string;
+  selectedSessionId?: string;
+  driveLabels: Record<string, string>;
+  page: number;
+  pageSize: number;
   emptyMessage?: string;
+  onPageChange: (page: number) => void;
+  onShowAllDrives: () => void;
 }
 
-function DetailPanel({ event }: { event: DriverHistoryEvent }) {
-  const archiveSource = event.archiveSource ?? "local_only";
+function LongDetailText({ text }: { text: string }) {
+  const [page, setPage] = useState(1);
+  const pageSize = 420;
+  const chunks = useMemo(() => {
+    if (text.length <= pageSize) return [text];
+    const result: string[] = [];
+    for (let index = 0; index < text.length; index += pageSize) {
+      result.push(text.slice(index, index + pageSize));
+    }
+    return result;
+  }, [text]);
+  const pageCount = chunks.length;
+  const safePage = Math.min(page, pageCount);
+
   return (
-    <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm text-slate-700">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(7,minmax(0,1fr))]">
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Session id
+    <div>
+      <p className="leading-6">{chunks[safePage - 1]}</p>
+      {pageCount > 1 ? (
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
+          <span>
+            Detail page {safePage} of {pageCount}
           </span>
-          <span className="font-semibold text-slate-800">{event.sessionId}</span>
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={safePage === 1}
+            className="rounded-lg border border-slate-200 bg-white px-2 py-1 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+            disabled={safePage === pageCount}
+            className="rounded-lg border border-slate-200 bg-white px-2 py-1 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Source event id
-          </span>
-          <span className="font-semibold text-slate-800">
-            {event.sourceEventId ?? "-"}
-          </span>
-        </div>
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            p_eye_closed max
-          </span>
-          {formatProbability(event.pEyeClosedMax)}
-        </div>
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            p_yawn max
-          </span>
-          {formatProbability(event.pYawnMax)}
-        </div>
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Eye evidence strength
-          </span>
-          {event.eyeEvidenceStrength ?? "unknown"}
-        </div>
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Candidate severity score
-          </span>
-          {formatCandidateScore(event.candidateSeverityScore)}
-        </div>
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Archive source
-          </span>
-          {archiveSource}
-        </div>
-      </div>
-      <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_1fr]">
-        <p className="leading-6">
-          <span className="font-semibold text-slate-900">Reason: </span>
-          {event.reason}
-        </p>
-        <p className="leading-6 text-slate-600">
-          Safe interpretation: this is a frontend-local warning-candidate history
-          item, not final system-level drowsiness accuracy.
-        </p>
-      </div>
+      ) : null}
     </div>
   );
 }
 
-function SourceLabel({ event }: { event: DriverHistoryEvent }) {
+function DetailPanel({
+  event,
+  driveLabel,
+}: {
+  event: DriverHistoryEvent;
+  driveLabel: string;
+}) {
   return (
-    <div className="leading-5">
-      <div>{SOURCE_LABELS[event.source]}</div>
-      <div className="text-[11px] font-semibold text-slate-400">
-        {event.archiveSource ?? "local_only"}
+    <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4 text-sm text-slate-700">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            What happened
+          </h3>
+          <div className="mt-1 text-slate-800">
+            <LongDetailText text={event.summary || event.reason} />
+          </div>
+        </div>
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Evidence
+          </h3>
+          <p className="mt-1 font-semibold text-slate-800">
+            {evidenceLabel(event)}
+          </p>
+          <p className="mt-1 text-slate-600">
+            Severity: {SEVERITY_META[event.severity].label}
+          </p>
+        </div>
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Drive
+          </h3>
+          <p className="mt-1 font-semibold text-slate-800">{driveLabel}</p>
+          <p className="mt-1 text-slate-600">
+            Duration: {formatDuration(event.durationSec)}
+          </p>
+        </div>
       </div>
+
+      <details className="mt-4 rounded-lg border border-blue-100 bg-white/80 px-3 py-2">
+        <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Technical details
+        </summary>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <TechnicalItem label="Session ID" value={event.sessionId} />
+          <TechnicalItem
+            label="Record reference"
+            value={event.sourceEventId ?? "-"}
+          />
+          <TechnicalItem
+            label="Eye closed score"
+            value={formatProbability(event.pEyeClosedMax)}
+          />
+          <TechnicalItem
+            label="Yawn score"
+            value={formatProbability(event.pYawnMax)}
+          />
+          <TechnicalItem
+            label="Eye evidence"
+            value={event.eyeEvidenceStrength ?? "unknown"}
+          />
+          <TechnicalItem
+            label="Priority score"
+            value={formatCandidateScore(event.candidateSeverityScore)}
+          />
+        </div>
+      </details>
+    </div>
+  );
+}
+
+function TechnicalItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
+        {label}
+      </span>
+      <span className="break-words font-semibold text-slate-800">{value}</span>
     </div>
   );
 }
@@ -116,23 +175,52 @@ function SeverityPill({ event }: { event: DriverHistoryEvent }) {
   );
 }
 
+function signalLabel(event: DriverHistoryEvent): string {
+  if (event.state === "signal_unreliable") return "Interrupted";
+  if (
+    event.eyeEvidenceStrength === "weak" ||
+    event.eyeEvidenceStrength === "unknown"
+  ) {
+    return "Limited";
+  }
+  return "Available";
+}
+
 export function EventTimelineTable({
   events,
-  emptyMessage = "No events match the current filters.",
+  totalCount,
+  scopeText,
+  selectedSessionId,
+  driveLabels,
+  page,
+  pageSize,
+  emptyMessage = "No matching alerts.",
+  onPageChange,
+  onShowAllDrives,
 }: EventTimelineTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-      <div className="mb-4">
-        <h2 className="text-base font-bold text-slate-900">Event timeline</h2>
-        <p className="mt-1 text-sm text-slate-500">
-          Compact warning-candidate history rows. Open details for model evidence
-          and safe interpretation notes.
-        </p>
+      <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div>
+          <h2 className="text-base font-bold text-slate-900">
+            Alert Timeline
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">{scopeText}</p>
+        </div>
+        {selectedSessionId && (
+          <button
+            type="button"
+            onClick={onShowAllDrives}
+            className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100"
+          >
+            Show all drives
+          </button>
+        )}
       </div>
 
-      {events.length === 0 ? (
+      {totalCount === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm font-medium text-slate-500">
           {emptyMessage}
         </div>
@@ -142,16 +230,15 @@ export function EventTimelineTable({
             <table className="w-full table-fixed border-separate border-spacing-0 text-sm">
               <thead>
                 <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  <th className="w-[15%] rounded-l-lg bg-slate-50 px-3 py-3">
+                  <th className="w-[14%] rounded-l-lg bg-slate-50 px-3 py-3">
                     Time
                   </th>
-                  <th className="w-[9%] bg-slate-50 px-3 py-3">Duration</th>
-                  <th className="w-[18%] bg-slate-50 px-3 py-3">State</th>
+                  <th className="w-[18%] bg-slate-50 px-3 py-3">Alert</th>
                   <th className="w-[10%] bg-slate-50 px-3 py-3">Severity</th>
-                  <th className="w-[12%] bg-slate-50 px-3 py-3">Evidence</th>
-                  <th className="w-[11%] bg-slate-50 px-3 py-3">Source</th>
-                  <th className="w-[12%] bg-slate-50 px-3 py-3">Review</th>
-                  <th className="w-[13%] rounded-r-lg bg-slate-50 px-3 py-3 text-right">
+                  <th className="w-[10%] bg-slate-50 px-3 py-3">Duration</th>
+                  <th className="w-[17%] bg-slate-50 px-3 py-3">Evidence</th>
+                  <th className="w-[13%] bg-slate-50 px-3 py-3">Signal</th>
+                  <th className="w-[18%] rounded-r-lg bg-slate-50 px-3 py-3 text-right">
                     Details
                   </th>
                 </tr>
@@ -161,14 +248,11 @@ export function EventTimelineTable({
                   const isExpanded = expandedId === event.id;
                   return (
                     <tr key={event.id} className="align-top">
-                      <td colSpan={8} className="pt-2">
+                      <td colSpan={7} className="pt-2">
                         <div className="rounded-xl border border-slate-200 bg-white">
-                          <div className="grid grid-cols-[15%_9%_18%_10%_12%_11%_12%_13%] items-center gap-0 px-3 py-3">
+                          <div className="grid grid-cols-[14%_18%_10%_10%_17%_13%_18%] items-center gap-0 px-3 py-3">
                             <div className="pr-3 font-semibold text-slate-800">
                               {formatDateTime(event.timestamp)}
-                            </div>
-                            <div className="pr-3 text-slate-600">
-                              {formatDuration(event.durationSec)}
                             </div>
                             <div className="pr-3">
                               <StatePill event={event} />
@@ -176,16 +260,16 @@ export function EventTimelineTable({
                             <div className="pr-3">
                               <SeverityPill event={event} />
                             </div>
+                            <div className="pr-3 text-slate-600">
+                              {formatDuration(event.durationSec)}
+                            </div>
                             <div className="pr-3 font-medium text-slate-700">
                               {evidenceLabel(event)}
                             </div>
                             <div className="pr-3 text-slate-600">
-                              <SourceLabel event={event} />
+                              {signalLabel(event)}
                             </div>
-                            <div className="pr-3 text-slate-600">
-                              {REVIEW_LABELS[event.reviewStatus]}
-                            </div>
-                            <div className="text-right">
+                            <div className="flex justify-end">
                               <button
                                 type="button"
                                 onClick={() =>
@@ -205,7 +289,12 @@ export function EventTimelineTable({
                           </div>
                           {isExpanded && (
                             <div className="border-t border-slate-100 p-3">
-                              <DetailPanel event={event} />
+                              <DetailPanel
+                                event={event}
+                                driveLabel={
+                                  driveLabels[event.sessionId] ?? "Live Monitor drive"
+                                }
+                              />
                             </div>
                           )}
                         </div>
@@ -230,42 +319,13 @@ export function EventTimelineTable({
                     <SeverityPill event={event} />
                   </div>
                   <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                    <div>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Time
-                      </span>
-                      {formatDateTime(event.timestamp)}
-                    </div>
-                    <div>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Duration
-                      </span>
-                      {formatDuration(event.durationSec)}
-                    </div>
-                    <div>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Evidence
-                      </span>
-                      {evidenceLabel(event)}
-                    </div>
-                    <div>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Source
-                      </span>
-                      <SourceLabel event={event} />
-                    </div>
-                    <div>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Review
-                      </span>
-                      {REVIEW_LABELS[event.reviewStatus]}
-                    </div>
-                    <div>
-                      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
-                        Candidate severity score
-                      </span>
-                      {formatCandidateScore(event.candidateSeverityScore)}
-                    </div>
+                    <TimelineField label="Time" value={formatDateTime(event.timestamp)} />
+                    <TimelineField
+                      label="Duration"
+                      value={formatDuration(event.durationSec)}
+                    />
+                    <TimelineField label="Evidence" value={evidenceLabel(event)} />
+                    <TimelineField label="Signal" value={signalLabel(event)} />
                   </div>
                   <button
                     type="button"
@@ -280,13 +340,40 @@ export function EventTimelineTable({
                     )}
                     {isExpanded ? "Hide" : "Details"}
                   </button>
-                  {isExpanded && <div className="mt-3"><DetailPanel event={event} /></div>}
+                  {isExpanded && (
+                    <div className="mt-3">
+                      <DetailPanel
+                        event={event}
+                        driveLabel={
+                          driveLabels[event.sessionId] ?? "Live Monitor drive"
+                        }
+                      />
+                    </div>
+                  )}
                 </article>
               );
             })}
           </div>
+          <PaginationControls
+            label="alerts"
+            page={page}
+            pageSize={pageSize}
+            totalItems={totalCount}
+            onPageChange={onPageChange}
+          />
         </>
       )}
     </section>
+  );
+}
+
+function TimelineField({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <span className="block text-xs font-semibold uppercase tracking-wide text-slate-400">
+        {label}
+      </span>
+      {value}
+    </div>
   );
 }

@@ -47,7 +47,7 @@ export function TopBar() {
         <div className="flex items-center gap-1.5 rounded-full border border-slate-200/70 bg-white px-2.5 py-1.5 text-sm shadow-sm transition-colors duration-200 sm:gap-2 sm:px-3 dark:border-slate-700 dark:bg-slate-900">
           <Clock className="h-3.5 w-3.5 text-slate-400 sm:h-4 sm:w-4" strokeWidth={2.2} />
           <span className="hidden text-[11px] font-medium uppercase tracking-wider text-slate-400 lg:inline">
-            Drive
+            Current drive
           </span>
           <span className="text-xs font-semibold tabular-nums text-slate-700 sm:text-sm">
             {formatHMS(elapsed)}

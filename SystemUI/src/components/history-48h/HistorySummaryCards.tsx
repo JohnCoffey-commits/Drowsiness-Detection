@@ -1,10 +1,4 @@
-import {
-  AlertCircle,
-  Clock3,
-  FileWarning,
-  History,
-  ShieldAlert,
-} from "lucide-react";
+import { AlertCircle, Clock3, History, ShieldAlert } from "lucide-react";
 import type { HistorySummary } from "@/lib/history48hUtils";
 import { formatDateTime } from "@/lib/history48hUtils";
 
@@ -15,45 +9,38 @@ interface HistorySummaryCardsProps {
 export function HistorySummaryCards({ summary }: HistorySummaryCardsProps) {
   const cards = [
     {
-      label: "Warning-candidate events",
+      label: "Total Alerts",
       value: String(summary.warningCandidateCount),
-      note: "Non-normal local history records",
+      note: "Alerts in the selected scope",
       icon: History,
       accent: "text-blue-600 bg-blue-50 border-blue-100",
     },
     {
-      label: "High-priority candidates",
+      label: "High-Risk Alerts",
       value: String(summary.highPriorityCount),
-      note: "Critical eye or high severity records",
+      note: "Stronger fatigue-related cues",
       icon: ShieldAlert,
       accent: "text-red-700 bg-red-50 border-red-100",
     },
     {
-      label: "Signal quality issues",
+      label: "Signal Interruptions",
       value: String(summary.signalUnreliableCount),
-      note: "Camera, face, ROI, or signal uncertainty",
+      note: "Camera, face, or signal visibility gaps",
       icon: AlertCircle,
       accent: "text-slate-700 bg-slate-100 border-slate-200",
     },
     {
-      label: "Manual review pending",
-      value: String(summary.reviewPendingCount),
-      note: "Local review state",
-      icon: FileWarning,
-      accent: "text-amber-700 bg-amber-50 border-amber-100",
-    },
-    {
-      label: "Last event time",
+      label: "Latest Alert",
       value: summary.lastEventTime ? formatDateTime(summary.lastEventTime) : "-",
-      note: "Most recent filtered event",
+      note: "Most recent alert shown",
       icon: Clock3,
       accent: "text-blue-700 bg-blue-50 border-blue-100",
     },
   ];
 
   return (
-    <section aria-label="48h summary cards">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+    <section aria-label="History summary cards">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {cards.map(({ label, value, note, icon: Icon, accent }) => (
           <article
             key={label}
@@ -64,7 +51,13 @@ export function HistorySummaryCards({ summary }: HistorySummaryCardsProps) {
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {label}
                 </p>
-                <p className="mt-2 truncate text-2xl font-bold tracking-tight text-slate-900">
+                <p
+                  className={`mt-2 break-words font-bold tracking-tight text-slate-900 ${
+                    label === "Latest Alert"
+                      ? "text-lg leading-6"
+                      : "text-2xl"
+                  }`}
+                >
                   {value}
                 </p>
               </div>

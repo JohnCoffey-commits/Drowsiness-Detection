@@ -1,10 +1,12 @@
-import { BarChart3, Database, ShieldCheck, UserRound } from "lucide-react";
+import { BarChart3, Database, Server, ShieldCheck, UserRound } from "lucide-react";
 import { INSIGHTS_BOUNDARY_NOTICE } from "@/lib/insightsUtils";
 
 interface InsightsHeaderProps {
   displayName?: string;
   recordCount: number;
   dataSource: string;
+  archiveConnection: string;
+  archiveCheckedAt: string;
 }
 
 function HeaderBadge({
@@ -26,6 +28,8 @@ export function InsightsHeader({
   displayName,
   recordCount,
   dataSource,
+  archiveConnection,
+  archiveCheckedAt,
 }: InsightsHeaderProps) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-6">
@@ -50,7 +54,11 @@ export function InsightsHeader({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-          <HeaderBadge icon={Database} label={dataSource} />
+          <HeaderBadge icon={Database} label={`Data source: ${dataSource}`} />
+          <HeaderBadge
+            icon={Server}
+            label={`Archive: ${archiveConnection} | ${archiveCheckedAt}`}
+          />
           <HeaderBadge icon={ShieldCheck} label="Last 48 hours" />
           <HeaderBadge icon={UserRound} label="Current user" />
           <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">

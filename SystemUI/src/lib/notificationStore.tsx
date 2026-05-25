@@ -125,6 +125,12 @@ function normalizeNotification(value: unknown): VisionGuardNotification | null {
     notification.relatedRoute = record.relatedRoute;
   }
 
+  if (notification.id.endsWith("-review-history")) {
+    notification.title = "Open driving alert history";
+    notification.message =
+      "The 48h History page contains Live Monitor alert history for product workflow checks.";
+  }
+
   return notification;
 }
 
@@ -184,9 +190,9 @@ function createSeedNotifications(userId: string, now = new Date()) {
       userId,
       category: "review",
       severity: "info",
-      title: "Review local warning-candidate history",
+      title: "Open driving alert history",
       message:
-        "The 48h History page contains local/demo review items for product workflow checks.",
+        "The 48h History page contains Live Monitor alert history for product workflow checks.",
       createdAt: reviewDate,
       source: "history_48h",
       relatedRoute: "/history-48h",
