@@ -8,11 +8,11 @@ export function InsightsEmptyState() {
         <History className="h-6 w-6" />
       </div>
       <h2 className="mt-4 text-xl font-black text-slate-950 dark:text-white">
-        No local warning-candidate history is available
+        No insights yet
       </h2>
       <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
-        No local warning-candidate history is available for this user in the
-        selected window.
+        Start a Live Monitor drive to generate alert patterns. Insights become
+        more useful as more recent drives are recorded.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-3">
         <Link
@@ -27,7 +27,7 @@ export function InsightsEmptyState() {
           className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-700 shadow-sm transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/70 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200 dark:hover:border-cyan-400/40 dark:hover:bg-cyan-400/10 dark:hover:text-cyan-100"
         >
           <History className="h-4 w-4" />
-          Open 48h History
+          Open History
         </Link>
       </div>
     </section>

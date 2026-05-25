@@ -11,7 +11,7 @@ import { UserProfileMenu } from "@/components/dashboard/UserProfileMenu";
 const ROUTE_TITLES: Record<string, string> = {
   "/": "Live Monitor",
   "/video-upload": "Video Upload Analysis",
-  "/history-48h": "48h History",
+  "/history-48h": "History",
   "/insights": "Insights",
 };
 

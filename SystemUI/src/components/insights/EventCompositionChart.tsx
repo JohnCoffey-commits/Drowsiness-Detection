@@ -7,21 +7,22 @@ interface EventCompositionChartProps {
 
 export function EventCompositionChart({ data }: EventCompositionChartProps) {
   const hasEvents = data.some((item) => item.count > 0);
+  const visibleData = data.filter((item) => item.count > 0);
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-5">
       <div className="mb-5">
         <h2 className="text-base font-black text-slate-950 dark:text-white">
-          Event composition
+          Alert Composition
         </h2>
         <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-          Local warning-candidate records grouped by user-facing event type.
+          Breakdown of alert types in the selected history window.
         </p>
       </div>
 
       {hasEvents ? (
         <div className="space-y-4">
-          {data.map((item) => (
+          {visibleData.map((item) => (
             <div key={item.kind}>
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
@@ -51,7 +52,7 @@ export function EventCompositionChart({ data }: EventCompositionChartProps) {
         </div>
       ) : (
         <div className="flex min-h-[220px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-sm font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
-          No event composition is available for this user.
+          No alert composition is available yet.
         </div>
       )}
     </section>

@@ -11,7 +11,7 @@ export function HistoryHeader() {
               Live Monitor history
             </div>
             <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
-              48h History
+              History
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-blue-50 sm:text-base">
               View recent driving alerts, fatigue-related visual cues, and

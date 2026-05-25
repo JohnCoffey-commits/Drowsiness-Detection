@@ -1,6 +1,6 @@
 import {
   AlertTriangle,
-  ClipboardCheck,
+  CarFront,
   Radar,
   ShieldAlert,
 } from "lucide-react";
@@ -9,39 +9,43 @@ import { formatInsightPercent } from "@/lib/insightsUtils";
 
 interface InsightSummaryCardsProps {
   summary: InsightSummary;
+  driveCount: number;
 }
 
-export function InsightSummaryCards({ summary }: InsightSummaryCardsProps) {
+export function InsightSummaryCards({
+  summary,
+  driveCount,
+}: InsightSummaryCardsProps) {
   const cards = [
     {
-      title: "Dominant pattern",
-      value: summary.dominantPatternLabel,
-      helper: `${formatInsightPercent(summary.dominantPatternShare)} of local warning-candidate events`,
+      title: "Dominant Alert",
+      value: summary.dominantAlertLabel,
+      helper: `${summary.dominantAlertCount} of ${summary.totalAlerts} alerts`,
       icon: Radar,
       accent: "text-blue-600 dark:text-cyan-300",
       bg: "bg-blue-50 dark:bg-cyan-400/10",
     },
     {
-      title: "High-priority share",
-      value: `${formatInsightPercent(summary.highPriorityShare)} high-priority`,
-      helper: "Critical or high-priority warning-candidate records",
+      title: "High-Risk Share",
+      value: formatInsightPercent(summary.highPriorityShare),
+      helper: "Alerts with stronger fatigue-related cues",
       icon: ShieldAlert,
       accent: "text-red-600 dark:text-red-300",
       bg: "bg-red-50 dark:bg-red-400/10",
     },
     {
-      title: "Signal quality burden",
-      value: summary.signalQualityBurdenLabel,
-      helper: `${formatInsightPercent(summary.signalQualityShare)} involved camera/ROI uncertainty`,
+      title: "Signal Interruptions",
+      value: formatInsightPercent(summary.signalInterruptionShare),
+      helper: `${summary.signalInterruptionCount} alerts involved camera or tracking uncertainty`,
       icon: AlertTriangle,
       accent: "text-amber-600 dark:text-amber-300",
       bg: "bg-amber-50 dark:bg-amber-400/10",
     },
     {
-      title: "Review completion",
-      value: `${formatInsightPercent(summary.reviewCompletionShare)} reviewed`,
-      helper: `${summary.reviewedCount}/${summary.reviewableCount} local review items reviewed`,
-      icon: ClipboardCheck,
+      title: "Drives Analyzed",
+      value: String(driveCount),
+      helper: "Recent drives in the selected window",
+      icon: CarFront,
       accent: "text-emerald-600 dark:text-emerald-300",
       bg: "bg-emerald-50 dark:bg-emerald-400/10",
     },

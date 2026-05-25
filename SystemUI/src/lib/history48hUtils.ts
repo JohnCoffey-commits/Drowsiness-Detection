@@ -628,8 +628,8 @@ export function buildHistorySummaryText(
       ?.label ?? `Last ${filters.timeWindowHours} hours`;
 
   return [
-    "VisionGuard 48h driving alert history summary",
-    `Selected window: ${windowLabel}`,
+    "VisionGuard History Summary",
+    `Time window: ${windowLabel}`,
     `Drives: ${summary.sessionCount}`,
     `Total alerts: ${summary.warningCandidateCount}`,
     `High-risk alerts: ${summary.highPriorityCount}`,

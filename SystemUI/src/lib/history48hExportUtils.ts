@@ -55,7 +55,7 @@ export function buildHistorySummaryHtml(payload: HistoryExportPayload): string {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>VisionGuard 48h History Summary</title>
+  <title>VisionGuard History Summary</title>
   <style>
     :root {
       color: #0f172a;
@@ -107,10 +107,10 @@ export function buildHistorySummaryHtml(payload: HistoryExportPayload): string {
 <body>
   <main class="report">
     <section class="header">
-      <h1>VisionGuard 48h History Summary</h1>
+      <h1>VisionGuard History Summary</h1>
       <div class="meta">
         <p><strong>Generated:</strong> ${escapeHtml(formatGeneratedAt(exportedAt))}</p>
-        <p><strong>Selected time window:</strong> ${escapeHtml(selectedWindow)}</p>
+        <p><strong>Time window:</strong> ${escapeHtml(selectedWindow)}</p>
         <p><strong>Alert type:</strong> ${escapeHtml(alertType)}</p>
         <p><strong>Source:</strong> Live Monitor</p>
       </div>
@@ -194,19 +194,17 @@ export function historyExportDate(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function historySummaryFilename(filters: HistoryFilters): string {
+export function historySummaryFilename(): string {
   const date = historyExportDate();
-  return filters.timeWindowHours === 48
-    ? `visionguard-48h-summary-${date}.html`
-    : `visionguard-history-summary-${date}.html`;
+  return `visionguard-history-summary-${date}.html`;
 }
 
 export function historyCsvFilename(): string {
-  return `visionguard-48h-alerts-${historyExportDate()}.csv`;
+  return `visionguard-history-alerts-${historyExportDate()}.csv`;
 }
 
 export function historyRawJsonFilename(): string {
-  return `visionguard-48h-raw-history-${historyExportDate()}.json`;
+  return `visionguard-history-raw-data-${historyExportDate()}.json`;
 }
 
 export function escapeHtml(value: unknown): string {

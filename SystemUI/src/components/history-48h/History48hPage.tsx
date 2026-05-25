@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { EventTimelineTable } from "@/components/history-48h/EventTimelineTable";
 import { HistoryFilters } from "@/components/history-48h/HistoryFilters";
@@ -15,9 +15,12 @@ import {
 import { useVisionGuardAuth } from "@/lib/authStore";
 import {
   archiveRecordsToHistoryStore,
+  buildLiveArchiveSessionPayload,
   getArchiveHealth,
   getArchiveRecords,
+  saveLiveArchiveSession,
 } from "@/lib/backendArchiveApi";
+import { getArchiveClientId } from "@/lib/archiveClientId";
 import type { BackendArchiveRange } from "@/lib/backendArchiveTypes";
 import type {
   DriverHistoryEvent,
@@ -227,10 +230,12 @@ export function History48hPage() {
   const [store, setStore] = useState<History48hStore>(EMPTY_STORE);
   const [archiveStore, setArchiveStore] = useState<History48hStore | null>(null);
   const [archiveAvailable, setArchiveAvailable] = useState(false);
+  const [archiveReachable, setArchiveReachable] = useState(false);
   const [filters, setFilters] = useState<HistoryFilterState>(DEFAULT_FILTERS);
   const [eventListPage, setEventListPage] = useState(1);
   const [referenceNow, setReferenceNow] = useState<Date>(new Date());
   const [copyStatus, setCopyStatus] = useState("");
+  const syncedSessionArchiveKeysRef = useRef<Set<string>>(new Set());
   const { currentUser, isLegacyRecordVisible } = useVisionGuardAuth();
   const currentUserId = currentUser?.id;
   const includeLegacyRecords = currentUser
@@ -300,10 +305,12 @@ export function History48hPage() {
     try {
       const health = await getArchiveHealth();
       if (!health.ok || !health.enabled) {
+        setArchiveReachable(false);
         setArchiveAvailable(false);
         setArchiveStore(null);
         return;
       }
+      setArchiveReachable(true);
 
       const archiveRange = archiveRangeFromTimeWindow(filters.timeWindowHours);
       const response = await getArchiveRecords({
@@ -315,8 +322,11 @@ export function History48hPage() {
         archiveRecordsToHistoryStore(response.records)
       );
       setArchiveStore(nextStore);
-      setArchiveAvailable(response.enabled && nextStore.events.length > 0);
+      setArchiveAvailable(
+        response.enabled && (nextStore.events.length > 0 || nextStore.sessions.length > 0)
+      );
     } catch {
+      setArchiveReachable(false);
       setArchiveAvailable(false);
       setArchiveStore(null);
     }
@@ -329,6 +339,65 @@ export function History48hPage() {
 
     return () => window.clearTimeout(id);
   }, [refreshArchive]);
+
+  useEffect(() => {
+    if (!archiveReachable || !currentUserId || store.sessions.length === 0) {
+      return;
+    }
+
+    const sessionsToSync = store.sessions.filter((session) => {
+      if (session.source !== "live_monitor") return false;
+      if (!isSessionInWindow(session, referenceNow, filters.timeWindowHours)) {
+        return false;
+      }
+
+      const syncKey = [
+        currentUserId,
+        session.id,
+        session.startedAt,
+        session.endedAt,
+        session.status,
+      ].join(":");
+      if (syncedSessionArchiveKeysRef.current.has(syncKey)) return false;
+      syncedSessionArchiveKeysRef.current.add(syncKey);
+      return true;
+    });
+
+    if (sessionsToSync.length === 0) return;
+
+    let cancelled = false;
+    void Promise.allSettled(
+      sessionsToSync.map((session) =>
+        saveLiveArchiveSession(
+          buildLiveArchiveSessionPayload(
+            session,
+            getArchiveClientId(),
+            currentUserId
+          )
+        )
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      if (
+        results.some(
+          (result) => result.status === "fulfilled" && result.value.ok
+        )
+      ) {
+        void refreshArchive();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    archiveReachable,
+    currentUserId,
+    filters.timeWindowHours,
+    referenceNow,
+    refreshArchive,
+    store.sessions,
+  ]);
 
   const activeStore = useMemo(
     () =>
@@ -453,7 +522,7 @@ export function History48hPage() {
     try {
       const payload = createExportPayload();
       downloadTextFile(
-        historySummaryFilename(filters),
+        historySummaryFilename(),
         buildHistorySummaryHtml(payload),
         "text/html;charset=utf-8"
       );

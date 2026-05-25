@@ -35,7 +35,9 @@ import { appendLiveMonitorDashboardEventToHistory } from "@/lib/liveMonitorHisto
 import { getArchiveClientId } from "@/lib/archiveClientId";
 import {
   buildLiveArchiveEventPayload,
+  buildLiveArchiveSessionPayload,
   saveLiveArchiveEvent,
+  saveLiveArchiveSession,
 } from "@/lib/backendArchiveApi";
 import type {
   LiveMonitorDashboardEventDraft,
@@ -106,6 +108,7 @@ export function LiveMonitorPage() {
   const lastNormalEventAtRef = useRef(0);
   const legacyRecordsVisible =
     Boolean(currentUser?.id) && authState.users[0]?.id === currentUser?.id;
+  const currentUserId = currentUser?.id;
 
   const recordDriveSession = useCallback(
     (
@@ -113,12 +116,30 @@ export function LiveMonitorPage() {
       endedAt: Date,
       status: DriverHistorySession["status"]
     ) => {
-      upsertHistory48hSession(
-        createDriveHistorySession(session, endedAt, currentUser?.id, status),
-        endedAt
+      const historySession = createDriveHistorySession(
+        session,
+        endedAt,
+        currentUserId,
+        status
       );
+      upsertHistory48hSession(historySession, endedAt);
+
+      if (!currentUserId) return;
+
+      const archivePayload = buildLiveArchiveSessionPayload(
+        historySession,
+        getArchiveClientId(),
+        currentUserId
+      );
+      void saveLiveArchiveSession(archivePayload).then((result) => {
+        setArchiveStatus(
+          result.ok
+            ? "Saved Live Monitor drive summary to local backend archive."
+            : "Archive save failed for the latest Live Monitor drive."
+        );
+      });
     },
-    [currentUser?.id]
+    [currentUserId]
   );
 
   const handleMonitoringSessionStart = useCallback(

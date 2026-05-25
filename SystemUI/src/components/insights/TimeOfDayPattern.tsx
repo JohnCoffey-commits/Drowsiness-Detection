@@ -16,10 +16,10 @@ export function TimeOfDayPattern({
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-5">
       <div className="mb-5">
         <h2 className="text-base font-black text-slate-950 dark:text-white">
-          Time-of-day pattern
+          Time of Day
         </h2>
         <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-          Conservative grouping by local record timestamp.
+          When alerts occurred during the selected window.
         </p>
       </div>
 
@@ -39,19 +39,22 @@ export function TimeOfDayPattern({
                 </p>
               </div>
               <span className="text-sm font-black text-slate-950 dark:text-white">
-                {item.count}
+                {item.count} {item.count === 1 ? "alert" : "alerts"}
               </span>
             </div>
             <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-white dark:bg-slate-800">
               <div
                 className="h-full rounded-full bg-blue-600 dark:bg-cyan-400"
                 style={{
-                  width: `${Math.max(4, Math.round((item.count / maxCount) * 100))}%`,
+                  width:
+                    item.count === 0
+                      ? "0%"
+                      : `${Math.max(4, Math.round((item.count / maxCount) * 100))}%`,
                 }}
               />
             </div>
             <p className="mt-2 text-xs font-bold text-slate-500 dark:text-slate-400">
-              {formatInsightPercent(item.share)} of local records
+              {formatInsightPercent(item.share)} of alerts
             </p>
           </article>
         ))}

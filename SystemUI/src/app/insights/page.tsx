@@ -3,7 +3,7 @@ import { InsightsPage } from "@/components/insights/InsightsPage";
 
 export const metadata: Metadata = {
   title: "Insights | VisionGuard",
-  description: "User-scoped local warning-candidate analytics.",
+  description: "Patterns from recent Live Monitor alerts.",
 };
 
 export default function InsightsRoute() {

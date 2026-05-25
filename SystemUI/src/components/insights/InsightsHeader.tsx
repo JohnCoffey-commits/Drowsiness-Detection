@@ -1,19 +1,24 @@
-import { BarChart3, Database, Server, ShieldCheck, UserRound } from "lucide-react";
-import { INSIGHTS_BOUNDARY_NOTICE } from "@/lib/insightsUtils";
+import {
+  BarChart3,
+  Database,
+  Download,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface InsightsHeaderProps {
   displayName?: string;
   recordCount: number;
-  dataSource: string;
-  archiveConnection: string;
-  archiveCheckedAt: string;
+  dataSourceLabel: string;
+  onDownloadReport: () => void;
 }
 
 function HeaderBadge({
   icon: Icon,
   label,
 }: {
-  icon: typeof Database;
+  icon: LucideIcon;
   label: string;
 }) {
   return (
@@ -27,13 +32,12 @@ function HeaderBadge({
 export function InsightsHeader({
   displayName,
   recordCount,
-  dataSource,
-  archiveConnection,
-  archiveCheckedAt,
+  dataSourceLabel,
+  onDownloadReport,
 }: InsightsHeaderProps) {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-900/20 dark:bg-cyan-500">
@@ -44,26 +48,36 @@ export function InsightsHeader({
                 Insights
               </h1>
               <p className="mt-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
-                User-scoped local warning-candidate analytics
+                Patterns from recent Live Monitor alerts.
               </p>
             </div>
           </div>
           <p className="mt-4 max-w-3xl text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">
-            {INSIGHTS_BOUNDARY_NOTICE}
+            These insights summarize fatigue-related visual cues, alert timing,
+            drive-level patterns, and camera signal interruptions from the
+            selected history window.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-          <HeaderBadge icon={Database} label={`Data source: ${dataSource}`} />
-          <HeaderBadge
-            icon={Server}
-            label={`Archive: ${archiveConnection} | ${archiveCheckedAt}`}
-          />
-          <HeaderBadge icon={ShieldCheck} label="Last 48 hours" />
-          <HeaderBadge icon={UserRound} label="Current user" />
-          <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-            {displayName ?? "Local user"} · {recordCount} records
-          </span>
+        <div className="flex flex-col gap-3 lg:items-end">
+          <button
+            type="button"
+            onClick={onDownloadReport}
+            disabled={recordCount === 0}
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-3 text-sm font-bold text-emerald-700 shadow-sm transition hover:bg-emerald-100 focus:outline-none focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none dark:border-emerald-400/20 dark:bg-emerald-400/10 dark:text-emerald-200"
+          >
+            <Download className="h-4 w-4" />
+            Download insights report
+          </button>
+          <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+            <HeaderBadge icon={ShieldCheck} label="Last 48 hours" />
+            <HeaderBadge icon={UserRound} label={displayName ?? "Local user"} />
+            <HeaderBadge
+              icon={BarChart3}
+              label={`${recordCount} ${recordCount === 1 ? "alert" : "alerts"}`}
+            />
+            <HeaderBadge icon={Database} label={dataSourceLabel} />
+          </div>
         </div>
       </div>
     </section>

@@ -4,7 +4,12 @@ import type {
   HistorySource,
   TimeWindowHours,
 } from "@/lib/history48hTypes";
-import { SOURCE_LABELS, getBucketMinutes } from "@/lib/history48hUtils";
+import {
+  SOURCE_LABELS,
+  formatMinutes,
+  formatTimeRange,
+  getBucketMinutes,
+} from "@/lib/history48hUtils";
 import type {
   InsightCompositionItem,
   InsightEventKind,
@@ -18,39 +23,39 @@ import type {
 } from "@/lib/insightsTypes";
 
 export const INSIGHTS_BOUNDARY_NOTICE =
-  "This page summarizes Live Monitor warning-candidate history for review. It is not final system-level drowsiness accuracy.";
+  "Insights are derived from lightweight Live Monitor alert summaries. They show patterns in recent visual cues such as eye closure, yawning, and camera signal quality.";
 
 export const INSIGHT_KIND_META: Record<InsightEventKind, InsightKindMeta> = {
   eye_warning_candidate: {
     kind: "eye_warning_candidate",
-    label: "Eye warning candidate",
-    shortLabel: "Eye warning",
+    label: "Eye-closure alert",
+    shortLabel: "Eye closure",
     color: "#f97316",
   },
   yawn_warning_candidate: {
     kind: "yawn_warning_candidate",
-    label: "Yawn warning candidate",
-    shortLabel: "Yawn warning",
+    label: "Yawn alert",
+    shortLabel: "Yawn",
     color: "#ec4899",
   },
   critical_eye_warning_candidate: {
     kind: "critical_eye_warning_candidate",
-    label: "Critical eye warning candidate",
-    shortLabel: "Critical eye",
+    label: "High-risk eye alert",
+    shortLabel: "High-risk eye",
     color: "#ef4444",
   },
   signal_quality_issue: {
     kind: "signal_quality_issue",
-    label: "Signal quality issue",
-    shortLabel: "Signal quality",
+    label: "Camera signal interruption",
+    shortLabel: "Camera signal",
     color: "#64748b",
   },
 };
 
 const INSIGHT_KIND_ORDER: InsightEventKind[] = [
+  "critical_eye_warning_candidate",
   "eye_warning_candidate",
   "yawn_warning_candidate",
-  "critical_eye_warning_candidate",
   "signal_quality_issue",
 ];
 
@@ -130,7 +135,11 @@ function getDominantKind(records: DriverHistoryEvent[]): {
   const ranked = INSIGHT_KIND_ORDER.map((kind) => ({
     kind,
     count: countKind(records, kind),
-  })).sort((a, b) => b.count - a.count);
+  })).sort(
+    (a, b) =>
+      b.count - a.count ||
+      INSIGHT_KIND_ORDER.indexOf(a.kind) - INSIGHT_KIND_ORDER.indexOf(b.kind)
+  );
   const top = ranked[0];
 
   return {
@@ -141,45 +150,26 @@ function getDominantKind(records: DriverHistoryEvent[]): {
 }
 
 export function getInsightSummary(records: DriverHistoryEvent[]): InsightSummary {
-  const totalWarningCandidates = records.length;
+  const totalAlerts = records.length;
   const dominant = getDominantKind(records);
   const highPriorityCount = records.filter(
     (record) =>
       normalizeHistoryEventKind(record) === "critical_eye_warning_candidate" ||
       record.severity === "high"
   ).length;
-  const signalQualityCount = countKind(records, "signal_quality_issue");
-  const reviewedCount = records.filter(
-    (record) => record.reviewStatus === "reviewed"
-  ).length;
-  const reviewableCount = records.filter(
-    (record) => record.reviewStatus !== "not_required"
-  ).length;
-  const signalQualityShare = percent(signalQualityCount, totalWarningCandidates);
-
-  let signalQualityBurdenLabel = "Low signal-quality burden";
-  if (signalQualityShare >= 0.35) {
-    signalQualityBurdenLabel = "High signal-quality burden";
-  } else if (signalQualityShare >= 0.15) {
-    signalQualityBurdenLabel = "Moderate signal-quality burden";
-  } else if (signalQualityCount === 0) {
-    signalQualityBurdenLabel = "No signal-quality burden";
-  }
+  const signalInterruptionCount = countKind(records, "signal_quality_issue");
 
   return {
-    totalWarningCandidates,
-    dominantPatternLabel: dominant.kind
-      ? `${INSIGHT_KIND_META[dominant.kind].shortLabel} dominant`
-      : "No dominant pattern",
-    dominantPatternShare: dominant.share,
-    highPriorityShare: percent(highPriorityCount, totalWarningCandidates),
+    totalAlerts,
+    dominantAlertLabel: dominant.kind
+      ? INSIGHT_KIND_META[dominant.kind].label
+      : "No dominant alert",
+    dominantAlertCount: dominant.count,
+    dominantAlertShare: dominant.share,
+    highPriorityShare: percent(highPriorityCount, totalAlerts),
     highPriorityCount,
-    signalQualityBurdenLabel,
-    signalQualityShare,
-    signalQualityCount,
-    reviewCompletionShare: percent(reviewedCount, Math.max(reviewableCount, 1)),
-    reviewedCount,
-    reviewableCount,
+    signalInterruptionShare: percent(signalInterruptionCount, totalAlerts),
+    signalInterruptionCount,
   };
 }
 
@@ -301,10 +291,10 @@ export function describeTimeOfDayPattern(
 ): string {
   const top = [...items].sort((a, b) => b.count - a.count)[0];
   if (!top || top.count === 0) {
-    return "No local warning-candidate time-of-day pattern is available in the selected window.";
+    return "No alert timing pattern is available in the selected window.";
   }
 
-  return `More warning-candidate events were recorded during ${top.label.toLowerCase()} sessions (${top.timeRange}).`;
+  return `Most alerts were recorded during ${top.label.toLowerCase()} drives.`;
 }
 
 export function getSessionComparison(
@@ -331,26 +321,47 @@ export function getSessionComparison(
             dateValue(record.timestamp) < dateValue(min) ? record.timestamp : min,
           sessionRecords[0]?.timestamp ?? new Date(0).toISOString()
         );
+      const endedAt =
+        session?.endedAt ??
+        sessionRecords.reduce(
+          (max, record) =>
+            dateValue(record.timestamp) > dateValue(max) ? record.timestamp : max,
+          sessionRecords[0]?.timestamp ?? startedAt
+        );
+      const durationMin = session?.durationMin ?? Math.max(
+        1,
+        Math.round((dateValue(endedAt) - dateValue(startedAt)) / 60_000)
+      );
+      const criticalEyeCount = countKind(
+        sessionRecords,
+        "critical_eye_warning_candidate"
+      );
+      const eyeClosureCount = countKind(sessionRecords, "eye_warning_candidate");
+      const yawnCount = countKind(sessionRecords, "yawn_warning_candidate");
+      const signalInterruptionCount = countKind(
+        sessionRecords,
+        "signal_quality_issue"
+      );
 
       return {
         sessionId,
         source: session?.source ?? sessionRecords[0]?.source ?? "mock",
         startedAt,
+        endedAt,
+        driveLabel: formatTimeRange(startedAt, endedAt),
+        durationLabel: formatMinutes(durationMin),
         eventCount: sessionRecords.length,
         highPriorityCount: sessionRecords.filter(
           (record) =>
             normalizeHistoryEventKind(record) ===
               "critical_eye_warning_candidate" || record.severity === "high"
         ).length,
-        signalQualityIssueCount: countKind(
-          sessionRecords,
-          "signal_quality_issue"
-        ),
-        pendingReviewCount: sessionRecords.filter(
-          (record) => record.reviewStatus === "pending"
-        ).length,
+        signalInterruptionCount,
+        criticalEyeCount,
+        eyeClosureCount,
+        yawnCount,
         dominantPattern: dominant.kind
-          ? INSIGHT_KIND_META[dominant.kind].shortLabel
+          ? INSIGHT_KIND_META[dominant.kind].label
           : "No dominant pattern",
       };
     })
@@ -363,7 +374,8 @@ export function getSessionComparison(
 }
 
 export function getSignalQualityInsights(
-  records: DriverHistoryEvent[]
+  records: DriverHistoryEvent[],
+  sessionRows: InsightSessionComparisonRow[] = []
 ): InsightSignalQualitySummary {
   const signalRecords = records.filter(
     (record) => normalizeHistoryEventKind(record) === "signal_quality_issue"
@@ -382,82 +394,119 @@ export function getSignalQualityInsights(
       null,
       0,
     ];
+  const mostLimitedDriveLabel =
+    sessionRows.find((row) => row.sessionId === mostLimitedSessionId)
+      ?.driveLabel ?? null;
 
   return {
     count: signalRecords.length,
     share: percent(signalRecords.length, records.length),
     affectedSessionCount: countsBySession.size,
     mostLimitedSessionId,
+    mostLimitedDriveLabel,
     mostLimitedSessionCount,
   };
 }
 
-export function getReviewRecommendations(
-  records: DriverHistoryEvent[]
+export function getKeyInsights({
+  records,
+  summary,
+  timeOfDay,
+  sessionRows,
+  signalQuality,
+}: {
+  records: DriverHistoryEvent[];
+  summary: InsightSummary;
+  timeOfDay: InsightTimeOfDayItem[];
+  sessionRows: InsightSessionComparisonRow[];
+  signalQuality: InsightSignalQualitySummary;
+}): string[] {
+  if (records.length === 0) {
+    return ["No insights yet. Start a Live Monitor drive to generate alert patterns."];
+  }
+
+  const insights: string[] = [];
+  const topTime = [...timeOfDay].sort((a, b) => b.count - a.count)[0];
+
+  if (summary.dominantAlertCount > 0) {
+    insights.push(
+      `Most alerts were ${pluralizeAlertLabel(summary.dominantAlertLabel).toLowerCase()}.`
+    );
+  }
+  if (topTime && topTime.count > 0) {
+    insights.push(
+      `Alerts were concentrated during ${topTime.label.toLowerCase()} drives.`
+    );
+  }
+  if (signalQuality.affectedSessionCount > 0) {
+    insights.push(
+      `Camera signal interruptions affected ${formatCount(signalQuality.affectedSessionCount, "drive")}.`
+    );
+  }
+  insights.push(
+    `Based on ${formatCount(records.length, "alert")} across ${formatCount(sessionRows.length, "recent drive")}.`
+  );
+
+  if (records.length < 10 || sessionRows.length < 3) {
+    insights.push(
+      "Insights are based on a small number of recent drives, so treat patterns as early signals."
+    );
+  } else {
+    insights.push(
+      `Patterns become more reliable as more Live Monitor drives are recorded.`
+    );
+  }
+
+  return insights;
+}
+
+export function getAttentionAreas(
+  records: DriverHistoryEvent[],
+  sessionRows: InsightSessionComparisonRow[] = []
 ): InsightRecommendation[] {
-  const recommendations: InsightRecommendation[] = [];
+  const areas: InsightRecommendation[] = [];
   const criticalCount = countKind(records, "critical_eye_warning_candidate");
-  const signalQuality = getSignalQualityInsights(records);
-  const sessionRows = getSessionComparison(records, []);
-  const repeatedEyeSession = sessionRows.find((row) => {
-    const sessionRecords = records.filter(
-      (record) => record.sessionId === row.sessionId
-    );
-    return countKind(sessionRecords, "eye_warning_candidate") >= 2;
-  });
-  const repeatedYawnSession = sessionRows.find((row) => {
-    const sessionRecords = records.filter(
-      (record) => record.sessionId === row.sessionId
-    );
-    return countKind(sessionRecords, "yawn_warning_candidate") >= 2;
-  });
+  const eyeCount = countKind(records, "eye_warning_candidate");
+  const yawnCount = countKind(records, "yawn_warning_candidate");
+  const signalQuality = getSignalQualityInsights(records, sessionRows);
 
   if (criticalCount > 0) {
-    recommendations.push({
-      id: "review-critical-eye",
+    areas.push({
+      id: "high-risk-eye-alerts",
       priority: "high",
-      title: "Review critical eye warning candidates first.",
-      body: `${criticalCount} high-priority warning-candidate record${criticalCount === 1 ? "" : "s"} should be reviewed before lower-priority items.`,
+      title: "High-risk eye alerts were frequent.",
+      body: `${formatCount(criticalCount, "alert")} showed stronger eye-closure-related cues in the selected window.`,
     });
   }
 
   if (signalQuality.count > 0) {
-    recommendations.push({
-      id: "review-signal-quality",
+    areas.push({
+      id: "camera-signal-interruptions",
       priority: signalQuality.share >= 0.2 ? "high" : "medium",
-      title: "Check signal-quality-heavy sessions before interpreting patterns.",
-      body: `Signal quality issues account for ${formatPercentValue(signalQuality.share)} of local warning-candidate records.`,
+      title: `Camera signal interruptions appeared in ${formatCount(signalQuality.affectedSessionCount, "drive")}.`,
+      body: "Check camera angle, lighting, and face visibility if this repeats.",
     });
   }
 
-  if (repeatedEyeSession) {
-    recommendations.push({
-      id: "review-repeated-eye",
+  if (yawnCount > 0 && eyeCount + criticalCount > 0) {
+    areas.push({
+      id: "yawn-with-eye-alerts",
       priority: "medium",
-      title: "Review sessions with repeated eye warning candidates.",
-      body: `Session ${repeatedEyeSession.sessionId} contains repeated eye warning-candidate records.`,
+      title: "Yawn alerts appeared alongside eye-related alerts.",
+      body: "Open History to see when these alerts occurred during each drive.",
     });
   }
 
-  if (repeatedYawnSession) {
-    recommendations.push({
-      id: "compare-yawn-eye",
+  if (areas.length === 0) {
+    areas.push({
+      id: "limited-alert-patterns",
       priority: "low",
-      title: "Compare yawn-warning clusters with eye-warning clusters.",
-      body: `Session ${repeatedYawnSession.sessionId} includes repeated yawn warning-candidate records for local review context.`,
+      title: "No single alert pattern stands out yet.",
+      body: "Keep recording Live Monitor drives to make recent patterns easier to compare.",
     });
   }
 
-  if (recommendations.length === 0) {
-    recommendations.push({
-      id: "continue-review",
-      priority: "low",
-      title: "Continue reviewing new local warning-candidate records.",
-      body: "No high-priority review pattern stands out in the selected local history window.",
-    });
-  }
-
-  return recommendations.slice(0, 4);
+  return areas.slice(0, 4);
 }
 
 export function formatInsightPercent(value: number): string {
@@ -466,4 +515,13 @@ export function formatInsightPercent(value: number): string {
 
 export function formatInsightSource(source: HistorySource): string {
   return sourceSortLabel(source);
+}
+
+export function formatCount(count: number, singular: string): string {
+  return `${count} ${singular}${count === 1 ? "" : "s"}`;
+}
+
+export function pluralizeAlertLabel(label: string): string {
+  if (label === "No dominant alert") return label;
+  return label.endsWith("alert") ? `${label}s` : label;
 }

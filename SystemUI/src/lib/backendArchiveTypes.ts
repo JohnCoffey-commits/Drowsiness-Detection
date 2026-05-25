@@ -91,6 +91,23 @@ export interface LiveArchiveEventPayload {
   metadata?: Record<string, unknown>;
 }
 
+export interface LiveArchiveSessionPayload {
+  id: string;
+  client_id: string;
+  account_id?: string;
+  session_id: string;
+  event_type: "drive_session";
+  severity?: HistorySeverity;
+  title: string;
+  summary: string;
+  started_at: string;
+  ended_at: string;
+  created_at: string;
+  reviewed?: boolean;
+  evidence?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+}
+
 export interface VideoArchiveRunPayload {
   id: string;
   client_id: string;

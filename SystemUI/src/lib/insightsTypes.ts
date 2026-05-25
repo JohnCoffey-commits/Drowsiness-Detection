@@ -14,17 +14,14 @@ export interface InsightKindMeta {
 }
 
 export interface InsightSummary {
-  totalWarningCandidates: number;
-  dominantPatternLabel: string;
-  dominantPatternShare: number;
+  totalAlerts: number;
+  dominantAlertLabel: string;
+  dominantAlertCount: number;
+  dominantAlertShare: number;
   highPriorityShare: number;
   highPriorityCount: number;
-  signalQualityBurdenLabel: string;
-  signalQualityShare: number;
-  signalQualityCount: number;
-  reviewCompletionShare: number;
-  reviewedCount: number;
-  reviewableCount: number;
+  signalInterruptionShare: number;
+  signalInterruptionCount: number;
 }
 
 export interface InsightTrendPoint {
@@ -56,10 +53,15 @@ export interface InsightSessionComparisonRow {
   sessionId: string;
   source: HistorySource;
   startedAt: string;
+  endedAt: string;
+  driveLabel: string;
+  durationLabel: string;
   eventCount: number;
   highPriorityCount: number;
-  signalQualityIssueCount: number;
-  pendingReviewCount: number;
+  signalInterruptionCount: number;
+  criticalEyeCount: number;
+  eyeClosureCount: number;
+  yawnCount: number;
   dominantPattern: string;
 }
 
@@ -68,6 +70,7 @@ export interface InsightSignalQualitySummary {
   share: number;
   affectedSessionCount: number;
   mostLimitedSessionId: string | null;
+  mostLimitedDriveLabel: string | null;
   mostLimitedSessionCount: number;
 }
 

@@ -9,6 +9,7 @@ import type {
   BackendArchiveSaveResult,
   BackendArchiveSource,
   LiveArchiveEventPayload,
+  LiveArchiveSessionPayload,
   VideoArchiveRunPayload,
 } from "@/lib/backendArchiveTypes";
 import type {
@@ -99,6 +100,23 @@ export async function saveLiveArchiveEvent(
     return {
       ok: false,
       error: error instanceof Error ? error.message : "Archive save failed.",
+    };
+  }
+}
+
+export async function saveLiveArchiveSession(
+  record: LiveArchiveSessionPayload,
+): Promise<BackendArchiveSaveResult> {
+  try {
+    return await fetchJson<BackendArchiveSaveResult>("/api/archive/live-session", {
+      method: "POST",
+      headers: jsonHeaders(),
+      body: JSON.stringify(record),
+    });
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Archive session save failed.",
     };
   }
 }
@@ -194,8 +212,46 @@ export function buildLiveArchiveEventPayload(
   };
 }
 
+export function buildLiveArchiveSessionPayload(
+  session: DriverHistorySession,
+  clientId: string,
+  accountId?: string,
+): LiveArchiveSessionPayload {
+  return {
+    id: `live-session-${session.id}`,
+    client_id: clientId,
+    account_id: accountId,
+    session_id: session.id,
+    event_type: "drive_session",
+    severity: "low",
+    title: "Live Monitor drive",
+    summary: `Live Monitor drive recorded from ${session.startedAt} to ${session.endedAt}.`,
+    started_at: session.startedAt,
+    ended_at: session.endedAt,
+    created_at: session.startedAt,
+    reviewed: true,
+    evidence: {},
+    metadata: {
+      history_record_type: "drive_session",
+      status: session.status,
+      duration_min: session.durationMin,
+      normal_count: session.normalCount,
+      eye_warning_count: session.eyeWarningCount,
+      mouth_warning_count: session.mouthWarningCount,
+      high_confidence_count: session.highConfidenceCount,
+      signal_unreliable_count: session.signalUnreliableCount,
+      review_pending_count: session.reviewPendingCount,
+    },
+  };
+}
+
 function numeric(value: unknown): number | undefined {
   return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function positiveCount(value: unknown): number {
+  const number = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(number) && number > 0 ? number : 0;
 }
 
 function countIntervals(summary: VideoUploadSummary): number {
@@ -402,15 +458,150 @@ export function archiveRecordToHistoryEvent(
   };
 }
 
+function timestampMs(value?: string | null): number {
+  const timestamp = value ? new Date(value).getTime() : 0;
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function sessionDurationMin(startedAt: string, endedAt: string): number {
+  const startMs = timestampMs(startedAt);
+  const endMs = timestampMs(endedAt);
+  if (!startMs || !endMs || endMs < startMs) return 0;
+  return Math.round(((endMs - startMs) / 60_000) * 10) / 10;
+}
+
+function sessionStatusFromRecord(
+  record: BackendArchiveRecord,
+): DriverHistorySession["status"] {
+  const status = record.metadata?.status;
+  if (status === "completed" || status === "partial" || status === "demo") {
+    return status;
+  }
+  return "completed";
+}
+
+function archiveRecordToHistorySession(
+  record: BackendArchiveRecord,
+): DriverHistorySession | null {
+  const sessionId = record.session_id || record.id.replace(/^live-session-/, "");
+  const startedAt = record.started_at || record.created_at;
+  const endedAt = record.ended_at || startedAt;
+  if (!sessionId || !startedAt || !endedAt) return null;
+
+  const durationMin =
+    numeric(record.metadata?.duration_min) ?? sessionDurationMin(startedAt, endedAt);
+
+  return {
+    id: sessionId,
+    userId: record.account_id || undefined,
+    source: "live_monitor",
+    startedAt,
+    endedAt,
+    durationMin,
+    status: sessionStatusFromRecord(record),
+    normalCount: positiveCount(record.metadata?.normal_count),
+    eyeWarningCount: positiveCount(record.metadata?.eye_warning_count),
+    mouthWarningCount: positiveCount(record.metadata?.mouth_warning_count),
+    highConfidenceCount: positiveCount(record.metadata?.high_confidence_count),
+    signalUnreliableCount: positiveCount(record.metadata?.signal_unreliable_count),
+    reviewPendingCount: positiveCount(record.metadata?.review_pending_count),
+  };
+}
+
+function mergeSessionStatus(
+  a: DriverHistorySession["status"],
+  b: DriverHistorySession["status"],
+): DriverHistorySession["status"] {
+  if (a === "completed" || b === "completed") return "completed";
+  if (a === "demo" || b === "demo") return "demo";
+  return "partial";
+}
+
+function mergeArchiveSession(
+  preferredSession: DriverHistorySession,
+  fallbackSession: DriverHistorySession,
+): DriverHistorySession {
+  const startMs = Math.min(
+    timestampMs(preferredSession.startedAt),
+    timestampMs(fallbackSession.startedAt),
+  );
+  const endMs = Math.max(
+    timestampMs(preferredSession.endedAt),
+    timestampMs(fallbackSession.endedAt),
+  );
+  const startedAt =
+    startMs > 0 ? new Date(startMs).toISOString() : preferredSession.startedAt;
+  const endedAt =
+    endMs > 0 ? new Date(endMs).toISOString() : preferredSession.endedAt;
+
+  return {
+    ...fallbackSession,
+    ...preferredSession,
+    startedAt,
+    endedAt,
+    durationMin: Math.max(
+      preferredSession.durationMin,
+      fallbackSession.durationMin,
+      sessionDurationMin(startedAt, endedAt),
+    ),
+    status: mergeSessionStatus(preferredSession.status, fallbackSession.status),
+    normalCount: Math.max(preferredSession.normalCount, fallbackSession.normalCount),
+    eyeWarningCount: Math.max(
+      preferredSession.eyeWarningCount,
+      fallbackSession.eyeWarningCount,
+    ),
+    mouthWarningCount: Math.max(
+      preferredSession.mouthWarningCount,
+      fallbackSession.mouthWarningCount,
+    ),
+    highConfidenceCount: Math.max(
+      preferredSession.highConfidenceCount,
+      fallbackSession.highConfidenceCount,
+    ),
+    signalUnreliableCount: Math.max(
+      preferredSession.signalUnreliableCount,
+      fallbackSession.signalUnreliableCount,
+    ),
+    reviewPendingCount: Math.max(
+      preferredSession.reviewPendingCount,
+      fallbackSession.reviewPendingCount,
+    ),
+  };
+}
+
+function mergeArchiveSessions(
+  preferredSessions: DriverHistorySession[],
+  fallbackSessions: DriverHistorySession[],
+): DriverHistorySession[] {
+  const sessionMap = new Map<string, DriverHistorySession>();
+  const keyForSession = (session: DriverHistorySession) =>
+    `${session.userId || "__legacy__"}:${session.id}`;
+
+  for (const session of fallbackSessions) {
+    sessionMap.set(keyForSession(session), session);
+  }
+  for (const session of preferredSessions) {
+    const key = keyForSession(session);
+    const existing = sessionMap.get(key);
+    sessionMap.set(key, existing ? mergeArchiveSession(session, existing) : session);
+  }
+
+  return Array.from(sessionMap.values()).sort(
+    (a, b) => timestampMs(b.startedAt) - timestampMs(a.startedAt),
+  );
+}
+
 export function archiveRecordsToHistoryStore(
   records: BackendArchiveRecord[],
 ): History48hStore {
-  const events = records.map(archiveRecordToHistoryEvent);
+  const events = records
+    .filter((record) => record.record_type === "live_event")
+    .map(archiveRecordToHistoryEvent);
   const sessionMap = new Map<string, DriverHistoryEvent[]>();
   for (const event of events) {
     sessionMap.set(event.sessionId, [...(sessionMap.get(event.sessionId) ?? []), event]);
   }
-  const sessions: DriverHistorySession[] = Array.from(sessionMap.entries()).map(
+  const eventSessions: DriverHistorySession[] = Array.from(sessionMap.entries()).map(
     ([id, sessionEvents]) => {
       const sorted = [...sessionEvents].sort(
         (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
@@ -442,10 +633,14 @@ export function archiveRecordsToHistoryStore(
       };
     },
   );
+  const summarySessions = records
+    .filter((record) => record.record_type === "session_summary")
+    .map(archiveRecordToHistorySession)
+    .filter((session): session is DriverHistorySession => Boolean(session));
 
   return {
     events,
-    sessions,
+    sessions: mergeArchiveSessions(summarySessions, eventSessions),
     updatedAt: new Date().toISOString(),
   };
 }

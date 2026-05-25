@@ -423,6 +423,31 @@ def create_app():
         except Exception as exc:
             raise HTTPException(status_code=503, detail=f"Archive save failed: {exc}") from exc
 
+    @app.post("/api/archive/live-session")
+    async def archive_live_session(
+        request: Request,
+        x_visionguard_archive_token: str | None = Header(
+            default=None,
+            alias="X-VisionGuard-Archive-Token",
+        ),
+    ):
+        require_archive_write_token(x_visionguard_archive_token)
+        payload = await read_json_object(request)
+        try:
+            record = get_archive().upsert_record(
+                payload,
+                record_type="session_summary",
+                source="live_monitor",
+                event_type="drive_session",
+            )
+            return JSONResponse({"ok": True, "record": record})
+        except ArchiveDisabledError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ArchiveValidationError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:
+            raise HTTPException(status_code=503, detail=f"Archive session save failed: {exc}") from exc
+
     @app.post("/api/archive/video-run")
     async def archive_video_run(
         request: Request,

@@ -15,7 +15,7 @@ import {
 const NAV_ITEMS = [
   { id: "/", icon: LayoutDashboard, label: "Live Monitor" },
   { id: "/video-upload", icon: UploadCloud, label: "Video Upload Analysis" },
-  { id: "/history-48h", icon: History, label: "48h History" },
+  { id: "/history-48h", icon: History, label: "History" },
   { id: "/insights", icon: LineChart, label: "Insights" },
 ] as const;
 

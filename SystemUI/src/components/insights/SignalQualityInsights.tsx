@@ -8,8 +8,8 @@ interface SignalQualityInsightsProps {
 
 export function SignalQualityInsights({ summary }: SignalQualityInsightsProps) {
   const mostLimitedSession =
-    summary.mostLimitedSessionId && summary.mostLimitedSessionCount > 0
-      ? `${summary.mostLimitedSessionId} (${summary.mostLimitedSessionCount})`
+    summary.mostLimitedDriveLabel && summary.mostLimitedSessionCount > 0
+      ? `${summary.mostLimitedDriveLabel} (${summary.mostLimitedSessionCount})`
       : "None";
 
   return (
@@ -20,10 +20,10 @@ export function SignalQualityInsights({ summary }: SignalQualityInsightsProps) {
         </span>
         <div>
           <h2 className="text-base font-black text-slate-950 dark:text-white">
-            Signal quality insights
+            Camera Signal Insights
           </h2>
           <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
-            Camera, face visibility, ROI, or signal uncertainty burden.
+            Camera, face visibility, and ROI tracking reliability.
           </p>
         </div>
       </div>
@@ -31,7 +31,7 @@ export function SignalQualityInsights({ summary }: SignalQualityInsightsProps) {
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-950">
           <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-400">
-            Issue count
+            Interruptions
           </p>
           <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
             {summary.count}
@@ -47,7 +47,7 @@ export function SignalQualityInsights({ summary }: SignalQualityInsightsProps) {
         </div>
         <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-950">
           <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-400">
-            Affected sessions
+            Affected drives
           </p>
           <p className="mt-2 text-2xl font-black text-slate-950 dark:text-white">
             {summary.affectedSessionCount}
@@ -55,18 +55,17 @@ export function SignalQualityInsights({ summary }: SignalQualityInsightsProps) {
         </div>
         <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-950">
           <p className="text-xs font-black uppercase tracking-[0.12em] text-slate-400">
-            Most limited session
+            Most affected drive
           </p>
-          <p className="mt-2 break-all text-sm font-black text-slate-950 dark:text-white">
+          <p className="mt-2 text-sm font-black leading-5 text-slate-950 dark:text-white">
             {mostLimitedSession}
           </p>
         </div>
       </div>
 
       <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-900 dark:bg-amber-400/10 dark:text-amber-100">
-        Signal quality issues indicate camera, face visibility, ROI, or signal
-        uncertainty. Review signal-quality-heavy sessions before interpreting
-        warning-candidate patterns.
+        Signal interruptions can affect how alerts are interpreted. Improve
+        lighting, camera angle, and face visibility when possible.
       </p>
     </section>
   );

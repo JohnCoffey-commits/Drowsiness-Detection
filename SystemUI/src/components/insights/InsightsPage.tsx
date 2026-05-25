@@ -2,15 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AboutInsightsNote } from "@/components/insights/AboutInsightsNote";
+import { AlertsByDriveChart } from "@/components/insights/AlertsByDriveChart";
 import { EventCompositionChart } from "@/components/insights/EventCompositionChart";
 import { InsightSummaryCards } from "@/components/insights/InsightSummaryCards";
 import { InsightsEmptyState } from "@/components/insights/InsightsEmptyState";
 import { InsightsHeader } from "@/components/insights/InsightsHeader";
-import { ReviewRecommendations } from "@/components/insights/ReviewRecommendations";
+import { KeyInsights } from "@/components/insights/KeyInsights";
+import { AttentionAreas } from "@/components/insights/AttentionAreas";
 import { SessionComparisonTable } from "@/components/insights/SessionComparisonTable";
 import { SignalQualityInsights } from "@/components/insights/SignalQualityInsights";
 import { TimeOfDayPattern } from "@/components/insights/TimeOfDayPattern";
-import { WarningCandidateTrend } from "@/components/insights/WarningCandidateTrend";
 import { useVisionGuardAuth } from "@/lib/authStore";
 import {
   archiveRecordsToHistoryStore,
@@ -24,15 +26,21 @@ import {
 import type { History48hStore } from "@/lib/history48hTypes";
 import {
   describeTimeOfDayPattern,
+  getAttentionAreas,
   getEventTypeDistribution,
+  getKeyInsights,
   getInsightRecords,
   getInsightSummary,
-  getReviewRecommendations,
   getSessionComparison,
   getSignalQualityInsights,
   getTimeOfDayPattern,
-  getWarningCandidateTrend,
 } from "@/lib/insightsUtils";
+import {
+  buildInsightsReportHtml,
+  downloadTextFile,
+  insightsReportFilename,
+  type InsightsReportPayload,
+} from "@/lib/insightsExportUtils";
 
 const EMPTY_STORE: History48hStore = {
   events: [],
@@ -50,17 +58,6 @@ type ArchiveConnectionState =
   | "connected"
   | "disconnected";
 
-function formatArchiveCheckedAt(value: string | null): string {
-  if (!value) return "Not checked";
-  return new Date(value).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
-
 export function InsightsPage() {
   const router = useRouter();
   const { currentUser, isLegacyRecordVisible } = useVisionGuardAuth();
@@ -69,7 +66,6 @@ export function InsightsPage() {
   const [archiveDataSource, setArchiveDataSource] = useState("local_only");
   const [archiveConnection, setArchiveConnection] =
     useState<ArchiveConnectionState>("unchecked");
-  const [archiveCheckedAt, setArchiveCheckedAt] = useState<string | null>(null);
   const [archiveAvailable, setArchiveAvailable] = useState(false);
   const [referenceNow, setReferenceNow] = useState<Date>(new Date());
   const includeLegacyRecords = currentUser
@@ -95,8 +91,6 @@ export function InsightsPage() {
       setArchiveConnection("checking");
       try {
         const health = await getArchiveHealth();
-        const checkedAt = new Date().toISOString();
-        setArchiveCheckedAt(checkedAt);
         if (!health.ok) {
           setArchiveAvailable(false);
           setArchiveStore(null);
@@ -129,7 +123,6 @@ export function InsightsPage() {
         setArchiveStore(null);
         setArchiveDataSource("local_only");
         setArchiveConnection("disconnected");
-        setArchiveCheckedAt(new Date().toISOString());
       }
     }, 0);
 
@@ -143,10 +136,6 @@ export function InsightsPage() {
     [activeStore.events, referenceNow]
   );
   const summary = useMemo(() => getInsightSummary(records), [records]);
-  const trend = useMemo(
-    () => getWarningCandidateTrend(records, referenceNow, 48),
-    [records, referenceNow]
-  );
   const composition = useMemo(
     () => getEventTypeDistribution(records),
     [records]
@@ -161,15 +150,44 @@ export function InsightsPage() {
     [activeStore.sessions, records]
   );
   const signalQuality = useMemo(
-    () => getSignalQualityInsights(records),
-    [records]
+    () => getSignalQualityInsights(records, sessionRows),
+    [records, sessionRows]
   );
-  const recommendations = useMemo(
-    () => getReviewRecommendations(records),
-    [records]
+  const keyInsights = useMemo(
+    () =>
+      getKeyInsights({
+        records,
+        summary,
+        timeOfDay,
+        sessionRows,
+        signalQuality,
+      }),
+    [records, sessionRows, signalQuality, summary, timeOfDay]
+  );
+  const attentionAreas = useMemo(
+    () => getAttentionAreas(records, sessionRows),
+    [records, sessionRows]
   );
 
-  function handleViewInHistory(sessionId: string) {
+  const dataSourceLabel =
+    archiveDataSource === "backend_archive"
+      ? "Data synced"
+      : archiveConnection === "checking"
+        ? "Checking sync"
+        : "Local history";
+  const userLabel = currentUser?.displayName ?? "Local user";
+  const dataBasisLabel = `${records.length} ${
+    records.length === 1 ? "alert" : "alerts"
+  } across ${sessionRows.length} ${
+    sessionRows.length === 1 ? "recent drive" : "recent drives"
+  }`;
+
+  function handleViewInHistory(sessionId?: string) {
+    if (!sessionId) {
+      router.push("/history-48h");
+      return;
+    }
+
     const params = new URLSearchParams({
       sessionId,
       timeWindowHours: "48",
@@ -177,23 +195,50 @@ export function InsightsPage() {
     router.push(`/history-48h?${params.toString()}`);
   }
 
+  function handleDownloadReport() {
+    if (records.length === 0) return;
+
+    const payload: InsightsReportPayload = {
+      exportedAt: new Date().toISOString(),
+      timeWindowLabel: "Last 48 hours",
+      userLabel,
+      dataSourceLabel,
+      dataBasisLabel,
+      keyInsights,
+      summary,
+      driveRows: sessionRows,
+      composition,
+      timeOfDay,
+      signalQuality,
+      attentionAreas,
+    };
+    downloadTextFile(
+      insightsReportFilename(),
+      buildInsightsReportHtml(payload),
+      "text/html;charset=utf-8"
+    );
+  }
+
   return (
     <main className="flex-1 overflow-y-auto bg-[#f4f7f9] px-4 py-5 transition-colors duration-300 dark:bg-slate-950 lg:px-6">
       <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5 pb-10">
         <InsightsHeader
-          displayName={currentUser?.displayName}
+          displayName={userLabel}
           recordCount={records.length}
-          dataSource={archiveDataSource}
-          archiveConnection={archiveConnection}
-          archiveCheckedAt={formatArchiveCheckedAt(archiveCheckedAt)}
+          dataSourceLabel={dataSourceLabel}
+          onDownloadReport={handleDownloadReport}
         />
 
         {records.length === 0 ? (
           <InsightsEmptyState />
         ) : (
           <>
-            <InsightSummaryCards summary={summary} />
-            <WarningCandidateTrend data={trend} />
+            <KeyInsights insights={keyInsights} />
+            <InsightSummaryCards
+              summary={summary}
+              driveCount={sessionRows.length}
+            />
+            <AlertsByDriveChart rows={sessionRows} />
             <div className="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
               <EventCompositionChart data={composition} />
               <TimeOfDayPattern
@@ -208,9 +253,10 @@ export function InsightsPage() {
               />
               <div className="flex flex-col gap-5">
                 <SignalQualityInsights summary={signalQuality} />
-                <ReviewRecommendations recommendations={recommendations} />
+                <AttentionAreas areas={attentionAreas} />
               </div>
             </div>
+            <AboutInsightsNote />
           </>
         )}
       </div>
