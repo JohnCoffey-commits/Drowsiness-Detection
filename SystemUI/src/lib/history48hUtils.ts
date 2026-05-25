@@ -231,10 +231,10 @@ export function summarizeHistory(
   events: DriverHistoryEvent[],
   sessions: DriverHistorySession[]
 ): HistorySummary {
-  const sessionIds = new Set(events.map((event) => event.sessionId));
-  const monitoredTimeMin = sessions
-    .filter((session) => sessionIds.has(session.id))
-    .reduce((sum, session) => sum + session.durationMin, 0);
+  const monitoredTimeMin = sessions.reduce(
+    (sum, session) => sum + session.durationMin,
+    0
+  );
   const totalEvents = events.length;
   const normalCount = countByState(events, "normal");
   const warningCandidateCount = events.filter(
@@ -251,7 +251,7 @@ export function summarizeHistory(
   );
 
   return {
-    sessionCount: sessionIds.size,
+    sessionCount: sessions.length,
     monitoredTimeMin,
     totalEvents,
     normalCount,
@@ -521,10 +521,7 @@ export function buildSessionRows(
   sessions: DriverHistorySession[],
   events: DriverHistoryEvent[]
 ): SessionSummaryRow[] {
-  const eventSessionIds = new Set(events.map((event) => event.sessionId));
-
   return sessions
-    .filter((session) => eventSessionIds.has(session.id))
     .map((session) => {
       const sessionEvents = events.filter((event) => event.sessionId === session.id);
       const highestSeverity = sessionEvents.reduce<HistorySeverity>(
@@ -593,7 +590,8 @@ export function formatDuration(seconds: number): string {
 }
 
 export function formatMinutes(minutes: number): string {
-  if (minutes < 60) return `${Math.round(minutes)}m`;
+  if (minutes <= 0) return "0m";
+  if (minutes < 60) return `${Math.max(1, Math.round(minutes))}m`;
   const hours = Math.floor(minutes / 60);
   const remainder = Math.round(minutes % 60);
   return remainder > 0 ? `${hours}h ${remainder}m` : `${hours}h`;

@@ -6,6 +6,8 @@ import { StatusMetricCard } from "@/components/dashboard/StatusMetricCard";
 import { DrowsinessRiskCard } from "@/components/dashboard/DrowsinessRiskCard";
 import { DrowsinessLevelChart } from "@/components/dashboard/DrowsinessLevelChart";
 import { RecentEventsList } from "@/components/dashboard/RecentEventsList";
+import { upsertHistory48hSession } from "@/lib/history48hStorage";
+import type { DriverHistorySession } from "@/lib/history48hTypes";
 import {
   IDLE_LIVE_MONITOR_RISK_STATE,
   getLiveMonitorRiskStateKey,
@@ -43,6 +45,46 @@ import type {
 const LIVE_MONITOR_WARNING =
   "This output is a realtime rule-based warning-candidate analysis, not final system-level drowsiness accuracy.";
 
+interface CurrentDriveSession {
+  id: string;
+  startedAt: Date;
+}
+
+function createCurrentDriveSession(startedAt = new Date()): CurrentDriveSession {
+  return {
+    id: createLiveMonitorDriveSessionId(startedAt),
+    startedAt,
+  };
+}
+
+function driveDurationMin(startedAt: Date, endedAt: Date): number {
+  const durationMs = Math.max(0, endedAt.getTime() - startedAt.getTime());
+  return Math.round((durationMs / 60_000) * 10) / 10;
+}
+
+function createDriveHistorySession(
+  session: CurrentDriveSession,
+  endedAt: Date,
+  userId: string | undefined,
+  status: DriverHistorySession["status"]
+): DriverHistorySession {
+  return {
+    id: session.id,
+    userId,
+    source: "live_monitor",
+    startedAt: session.startedAt.toISOString(),
+    endedAt: endedAt.toISOString(),
+    durationMin: driveDurationMin(session.startedAt, endedAt),
+    status,
+    normalCount: 0,
+    eyeWarningCount: 0,
+    mouthWarningCount: 0,
+    highConfidenceCount: 0,
+    signalUnreliableCount: 0,
+    reviewPendingCount: 0,
+  };
+}
+
 export function LiveMonitorPage() {
   const [riskState, setRiskState] = useState<LiveMonitorRiskState>(
     IDLE_LIVE_MONITOR_RISK_STATE
@@ -50,13 +92,10 @@ export function LiveMonitorPage() {
   const [dashboardStore, setDashboardStore] = useState<LiveMonitorDashboardStore>(() =>
     createEmptyLiveMonitorDashboardStore()
   );
-  const [currentDriveSession] = useState(() => {
-    const startedAt = new Date();
-    return {
-      id: createLiveMonitorDriveSessionId(startedAt),
-      startedAt,
-    };
-  });
+  const [currentDriveSession, setCurrentDriveSession] = useState(() =>
+    createCurrentDriveSession()
+  );
+  const currentDriveSessionRef = useRef(currentDriveSession);
   const [referenceNow, setReferenceNow] = useState<Date>(() => new Date());
   const [recentEventsExpanded, setRecentEventsExpanded] = useState(false);
   const [archiveStatus, setArchiveStatus] = useState("");
@@ -67,6 +106,42 @@ export function LiveMonitorPage() {
   const lastNormalEventAtRef = useRef(0);
   const legacyRecordsVisible =
     Boolean(currentUser?.id) && authState.users[0]?.id === currentUser?.id;
+
+  const recordDriveSession = useCallback(
+    (
+      session: CurrentDriveSession,
+      endedAt: Date,
+      status: DriverHistorySession["status"]
+    ) => {
+      upsertHistory48hSession(
+        createDriveHistorySession(session, endedAt, currentUser?.id, status),
+        endedAt
+      );
+    },
+    [currentUser?.id]
+  );
+
+  const handleMonitoringSessionStart = useCallback(
+    (startedAt: Date) => {
+      const nextSession = createCurrentDriveSession(startedAt);
+      currentDriveSessionRef.current = nextSession;
+      setCurrentDriveSession(nextSession);
+      recordDriveSession(nextSession, startedAt, "partial");
+    },
+    [recordDriveSession]
+  );
+
+  const handleMonitoringSessionEnd = useCallback(
+    (endedAt: Date) => {
+      const session = currentDriveSessionRef.current;
+      const safeEndedAt =
+        endedAt.getTime() >= session.startedAt.getTime()
+          ? endedAt
+          : session.startedAt;
+      recordDriveSession(session, safeEndedAt, "completed");
+    },
+    [recordDriveSession]
+  );
 
   const handleRiskStateChange = useCallback((nextRiskState: LiveMonitorRiskState) => {
     setRiskState(nextRiskState);
@@ -87,6 +162,7 @@ export function LiveMonitorPage() {
 
   const recordDashboardEvent = useCallback(
     (event: LiveMonitorDashboardEventDraft) => {
+      const activeSession = currentDriveSessionRef.current;
       const eventTimestamp = new Date(event.timestamp);
       if (Number.isFinite(eventTimestamp.getTime())) {
         setReferenceNow(eventTimestamp);
@@ -96,7 +172,7 @@ export function LiveMonitorPage() {
         appendLiveMonitorDashboardEvent(
           store,
           event,
-          currentDriveSession.id,
+          activeSession.id,
           currentUser?.id
         )
       );
@@ -104,7 +180,7 @@ export function LiveMonitorPage() {
       if (currentUser) {
         const persistedEvent = {
           ...event,
-          sessionId: currentDriveSession.id,
+          sessionId: activeSession.id,
           source: "live_monitor_prototype" as const,
           userId: currentUser.id,
         };
@@ -135,25 +211,26 @@ export function LiveMonitorPage() {
         }
       }
     },
-    [addNotification, currentDriveSession.id, currentUser, updateDashboardStore]
+    [addNotification, currentUser, updateDashboardStore]
   );
 
   const recordRiskPoint = useCallback(
     (state: LiveMonitorRiskState, now = new Date()) => {
+      const activeSession = currentDriveSessionRef.current;
       setReferenceNow(now);
       updateDashboardStore((store) =>
         appendLiveMonitorRiskPoint(
           store,
           createLiveMonitorRiskPoint(
             state,
-            currentDriveSession.id,
+            activeSession.id,
             now,
             currentUser?.id
           )
         )
       );
     },
-    [currentDriveSession.id, currentUser?.id, updateDashboardStore]
+    [currentUser?.id, updateDashboardStore]
   );
 
   useEffect(() => {
@@ -299,6 +376,8 @@ export function LiveMonitorPage() {
                 <LiveVideoCard
                   onRiskStateChange={handleRiskStateChange}
                   onDashboardEvent={recordDashboardEvent}
+                  onMonitoringSessionStart={handleMonitoringSessionStart}
+                  onMonitoringSessionEnd={handleMonitoringSessionEnd}
                 />
               </div>
 

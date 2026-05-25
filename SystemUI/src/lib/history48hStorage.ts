@@ -446,16 +446,11 @@ export function filterHistory48hStoreBySource(
   source: HistorySource
 ): History48hStore {
   const events = store.events.filter((event) => event.source === source);
-  const sessionKeys = new Set(
-    events.map((event) => `${userKey(event.userId)}:${event.sessionId}`)
-  );
 
   return {
     events,
     sessions: store.sessions.filter(
-      (session) =>
-        session.source === source &&
-        sessionKeys.has(`${userKey(session.userId)}:${session.id}`)
+      (session) => session.source === source
     ),
     updatedAt: store.updatedAt,
   };
@@ -549,6 +544,73 @@ function countSessionState(
   return events.filter((event) => event.state === state).length;
 }
 
+function dateMs(value: string): number {
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function earliestIso(...values: Array<string | undefined>): string {
+  const timestamps = values
+    .map((value) => (value ? dateMs(value) : 0))
+    .filter((timestamp) => timestamp > 0);
+  return timestamps.length > 0
+    ? new Date(Math.min(...timestamps)).toISOString()
+    : new Date().toISOString();
+}
+
+function latestIso(...values: Array<string | undefined>): string {
+  const timestamps = values
+    .map((value) => (value ? dateMs(value) : 0))
+    .filter((timestamp) => timestamp > 0);
+  return timestamps.length > 0
+    ? new Date(Math.max(...timestamps)).toISOString()
+    : new Date().toISOString();
+}
+
+function sessionDurationMin(startedAt: string, endedAt: string): number {
+  const startedAtMs = dateMs(startedAt);
+  const endedAtMs = dateMs(endedAt);
+  if (!startedAtMs || !endedAtMs) return 0;
+  return Math.max(0, Math.round(((endedAtMs - startedAtMs) / 60_000) * 10) / 10);
+}
+
+function sessionStatus(
+  existingStatus: DriverHistorySession["status"] | undefined,
+  nextStatus: DriverHistorySession["status"]
+): DriverHistorySession["status"] {
+  if (nextStatus === "completed" || existingStatus === "completed") {
+    return "completed";
+  }
+  if (nextStatus === "demo" || existingStatus === "demo") {
+    return "demo";
+  }
+  return "partial";
+}
+
+function buildSessionFromEvents(
+  baseSession: DriverHistorySession,
+  events: DriverHistoryEvent[]
+): DriverHistorySession {
+  return {
+    ...baseSession,
+    durationMin: Math.max(
+      baseSession.durationMin,
+      sessionDurationMin(baseSession.startedAt, baseSession.endedAt)
+    ),
+    normalCount: countSessionState(events, "normal"),
+    eyeWarningCount: countSessionState(events, "eye_warning_candidate"),
+    mouthWarningCount: countSessionState(events, "mouth_warning_candidate"),
+    highConfidenceCount: countSessionState(
+      events,
+      "high_confidence_drowsiness_candidate"
+    ),
+    signalUnreliableCount: countSessionState(events, "signal_unreliable"),
+    reviewPendingCount: events.filter(
+      (candidate) => candidate.reviewStatus === "pending"
+    ).length,
+  };
+}
+
 function createOrUpdateSessionForEvent(
   store: History48hStore,
   event: DriverHistoryEvent
@@ -560,40 +622,43 @@ function createOrUpdateSessionForEvent(
     .sort((a, b) => eventTimestamp(a) - eventTimestamp(b));
   const firstEvent = sessionEvents[0] ?? event;
   const lastEvent = sessionEvents[sessionEvents.length - 1] ?? event;
-  const startedAt = firstEvent.timestamp;
-  const endedAt =
+  const existingSession = store.sessions.find(
+    (candidate) =>
+      candidate.id === event.sessionId &&
+      userKey(candidate.userId) === userKey(event.userId)
+  );
+  const eventEndedAt =
     lastEvent.endTimestamp ??
     new Date(eventTimestamp(lastEvent) + lastEvent.durationSec * 1_000).toISOString();
-  const startedAtMs = new Date(startedAt).getTime();
-  const endedAtMs = new Date(endedAt).getTime();
-  const durationMin =
-    Number.isFinite(startedAtMs) && Number.isFinite(endedAtMs)
-      ? Math.max(1, Math.round(((endedAtMs - startedAtMs) / 60_000) * 10) / 10)
-      : Math.max(1, Math.round((event.durationSec / 60) * 10) / 10);
+  const startedAt = existingSession
+    ? earliestIso(existingSession.startedAt, firstEvent.timestamp)
+    : firstEvent.timestamp;
+  const endedAt = existingSession
+    ? latestIso(existingSession.endedAt, eventEndedAt)
+    : eventEndedAt;
 
-  const session: DriverHistorySession = {
+  const baseSession: DriverHistorySession = {
     id: event.sessionId,
     userId: event.userId,
-    source: event.source,
+    source: existingSession?.source ?? event.source,
     startedAt,
     endedAt,
-    durationMin,
-    status: event.source === "live_monitor" ? "partial" : "completed",
-    normalCount: countSessionState(sessionEvents, "normal"),
-    eyeWarningCount: countSessionState(sessionEvents, "eye_warning_candidate"),
-    mouthWarningCount: countSessionState(
-      sessionEvents,
-      "mouth_warning_candidate"
+    durationMin: Math.max(
+      existingSession?.durationMin ?? 0,
+      sessionDurationMin(startedAt, endedAt)
     ),
-    highConfidenceCount: countSessionState(
-      sessionEvents,
-      "high_confidence_drowsiness_candidate"
+    status: sessionStatus(
+      existingSession?.status,
+      event.source === "live_monitor" ? "partial" : "completed"
     ),
-    signalUnreliableCount: countSessionState(sessionEvents, "signal_unreliable"),
-    reviewPendingCount: sessionEvents.filter(
-      (candidate) => candidate.reviewStatus === "pending"
-    ).length,
+    normalCount: 0,
+    eyeWarningCount: 0,
+    mouthWarningCount: 0,
+    highConfidenceCount: 0,
+    signalUnreliableCount: 0,
+    reviewPendingCount: 0,
   };
+  const session = buildSessionFromEvents(baseSession, sessionEvents);
 
   return {
     ...store,
@@ -640,6 +705,64 @@ export function appendHistory48hRecord(
 
   saveHistory48hStore(withSession);
   return withSession;
+}
+
+export function upsertHistory48hSession(
+  session: DriverHistorySession,
+  now = new Date()
+): History48hStore {
+  const normalizedSession = normalizeHistorySession(session);
+  if (!normalizedSession) {
+    return loadRawHistory48hStore(now, undefined, false);
+  }
+
+  const rawStore = loadRawHistory48hStore(now, undefined, false);
+  const existingSession = rawStore.sessions.find(
+    (candidate) =>
+      candidate.id === normalizedSession.id &&
+      userKey(candidate.userId) === userKey(normalizedSession.userId)
+  );
+  const startedAt = existingSession
+    ? earliestIso(existingSession.startedAt, normalizedSession.startedAt)
+    : normalizedSession.startedAt;
+  const endedAt = existingSession
+    ? latestIso(existingSession.endedAt, normalizedSession.endedAt)
+    : normalizedSession.endedAt;
+  const sessionEvents = rawStore.events.filter((event) =>
+    sameEventSession(event, normalizedSession.id, normalizedSession.userId)
+  );
+  const baseSession: DriverHistorySession = {
+    ...normalizedSession,
+    startedAt,
+    endedAt,
+    durationMin: Math.max(
+      existingSession?.durationMin ?? 0,
+      normalizedSession.durationMin,
+      sessionDurationMin(startedAt, endedAt)
+    ),
+    status: sessionStatus(existingSession?.status, normalizedSession.status),
+  };
+  const nextSession = buildSessionFromEvents(baseSession, sessionEvents);
+  const nextStore = pruneHistory48hStore(
+    {
+      ...rawStore,
+      sessions: [
+        nextSession,
+        ...rawStore.sessions.filter(
+          (candidate) =>
+            !(
+              candidate.id === nextSession.id &&
+              userKey(candidate.userId) === userKey(nextSession.userId)
+            )
+        ),
+      ],
+      updatedAt: now.toISOString(),
+    },
+    now
+  );
+
+  saveHistory48hStore(nextStore);
+  return nextStore;
 }
 
 export function resetHistory48hDemoData(

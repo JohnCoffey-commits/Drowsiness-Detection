@@ -20,6 +20,8 @@ import {
 } from "@/lib/backendArchiveApi";
 import type { BackendArchiveRange } from "@/lib/backendArchiveTypes";
 import type {
+  DriverHistoryEvent,
+  DriverHistorySession,
   History48hStore,
   HistoryFilters as HistoryFilterState,
   TimeWindowHours,
@@ -71,6 +73,144 @@ function archiveRangeFromTimeWindow(
 
 function liveMonitorOnly(store: History48hStore): History48hStore {
   return filterHistory48hStoreBySource(store, "live_monitor");
+}
+
+function timestampMs(value: string | undefined): number {
+  const timestamp = value ? new Date(value).getTime() : 0;
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function eventKey(event: DriverHistoryEvent): string {
+  return event.ingestionKey || event.id;
+}
+
+function sessionKey(session: DriverHistorySession): string {
+  return `${session.userId || "__legacy__"}:${session.id}`;
+}
+
+function mergeHistoryEvents(
+  preferredEvents: DriverHistoryEvent[],
+  fallbackEvents: DriverHistoryEvent[]
+): DriverHistoryEvent[] {
+  const eventMap = new Map<string, DriverHistoryEvent>();
+  for (const event of [...preferredEvents, ...fallbackEvents]) {
+    const key = eventKey(event);
+    if (!eventMap.has(key)) {
+      eventMap.set(key, event);
+    }
+  }
+  return Array.from(eventMap.values()).sort(
+    (a, b) => timestampMs(b.timestamp) - timestampMs(a.timestamp)
+  );
+}
+
+function mergeSessionStatus(
+  a: DriverHistorySession["status"],
+  b: DriverHistorySession["status"]
+): DriverHistorySession["status"] {
+  if (a === "completed" || b === "completed") return "completed";
+  if (a === "demo" || b === "demo") return "demo";
+  return "partial";
+}
+
+function mergeSession(
+  preferredSession: DriverHistorySession,
+  fallbackSession: DriverHistorySession
+): DriverHistorySession {
+  const startMs = Math.min(
+    timestampMs(preferredSession.startedAt),
+    timestampMs(fallbackSession.startedAt)
+  );
+  const endMs = Math.max(
+    timestampMs(preferredSession.endedAt),
+    timestampMs(fallbackSession.endedAt)
+  );
+  const startedAt =
+    startMs > 0 ? new Date(startMs).toISOString() : preferredSession.startedAt;
+  const endedAt =
+    endMs > 0 ? new Date(endMs).toISOString() : preferredSession.endedAt;
+  const durationMin =
+    startMs > 0 && endMs > 0
+      ? Math.max(
+          preferredSession.durationMin,
+          fallbackSession.durationMin,
+          Math.round(((endMs - startMs) / 60_000) * 10) / 10
+        )
+      : Math.max(preferredSession.durationMin, fallbackSession.durationMin);
+
+  return {
+    ...fallbackSession,
+    ...preferredSession,
+    startedAt,
+    endedAt,
+    durationMin,
+    status: mergeSessionStatus(preferredSession.status, fallbackSession.status),
+    normalCount: Math.max(
+      preferredSession.normalCount,
+      fallbackSession.normalCount
+    ),
+    eyeWarningCount: Math.max(
+      preferredSession.eyeWarningCount,
+      fallbackSession.eyeWarningCount
+    ),
+    mouthWarningCount: Math.max(
+      preferredSession.mouthWarningCount,
+      fallbackSession.mouthWarningCount
+    ),
+    highConfidenceCount: Math.max(
+      preferredSession.highConfidenceCount,
+      fallbackSession.highConfidenceCount
+    ),
+    signalUnreliableCount: Math.max(
+      preferredSession.signalUnreliableCount,
+      fallbackSession.signalUnreliableCount
+    ),
+    reviewPendingCount: Math.max(
+      preferredSession.reviewPendingCount,
+      fallbackSession.reviewPendingCount
+    ),
+  };
+}
+
+function mergeHistorySessions(
+  preferredSessions: DriverHistorySession[],
+  fallbackSessions: DriverHistorySession[]
+): DriverHistorySession[] {
+  const sessionMap = new Map<string, DriverHistorySession>();
+  for (const session of fallbackSessions) {
+    sessionMap.set(sessionKey(session), session);
+  }
+  for (const session of preferredSessions) {
+    const key = sessionKey(session);
+    const existing = sessionMap.get(key);
+    sessionMap.set(key, existing ? mergeSession(session, existing) : session);
+  }
+  return Array.from(sessionMap.values()).sort(
+    (a, b) => timestampMs(b.startedAt) - timestampMs(a.startedAt)
+  );
+}
+
+function mergeHistoryStores(
+  localStore: History48hStore,
+  archiveStore: History48hStore
+): History48hStore {
+  return {
+    events: mergeHistoryEvents(archiveStore.events, localStore.events),
+    sessions: mergeHistorySessions(localStore.sessions, archiveStore.sessions),
+    updatedAt: archiveStore.updatedAt || localStore.updatedAt,
+  };
+}
+
+function isSessionInWindow(
+  session: DriverHistorySession,
+  now: Date,
+  timeWindowHours: TimeWindowHours
+): boolean {
+  const nowMs = now.getTime();
+  const windowStartMs = nowMs - timeWindowHours * 60 * 60_000;
+  const sessionStartMs = timestampMs(session.startedAt);
+  const sessionEndMs = timestampMs(session.endedAt) || sessionStartMs;
+  return sessionEndMs >= windowStartMs && sessionStartMs <= nowMs;
 }
 
 function scopeFreeFilters(filters: HistoryFilterState): HistoryFilterState {
@@ -190,12 +330,28 @@ export function History48hPage() {
     return () => window.clearTimeout(id);
   }, [refreshArchive]);
 
-  const activeStore = archiveAvailable && archiveStore ? archiveStore : store;
+  const activeStore = useMemo(
+    () =>
+      archiveAvailable && archiveStore
+        ? mergeHistoryStores(store, archiveStore)
+        : store,
+    [archiveAvailable, archiveStore, store]
+  );
   const baseFilters = useMemo(() => scopeFreeFilters(filters), [filters]);
 
   const driveScopeEvents = useMemo(
     () => filterHistoryEvents(activeStore.events, baseFilters, referenceNow),
     [activeStore.events, baseFilters, referenceNow]
+  );
+
+  const driveScopeSessions = useMemo(
+    () =>
+      activeStore.sessions.filter(
+        (session) =>
+          session.source === "live_monitor" &&
+          isSessionInWindow(session, referenceNow, filters.timeWindowHours)
+      ),
+    [activeStore.sessions, filters.timeWindowHours, referenceNow]
   );
 
   const visibleEvents = useMemo(
@@ -207,8 +363,8 @@ export function History48hPage() {
   );
 
   const sessionRows = useMemo(
-    () => buildSessionRows(activeStore.sessions, driveScopeEvents),
-    [activeStore.sessions, driveScopeEvents]
+    () => buildSessionRows(driveScopeSessions, driveScopeEvents),
+    [driveScopeEvents, driveScopeSessions]
   );
 
   const scopedSessionRows = useMemo(

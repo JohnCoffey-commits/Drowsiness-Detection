@@ -171,6 +171,8 @@ interface FaceVisibilityIssue {
 interface LiveVideoCardProps {
   onRiskStateChange?: (riskState: LiveMonitorRiskState) => void;
   onDashboardEvent?: (event: LiveMonitorDashboardEventDraft) => void;
+  onMonitoringSessionStart?: (startedAt: Date) => void;
+  onMonitoringSessionEnd?: (endedAt: Date) => void;
 }
 
 const PRODUCT_ALERT_COPY: Record<LiveAlertKind, ProductAlertCopy> = {
@@ -647,6 +649,8 @@ function CameraOffPlaceholder() {
 export function LiveVideoCard({
   onRiskStateChange,
   onDashboardEvent,
+  onMonitoringSessionStart,
+  onMonitoringSessionEnd,
 }: LiveVideoCardProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -977,6 +981,8 @@ export function LiveVideoCard({
 
   const stopCameraTracks = useCallback(
     (nextStatus: CameraStatus = "Stopped", updateState = true) => {
+      const hadActiveStream = Boolean(streamRef.current);
+      const endedAt = new Date();
       stopRealtimeEvidence(null, updateState);
       resetVisualAlertLayer(true, updateState);
       disableSoundAlerts(updateState);
@@ -996,8 +1002,17 @@ export function LiveVideoCard({
         setBackendStatus("Not connected");
         setAutoStartSamplingRequested(false);
       }
+
+      if (hadActiveStream) {
+        onMonitoringSessionEnd?.(endedAt);
+      }
     },
-    [disableSoundAlerts, resetVisualAlertLayer, stopRealtimeEvidence]
+    [
+      disableSoundAlerts,
+      onMonitoringSessionEnd,
+      resetVisualAlertLayer,
+      stopRealtimeEvidence,
+    ]
   );
 
   const startRealtimeSession = useCallback(async (): Promise<string> => {
@@ -1302,6 +1317,7 @@ export function LiveVideoCard({
       setMediaStream(stream);
       setCameraLabel(videoTrack?.label ?? "Webcam");
       setCameraStatus("Camera active");
+      onMonitoringSessionStart?.(new Date());
       setAutoStartSamplingRequested(true);
     } catch (error) {
       if (!isMountedRef.current) {
@@ -1313,7 +1329,13 @@ export function LiveVideoCard({
       setCameraStatus(cameraFailure.status);
       setCameraError(cameraFailure.message);
     }
-  }, [cameraStatus, enableSoundAlertsFromGesture, isStartingRealtime, stopCameraTracks]);
+  }, [
+    cameraStatus,
+    enableSoundAlertsFromGesture,
+    isStartingRealtime,
+    onMonitoringSessionStart,
+    stopCameraTracks,
+  ]);
 
   const handleStopCamera = useCallback(() => {
     if (isStoppingCamera) {

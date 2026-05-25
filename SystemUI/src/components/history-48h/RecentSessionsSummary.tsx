@@ -144,7 +144,11 @@ export function RecentSessionsSummary({
                 <DriveMetric
                   icon={Gauge}
                   label="Highest"
-                  value={SEVERITY_META[session.highestSeverity].label}
+                  value={
+                    session.warningCandidateCount > 0
+                      ? SEVERITY_META[session.highestSeverity].label
+                      : "None"
+                  }
                 />
                 <DriveMetric
                   icon={Route}
