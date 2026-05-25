@@ -8,6 +8,7 @@ import {
   type LiveMonitorRiskState,
 } from "@/lib/liveMonitorRiskUtils";
 import { useVisionGuardTheme } from "@/lib/themeStore";
+import { cn } from "@/lib/utils";
 
 const riskStyle: Record<
   LiveMonitorRiskSeverity,
@@ -92,10 +93,12 @@ function useAnimatedNumber(target: number, durationMs = 700): number {
 
 interface DrowsinessRiskCardProps {
   riskState?: LiveMonitorRiskState;
+  variant?: "default" | "prominent";
 }
 
 export function DrowsinessRiskCard({
   riskState = IDLE_LIVE_MONITOR_RISK_STATE,
+  variant = "default",
 }: DrowsinessRiskCardProps) {
   const { theme } = useVisionGuardTheme();
   const animatedScore = useAnimatedNumber(riskState.score);
@@ -105,11 +108,22 @@ export function DrowsinessRiskCard({
   const gaugeTrack = theme === "night" ? "#1f2937" : "#f1f5f9";
   const hubColor = theme === "night" ? "#e2e8f0" : "#0f172a";
   const hubDotColor = theme === "night" ? "#020617" : "#ffffff";
+  const isProminent = variant === "prominent";
 
   return (
-    <Card className="flex h-full min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md lg:p-6 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-slate-950/30">
-      <div className="mb-4 lg:mb-6 flex shrink-0 items-center justify-between">
-        <h3 className="text-lg font-bold tracking-tight text-slate-800">
+    <Card
+      className={cn(
+        "flex h-full min-h-0 flex-col rounded-[2rem] border border-slate-200/70 bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-md lg:p-6 dark:border-slate-800 dark:bg-slate-900 dark:hover:shadow-slate-950/30",
+        isProminent && "p-6 lg:p-8"
+      )}
+    >
+      <div className="mb-4 flex shrink-0 items-center justify-between lg:mb-6">
+        <h3
+          className={cn(
+            "font-bold tracking-tight text-slate-800",
+            isProminent ? "text-xl sm:text-2xl" : "text-lg"
+          )}
+        >
           Drowsiness Risk
         </h3>
         <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
@@ -117,8 +131,18 @@ export function DrowsinessRiskCard({
         </span>
       </div>
 
-      <div className="flex flex-1 min-h-0 flex-col items-center justify-center gap-4 lg:flex-row lg:gap-8">
-        <div className="relative w-full max-w-[200px] shrink-0">
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 flex-col items-center justify-center gap-4 lg:flex-row lg:gap-8",
+          isProminent && "gap-6 lg:flex-col lg:gap-7"
+        )}
+      >
+        <div
+          className={cn(
+            "relative w-full shrink-0",
+            isProminent ? "max-w-[320px]" : "max-w-[200px]"
+          )}
+        >
           <svg viewBox="0 0 200 120" className="w-full overflow-visible drop-shadow-sm">
             <path
               d="M 20 100 A 80 80 0 0 1 180 100"
@@ -162,19 +186,38 @@ export function DrowsinessRiskCard({
           </svg>
         </div>
 
-        <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+        <div
+          className={cn(
+            "flex flex-col items-center text-center",
+            isProminent ? "lg:items-center lg:text-center" : "lg:items-start lg:text-left"
+          )}
+        >
           <div
-            className={`text-[2.5rem] font-bold leading-none tracking-tight ${style.text}`}
+            className={cn(
+              "font-bold leading-none tracking-tight",
+              isProminent ? "text-5xl sm:text-6xl" : "text-[2.5rem]",
+              style.text
+            )}
           >
             {riskState.label}
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="text-2xl font-bold tabular-nums text-slate-700">
+            <span
+              className={cn(
+                "font-bold tabular-nums text-slate-700",
+                isProminent ? "text-4xl" : "text-2xl"
+              )}
+            >
               {displayScore}
             </span>
             <span className="text-sm font-medium text-slate-400">/ 100</span>
           </div>
-          <div className="mt-3 text-sm font-medium text-slate-500">
+          <div
+            className={cn(
+              "mt-3 font-medium text-slate-500",
+              isProminent ? "text-base" : "text-sm"
+            )}
+          >
             {riskState.helper}
           </div>
         </div>

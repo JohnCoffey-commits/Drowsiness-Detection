@@ -169,6 +169,7 @@ interface FaceVisibilityIssue {
 }
 
 interface LiveVideoCardProps {
+  minimalMode?: boolean;
   onRiskStateChange?: (riskState: LiveMonitorRiskState) => void;
   onDashboardEvent?: (event: LiveMonitorDashboardEventDraft) => void;
   onMonitoringSessionStart?: (startedAt: Date) => void;
@@ -457,12 +458,22 @@ function getCriticalReason(
   return null;
 }
 
-function ProductWarningOverlay({ kind }: { kind: LiveAlertKind }) {
+function ProductWarningOverlay({
+  kind,
+  fixed = false,
+}: {
+  kind: LiveAlertKind;
+  fixed?: boolean;
+}) {
   const copy = PRODUCT_ALERT_COPY[kind];
   const Icon = kind === "mouth_warning" ? Smile : Eye;
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-1/2 z-20 w-[min(92%,430px)] -translate-x-1/2 -translate-y-1/2">
+    <div
+      className={`pointer-events-none left-1/2 top-1/2 w-[min(92%,430px)] -translate-x-1/2 -translate-y-1/2 ${
+        fixed ? "fixed z-[1100]" : "absolute z-20"
+      }`}
+    >
       <div
         className={`rounded-2xl border p-4 shadow-2xl backdrop-blur-md ${getProductAlertCardStyle(
           kind
@@ -492,14 +503,20 @@ function ProductWarningOverlay({ kind }: { kind: LiveAlertKind }) {
 function CriticalEyeModal({
   alert,
   onAcknowledge,
+  fixed = false,
 }: {
   alert: CriticalEyeAlert;
   onAcknowledge: () => void;
+  fixed?: boolean;
 }) {
   const titleId = `${alert.id}-title`;
 
   return (
-    <div className="absolute inset-0 z-30 flex items-center justify-center bg-slate-950/62 p-5 backdrop-blur-[3px]">
+    <div
+      className={`inset-0 flex items-center justify-center bg-slate-950/62 p-5 backdrop-blur-[3px] ${
+        fixed ? "fixed z-[1200]" : "absolute z-30"
+      }`}
+    >
       <div
         role="alertdialog"
         aria-modal="true"
@@ -554,9 +571,19 @@ function CriticalEyeModal({
   );
 }
 
-function FaceVisibilityOverlay({ issue }: { issue: FaceVisibilityIssue }) {
+function FaceVisibilityOverlay({
+  issue,
+  fixed = false,
+}: {
+  issue: FaceVisibilityIssue;
+  fixed?: boolean;
+}) {
   return (
-    <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 w-[min(92%,430px)] -translate-x-1/2 -translate-y-1/2">
+    <div
+      className={`pointer-events-none left-1/2 top-1/2 w-[min(92%,430px)] -translate-x-1/2 -translate-y-1/2 ${
+        fixed ? "fixed z-[1090]" : "absolute z-10"
+      }`}
+    >
       <div className="rounded-2xl border border-slate-200 bg-white/92 p-4 text-slate-900 shadow-2xl shadow-slate-950/10 backdrop-blur-md">
         <div className="flex gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white">
@@ -647,6 +674,7 @@ function CameraOffPlaceholder() {
 }
 
 export function LiveVideoCard({
+  minimalMode = false,
   onRiskStateChange,
   onDashboardEvent,
   onMonitoringSessionStart,
@@ -1431,6 +1459,77 @@ export function LiveVideoCard({
     lastRiskStateKeyRef.current = nextRiskStateKey;
     onRiskStateChange(riskState);
   }, [onRiskStateChange, riskState]);
+
+  if (minimalMode) {
+    return (
+      <Card className="relative flex min-h-[112px] flex-col overflow-hidden rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
+
+        <video
+          ref={videoRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute left-0 top-0 h-px w-px opacity-0"
+          autoPlay
+          playsInline
+          muted
+        />
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <div
+              className={`flex max-w-full items-center gap-2.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold shadow-sm ${currentStatusStyle.chip}`}
+            >
+              <div className={`h-2 w-2 shrink-0 rounded-full ${currentStatusStyle.dot}`} />
+              <span className="truncate">{formatCameraStatusLabel(cameraStatus)}</span>
+            </div>
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+              Preview Hidden
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCameraToggle}
+            disabled={isCameraTransitioning}
+            className={`inline-flex h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-semibold shadow-sm outline-none transition focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-60 ${
+              isActive
+                ? "border-rose-200/30 bg-rose-600 text-white shadow-rose-950/15 hover:bg-rose-700 focus-visible:ring-rose-200"
+                : "border-blue-500/20 bg-blue-600 text-white shadow-blue-950/15 hover:bg-blue-700 focus-visible:ring-blue-200"
+            }`}
+          >
+            <CameraButtonIcon className="h-4.5 w-4.5" strokeWidth={2.3} />
+            {cameraButtonLabel}
+          </button>
+        </div>
+
+        {(cameraError || samplingError || backendError) && !isRequesting && (
+          <div className="mt-3 rounded-xl border border-rose-100 bg-rose-50 px-3.5 py-2 text-xs font-medium text-rose-800 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-200">
+            {cameraError ?? samplingError ?? backendError}
+          </div>
+        )}
+
+        {isRequesting && (
+          <div className="mt-3 rounded-xl border border-blue-100 bg-blue-50 px-3.5 py-2 text-xs font-semibold text-blue-700 dark:border-blue-500/25 dark:bg-blue-500/10 dark:text-cyan-200">
+            Waiting for camera permission...
+          </div>
+        )}
+
+        {activeProductAlert && !visibleCriticalAlert && (
+          <ProductWarningOverlay kind={activeProductAlert.kind} fixed />
+        )}
+
+        {faceVisibilityIssue && <FaceVisibilityOverlay issue={faceVisibilityIssue} fixed />}
+
+        {visibleCriticalAlert && (
+          <CriticalEyeModal
+            alert={visibleCriticalAlert}
+            onAcknowledge={acknowledgeCriticalAlert}
+            fixed
+          />
+        )}
+      </Card>
+    );
+  }
 
   return (
     <Card className="group relative col-span-2 row-span-2 flex h-full min-h-[400px] flex-col overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white p-2 shadow-sm transition-all duration-300 hover:shadow-md xl:min-h-0">

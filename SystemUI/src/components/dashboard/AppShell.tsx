@@ -12,6 +12,7 @@ import {
 } from "@/lib/authStore";
 import { VisionGuardThemeProvider, useVisionGuardTheme } from "@/lib/themeStore";
 import { VisionGuardNotificationsProvider } from "@/lib/notificationStore";
+import { VisionGuardSettingsProvider } from "@/lib/settingsStore";
 import { cn } from "@/lib/utils";
 
 function AppFrame({ children }: { children: React.ReactNode }) {
@@ -88,9 +89,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <VisionGuardAuthProvider>
       <VisionGuardThemeProvider>
-        <VisionGuardNotificationsProvider>
-          <AppFrame>{children}</AppFrame>
-        </VisionGuardNotificationsProvider>
+        <VisionGuardSettingsProvider>
+          <VisionGuardNotificationsProvider>
+            <AppFrame>{children}</AppFrame>
+          </VisionGuardNotificationsProvider>
+        </VisionGuardSettingsProvider>
       </VisionGuardThemeProvider>
     </VisionGuardAuthProvider>
   );

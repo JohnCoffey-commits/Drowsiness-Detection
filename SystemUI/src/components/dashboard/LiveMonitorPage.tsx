@@ -40,6 +40,7 @@ import type {
   LiveMonitorDashboardEventDraft,
   LiveMonitorDashboardStore,
 } from "@/lib/liveMonitorDashboardTypes";
+import { useVisionGuardSettings } from "@/lib/settingsStore";
 
 const LIVE_MONITOR_WARNING =
   "This output is a realtime rule-based warning-candidate analysis, not final system-level drowsiness accuracy.";
@@ -100,9 +101,11 @@ export function LiveMonitorPage() {
   const [archiveStatus, setArchiveStatus] = useState("");
   const { authState, currentUser } = useVisionGuardAuth();
   const { upsertDrivingDigestNotification } = useVisionGuardNotifications();
+  const { settings } = useVisionGuardSettings();
   const lastRiskPointKeyRef = useRef("");
   const previousRiskSeverityRef = useRef(riskState.severity);
   const lastNormalEventAtRef = useRef(0);
+  const minimalMode = settings.liveMonitor.minimalMode;
   const legacyRecordsVisible =
     Boolean(currentUser?.id) && authState.users[0]?.id === currentUser?.id;
   const currentUserId = currentUser?.id;
@@ -381,11 +384,34 @@ export function LiveMonitorPage() {
 
   return (
       <main className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto px-4 py-4 lg:px-6 lg:py-4 xl:overflow-hidden">
-        <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 xl:min-h-0 xl:flex-1 xl:gap-5">
-          <div className="grid grid-cols-1 gap-4 xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,1.45fr)_minmax(420px,1fr)] xl:gap-5 2xl:grid-cols-[minmax(0,1.5fr)_minmax(460px,1fr)]">
-            <div className="flex min-h-0 flex-col gap-4 xl:gap-5">
-              <div className="min-h-[360px] overflow-hidden xl:min-h-0 xl:flex-[1.35]">
+        <div
+          className={`mx-auto flex w-full flex-col gap-4 xl:min-h-0 xl:flex-1 xl:gap-5 ${
+            minimalMode ? "max-w-[920px]" : "max-w-[1600px]"
+          }`}
+        >
+          <div
+            className={
+              minimalMode
+                ? "flex min-h-0 flex-1 flex-col gap-4 xl:gap-5"
+                : "grid grid-cols-1 gap-4 xl:min-h-0 xl:flex-1 xl:grid-cols-[minmax(0,1.45fr)_minmax(420px,1fr)] xl:gap-5 2xl:grid-cols-[minmax(0,1.5fr)_minmax(460px,1fr)]"
+            }
+          >
+            <div
+              className={
+                minimalMode
+                  ? "order-2 flex min-h-0 flex-col gap-4 xl:gap-5"
+                  : "flex min-h-0 flex-col gap-4 xl:gap-5"
+              }
+            >
+              <div
+                className={
+                  minimalMode
+                    ? "min-h-[112px] overflow-visible"
+                    : "min-h-[360px] overflow-hidden xl:min-h-0 xl:flex-[1.35]"
+                }
+              >
                 <LiveVideoCard
+                  minimalMode={minimalMode}
                   onRiskStateChange={handleRiskStateChange}
                   onDashboardEvent={recordDashboardEvent}
                   onMonitoringSessionStart={handleMonitoringSessionStart}
@@ -393,79 +419,93 @@ export function LiveMonitorPage() {
                 />
               </div>
 
-              <div className="min-h-[260px] overflow-hidden xl:min-h-0 xl:flex-[0.85]">
-                <DrowsinessLevelChart
-                  points={currentSessionRiskPoints}
-                  now={referenceNow}
-                  sessionStartedAt={currentDriveSession.startedAt}
-                  isMonitoringActive={riskState.severity !== "idle"}
-                />
-              </div>
+              {!minimalMode && (
+                <div className="min-h-[260px] overflow-hidden xl:min-h-0 xl:flex-[0.85]">
+                  <DrowsinessLevelChart
+                    points={currentSessionRiskPoints}
+                    now={referenceNow}
+                    sessionStartedAt={currentDriveSession.startedAt}
+                    isMonitoringActive={riskState.severity !== "idle"}
+                  />
+                </div>
+              )}
             </div>
 
-            <div className="relative flex min-h-[640px] min-w-0 flex-col gap-4 overflow-visible xl:min-h-0 xl:min-w-[420px] xl:gap-5 2xl:min-w-[460px]">
-              <div
-                aria-hidden={recentEventsExpanded}
-                className={`flex min-h-0 flex-[1.35] flex-col gap-4 transition-all duration-[360ms] ease-out xl:gap-5 ${
-                  recentEventsExpanded
-                    ? "pointer-events-none scale-[0.96] opacity-0"
-                    : "scale-100 opacity-100"
-                }`}
-              >
-                <div className="grid shrink-0 grid-cols-1 gap-4 xl:gap-5 sm:grid-cols-2">
-                  <StatusMetricCard
-                    type="closed"
-                    events={currentDriveCounts.eyeWarnings}
-                  />
-                  <StatusMetricCard
-                    type="yawn"
-                    events={currentDriveCounts.yawnWarnings}
-                  />
-                </div>
-                <div className="min-h-0 flex-1 overflow-hidden">
-                  <DrowsinessRiskCard riskState={riskState} />
-                </div>
-              </div>
+            <div
+              className={
+                minimalMode
+                  ? "order-1 min-h-[440px] min-w-0 overflow-visible sm:min-h-[520px] xl:min-h-0 xl:flex-1"
+                  : "relative flex min-h-[640px] min-w-0 flex-col gap-4 overflow-visible xl:min-h-0 xl:min-w-[420px] xl:gap-5 2xl:min-w-[460px]"
+              }
+            >
+              {minimalMode ? (
+                <DrowsinessRiskCard riskState={riskState} variant="prominent" />
+              ) : (
+                <>
+                  <div
+                    aria-hidden={recentEventsExpanded}
+                    className={`flex min-h-0 flex-[1.35] flex-col gap-4 transition-all duration-[360ms] ease-out xl:gap-5 ${
+                      recentEventsExpanded
+                        ? "pointer-events-none scale-[0.96] opacity-0"
+                        : "scale-100 opacity-100"
+                    }`}
+                  >
+                    <div className="grid shrink-0 grid-cols-1 gap-4 xl:gap-5 sm:grid-cols-2">
+                      <StatusMetricCard
+                        type="closed"
+                        events={currentDriveCounts.eyeWarnings}
+                      />
+                      <StatusMetricCard
+                        type="yawn"
+                        events={currentDriveCounts.yawnWarnings}
+                      />
+                    </div>
+                    <div className="min-h-0 flex-1 overflow-hidden">
+                      <DrowsinessRiskCard riskState={riskState} />
+                    </div>
+                  </div>
 
-              <div
-                aria-hidden={recentEventsExpanded}
-                className={`min-h-0 flex-[0.85] overflow-hidden transition-all duration-[360ms] ease-out ${
-                  recentEventsExpanded
-                    ? "pointer-events-none scale-[0.98] opacity-0"
-                    : "scale-100 opacity-100"
-                }`}
-              >
-                <RecentEventsList
-                  events={todayEvents}
-                  actionTabIndex={recentEventsExpanded ? -1 : 0}
-                  onExpand={() => setRecentEventsExpanded(true)}
-                />
-              </div>
+                  <div
+                    aria-hidden={recentEventsExpanded}
+                    className={`min-h-0 flex-[0.85] overflow-hidden transition-all duration-[360ms] ease-out ${
+                      recentEventsExpanded
+                        ? "pointer-events-none scale-[0.98] opacity-0"
+                        : "scale-100 opacity-100"
+                    }`}
+                  >
+                    <RecentEventsList
+                      events={todayEvents}
+                      actionTabIndex={recentEventsExpanded ? -1 : 0}
+                      onExpand={() => setRecentEventsExpanded(true)}
+                    />
+                  </div>
 
-              <div
-                aria-hidden={!recentEventsExpanded}
-                className={`absolute inset-x-0 bottom-0 z-30 h-full origin-bottom transform-gpu overflow-hidden transition-all duration-[420ms] ease-out ${
-                  recentEventsExpanded
-                    ? "pointer-events-auto opacity-100"
-                    : "pointer-events-none opacity-0"
-                }`}
-                style={{
-                  clipPath: recentEventsExpanded
-                    ? "inset(0 0 0 0 round 2rem)"
-                    : "inset(62% 0 0 0 round 2rem)",
-                  transform: recentEventsExpanded
-                    ? "translateY(0) scale(1)"
-                    : "translateY(10px) scale(0.985)",
-                }}
-              >
-                <RecentEventsList
-                  events={todayEvents}
-                  expanded
-                  actionTabIndex={recentEventsExpanded ? 0 : -1}
-                  onCollapse={() => setRecentEventsExpanded(false)}
-                  className="border-slate-200/80 shadow-2xl shadow-slate-950/20 hover:shadow-2xl"
-                />
-              </div>
+                  <div
+                    aria-hidden={!recentEventsExpanded}
+                    className={`absolute inset-x-0 bottom-0 z-30 h-full origin-bottom transform-gpu overflow-hidden transition-all duration-[420ms] ease-out ${
+                      recentEventsExpanded
+                        ? "pointer-events-auto opacity-100"
+                        : "pointer-events-none opacity-0"
+                    }`}
+                    style={{
+                      clipPath: recentEventsExpanded
+                        ? "inset(0 0 0 0 round 2rem)"
+                        : "inset(62% 0 0 0 round 2rem)",
+                      transform: recentEventsExpanded
+                        ? "translateY(0) scale(1)"
+                        : "translateY(10px) scale(0.985)",
+                    }}
+                  >
+                    <RecentEventsList
+                      events={todayEvents}
+                      expanded
+                      actionTabIndex={recentEventsExpanded ? 0 : -1}
+                      onCollapse={() => setRecentEventsExpanded(false)}
+                      className="border-slate-200/80 shadow-2xl shadow-slate-950/20 hover:shadow-2xl"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
           <p className="shrink-0 px-1 text-[11px] leading-4 text-slate-500">
