@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ExternalLink, FileText } from "lucide-react";
+import { ChevronRight, ExternalLink, FileText } from "lucide-react";
 import type { VideoUploadResponse } from "@/lib/videoUploadTypes";
 import { buildApiUrl, safeBackendLink, sessionFilePath } from "@/lib/videoUploadUtils";
 
@@ -54,7 +54,7 @@ export function TechnicalEvidencePanel({
         backendUrl,
         sessionFilePath(sessionId, "keyframes/keyframes_metadata.csv"),
       ),
-      description: "Keyframe table with warning-candidate metadata.",
+      description: "Keyframe table with backend alert metadata.",
     },
     {
       label: "Keyframe metadata JSON",
@@ -102,16 +102,16 @@ export function TechnicalEvidencePanel({
           </span>
           <span>
             <span className="block text-lg font-bold text-slate-950">
-              Technical Evidence Panel
+              Technical Details
             </span>
             <span className="mt-1 block text-sm text-slate-600">
-              Safe backend links only. Local server-side log paths are not shown
-              in the browser.
+              Advanced evidence links and backend artifacts. Local server-side
+              log paths are not shown in the browser.
             </span>
           </span>
         </span>
-        <ChevronDown
-          className={`h-5 w-5 shrink-0 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`}
+        <ChevronRight
+          className={`h-5 w-5 shrink-0 text-slate-500 transition-transform ${open ? "rotate-90" : ""}`}
         />
       </button>
 

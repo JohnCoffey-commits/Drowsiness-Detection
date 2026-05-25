@@ -1,5 +1,5 @@
 export const PERMANENT_WARNING =
-  "This output is a rule-based drowsiness warning-candidate analysis, not final system-level drowsiness accuracy.";
+  "This video analysis shows rule-based fatigue-related alert candidates based on visual evidence. It is intended for awareness and evidence review, not medical diagnosis, final system-level drowsiness accuracy, or a guarantee of driving safety.";
 
 export type FusionState =
   | "normal"
@@ -150,7 +150,11 @@ export interface VideoUploadResponse {
   audit_log?: string;
 }
 
-export type BackendStatus = "unchecked" | "checking" | "connected" | "failed";
+export type BackendStatus =
+  | "unchecked"
+  | "checking"
+  | "connected"
+  | "disconnected";
 
 export type AnalysisStatus =
   | "idle"

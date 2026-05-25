@@ -48,11 +48,11 @@ export function EvidenceFigures({ figures }: EvidenceFiguresProps) {
     <section className="space-y-4" aria-labelledby="figures-title">
       <div>
         <h2 id="figures-title" className="text-xl font-bold text-slate-950">
-          Evidence Figures
+          Evidence Timeline
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Fusion timeline is shown by default. Specialist probability figures
-          remain available through tabs without expanding every figure at once.
+          Backend-generated evidence figures for fusion state and specialist
+          model outputs.
         </p>
       </div>
 
@@ -103,7 +103,7 @@ export function EvidenceFigures({ figures }: EvidenceFiguresProps) {
                   className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 outline-none transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-400"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  Open
+                  Open full figure
                 </a>
               </div>
               <div className="mt-4">

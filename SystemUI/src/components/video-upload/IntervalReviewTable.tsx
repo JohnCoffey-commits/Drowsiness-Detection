@@ -16,6 +16,7 @@ import {
   hasStage175IntervalFields,
   intervalDuration,
   intervalFrameCount,
+  primaryEvidenceSummary,
   stateTone,
 } from "@/lib/videoUploadUtils";
 
@@ -98,6 +99,12 @@ function IntervalDetails({ interval }: { interval: MergedWarningInterval }) {
             not recompute or override the backend fusion state.
           </p>
         </DetailItem>
+        <DetailItem label="Model probabilities">
+          <p>Max p_eye_closed: {formatProbability(interval.max_p_eye_closed)}</p>
+          <p>Max p_yawn: {formatProbability(interval.max_p_yawn)}</p>
+          <p>Mean p_eye_closed: {formatProbability(interval.mean_p_eye_closed)}</p>
+          <p>Mean p_yawn: {formatProbability(interval.mean_p_yawn)}</p>
+        </DetailItem>
         <DetailItem label="Eye evidence explanation">
           {evidenceDescription}
         </DetailItem>
@@ -121,7 +128,7 @@ function IntervalDetails({ interval }: { interval: MergedWarningInterval }) {
           </p>
         </DetailItem>
         {gateReason !== "—" ? (
-          <DetailItem label="Stage 17.5 strength reason">
+          <DetailItem label="Eye evidence calibration reason">
             {gateReason}
           </DetailItem>
         ) : null}
@@ -187,6 +194,7 @@ function MobileIntervalCard({
 }) {
   const stage175 = hasStage175IntervalFields(interval);
   const evidence = intervalEyeEvidence(interval);
+  const primaryEvidence = primaryEvidenceSummary(interval);
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -220,15 +228,15 @@ function MobileIntervalCard({
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase text-slate-400">
-            Max p_eye_closed
+            Evidence
           </dt>
           <dd className="font-semibold text-slate-900">
-            {formatProbability(interval.max_p_eye_closed)}
+            {primaryEvidence}
           </dd>
         </div>
         <div>
           <dt className="text-xs font-semibold uppercase text-slate-400">
-            Peak eye evidence
+            Strength
           </dt>
           <dd className="font-semibold text-slate-900">
             {stage175
@@ -259,18 +267,17 @@ export function IntervalReviewTable({ intervals }: IntervalReviewTableProps) {
     <section className="space-y-4" aria-labelledby="intervals-title">
       <div>
         <h2 id="intervals-title" className="text-xl font-bold text-slate-950">
-          Warning-Candidate Intervals
+          Alert Intervals
         </h2>
         <p className="mt-1 text-sm text-slate-600">
           Normal intervals are omitted. Backend fusion states remain the source
-          of truth; peak eye evidence is descriptive probability evidence within
-          each interval.
+          of truth; details include the technical probability and gate fields.
         </p>
       </div>
 
       {intervals.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-5 text-sm text-slate-600">
-          No warning-candidate intervals were returned.
+          No alert intervals were returned.
         </div>
       ) : (
         <>
@@ -287,24 +294,21 @@ export function IntervalReviewTable({ intervals }: IntervalReviewTableProps) {
 
           <div className="hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:block">
             <table className="w-full table-fixed border-collapse text-left text-xs">
-              <thead className="bg-slate-50 text-[11px] uppercase text-slate-500">
+              <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
                 <tr>
-                  <th className="w-[15%] px-2 py-3">State</th>
-                  <th className="w-[7%] px-2 py-3">Start</th>
-                  <th className="w-[7%] px-2 py-3">End</th>
-                  <th className="w-[8%] px-2 py-3">Duration</th>
-                  <th className="w-[7%] px-2 py-3">Frames</th>
-                  <th className="w-[8%] px-2 py-3">Max p_eye</th>
-                  <th className="w-[8%] px-2 py-3">Max p_yawn</th>
+                  <th className="w-[17%] px-2 py-3">Alert</th>
+                  <th className="w-[8%] px-2 py-3">Start</th>
+                  <th className="w-[8%] px-2 py-3">End</th>
+                  <th className="w-[9%] px-2 py-3">Duration</th>
+                  <th className="w-[8%] px-2 py-3">Frames</th>
+                  <th className="w-[21%] px-2 py-3">Evidence</th>
                   <th
-                    className="w-[14%] px-2 py-3"
+                    className="w-[17%] px-2 py-3"
                     title="Descriptive eye-probability evidence within the interval; does not override backend fusion state."
                   >
-                    Peak eye evidence
+                    Strength
                   </th>
-                  <th className="w-[7%] px-2 py-3">Sustained</th>
-                  <th className="w-[8%] px-2 py-3">Review</th>
-                  <th className="w-[11%] px-2 py-3">Details</th>
+                  <th className="w-[12%] px-2 py-3">Details</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -312,6 +316,7 @@ export function IntervalReviewTable({ intervals }: IntervalReviewTableProps) {
                   const stage175 = hasStage175IntervalFields(interval);
                   const evidence = intervalEyeEvidence(interval);
                   const expanded = expandedId === interval.id;
+                  const primaryEvidence = primaryEvidenceSummary(interval);
                   return (
                     <Fragment key={interval.id}>
                       <tr className="align-middle">
@@ -336,11 +341,8 @@ export function IntervalReviewTable({ intervals }: IntervalReviewTableProps) {
                         <td className="whitespace-nowrap px-2 py-2 font-mono text-slate-700">
                           {intervalFrameCount(interval) ?? "—"}
                         </td>
-                        <td className="whitespace-nowrap px-2 py-2 font-mono text-slate-700">
-                          {formatProbability(interval.max_p_eye_closed)}
-                        </td>
-                        <td className="whitespace-nowrap px-2 py-2 font-mono text-slate-700">
-                          {formatProbability(interval.max_p_yawn)}
+                        <td className="px-2 py-2 font-semibold text-slate-700">
+                          {primaryEvidence}
                         </td>
                         <td className="px-2 py-2 font-semibold text-slate-700">
                           {stage175
@@ -351,16 +353,6 @@ export function IntervalReviewTable({ intervals }: IntervalReviewTableProps) {
                               )
                             : "—"}
                         </td>
-                        <td className="px-2 py-2 text-slate-700">
-                          {formatOptionalBooleanCompact(
-                            interval.sustained_eye_warning,
-                          )}
-                        </td>
-                        <td className="px-2 py-2 text-slate-700">
-                          {formatOptionalBooleanCompact(
-                            interval.manual_review_recommended,
-                          )}
-                        </td>
                         <td className="px-2 py-2">
                           <DetailsButton
                             expanded={expanded}
@@ -370,7 +362,7 @@ export function IntervalReviewTable({ intervals }: IntervalReviewTableProps) {
                       </tr>
                       {expanded ? (
                         <tr>
-                          <td colSpan={11} className="px-2 pb-3">
+                          <td colSpan={8} className="px-2 pb-3">
                             <IntervalDetails interval={interval} />
                           </td>
                         </tr>

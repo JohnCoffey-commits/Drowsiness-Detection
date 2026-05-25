@@ -12,8 +12,7 @@ import {
 import {
   AlertCircle,
   CheckCircle2,
-  Clipboard,
-  ClipboardCheck,
+  Download,
   FileVideo,
   RefreshCw,
   RotateCcw,
@@ -23,20 +22,19 @@ import {
 } from "lucide-react";
 import { AnalysisSummaryCards } from "@/components/video-upload/AnalysisSummaryCards";
 import { EvidenceFigures } from "@/components/video-upload/EvidenceFigures";
-import { InterpretationNotice } from "@/components/video-upload/InterpretationNotice";
 import { IntervalReviewTable } from "@/components/video-upload/IntervalReviewTable";
 import { KeyframeEvidenceGallery } from "@/components/video-upload/KeyframeEvidenceGallery";
 import { TechnicalEvidencePanel } from "@/components/video-upload/TechnicalEvidencePanel";
 import {
   type AnalysisStatus,
   type BackendStatus,
-  PERMANENT_WARNING,
   type VideoUploadResponse,
 } from "@/lib/videoUploadTypes";
 import {
   buildApiUrl,
-  buildCopySummary,
+  buildVideoUploadReportHtml,
   DEFAULT_BACKEND_URL,
+  downloadTextFile,
   figureDefinitions,
   formatBytes,
   formatNumber,
@@ -46,6 +44,7 @@ import {
   resultMessage,
   sanitizeBrowserText,
   validateBackendUrl,
+  videoUploadReportFilename,
 } from "@/lib/videoUploadUtils";
 import { getArchiveClientId } from "@/lib/archiveClientId";
 import {
@@ -56,6 +55,8 @@ import { useVisionGuardAuth } from "@/lib/authStore";
 import { useVisionGuardNotifications } from "@/lib/notificationStore";
 
 const ACCEPTED_EXTENSIONS = [".mp4", ".mov", ".avi", ".m4v"];
+const BACKEND_URL_STORAGE_KEY = "visionguard.videoUpload.backendUrl";
+const BACKEND_HEALTH_PATH = "/";
 
 const processingSteps = [
   "Upload validation",
@@ -90,13 +91,13 @@ function statusLabel(status: AnalysisStatus): string {
 function backendStatusLabel(status: BackendStatus): string {
   switch (status) {
     case "connected":
-      return "connected";
-    case "failed":
-      return "failed";
+      return "Backend connected";
+    case "disconnected":
+      return "Backend unavailable";
     case "checking":
-      return "checking";
+      return "Checking backend";
     case "unchecked":
-      return "unchecked";
+      return "Backend not checked";
   }
 }
 
@@ -104,12 +105,49 @@ function backendStatusTone(status: BackendStatus): string {
   switch (status) {
     case "connected":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    case "failed":
+    case "disconnected":
       return "border-red-200 bg-red-50 text-red-700";
     case "checking":
       return "border-blue-200 bg-blue-50 text-blue-700";
     case "unchecked":
       return "border-slate-200 bg-slate-50 text-slate-600";
+  }
+}
+
+function formatBackendCheckedAt(value: string | null): string {
+  if (!value) return "Not checked";
+  return new Date(value).toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+function processingProgress(status: AnalysisStatus): {
+  activeIndex: number;
+  completeThrough: number;
+  progress: number;
+} {
+  switch (status) {
+    case "file-selected":
+      return { activeIndex: 0, completeThrough: -1, progress: 8 };
+    case "uploading":
+      return { activeIndex: 0, completeThrough: -1, progress: 18 };
+    case "analyzing":
+      return { activeIndex: 5, completeThrough: 4, progress: 68 };
+    case "completed":
+      return {
+        activeIndex: processingSteps.length - 1,
+        completeThrough: processingSteps.length - 1,
+        progress: 100,
+      };
+    case "failed":
+    case "backend-unavailable":
+      return { activeIndex: -1, completeThrough: -1, progress: 0 };
+    case "idle":
+      return { activeIndex: -1, completeThrough: -1, progress: 0 };
   }
 }
 
@@ -162,12 +200,10 @@ function SectionCard({
 function UploadedVideoPreview({
   file,
   previewUrl,
-  duration,
   onDuration,
 }: {
   file: File | null;
   previewUrl: string | null;
-  duration?: number;
   onDuration: (value?: number) => void;
 }) {
   return (
@@ -175,18 +211,17 @@ function UploadedVideoPreview({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-slate-950">
-            Uploaded video preview
+            Video preview
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Native browser preview for the selected upload. It does not auto-play
-            and is not a live feed.
+            Preview the selected file before sending it to backend analysis.
           </p>
         </div>
         <FileVideo className="h-5 w-5 shrink-0 text-blue-600" />
       </div>
 
       {file && previewUrl ? (
-        <div className="mt-4 space-y-4">
+        <div className="mt-4">
           <video
             controls
             preload="metadata"
@@ -196,44 +231,10 @@ function UploadedVideoPreview({
               onDuration(event.currentTarget.duration || undefined)
             }
           />
-          <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-            <div className="rounded-xl bg-slate-50 p-3">
-              <dt className="text-xs font-semibold uppercase text-slate-400">
-                File name
-              </dt>
-              <dd className="mt-1 break-words font-semibold text-slate-900">
-                {file.name}
-              </dd>
-            </div>
-            <div className="rounded-xl bg-slate-50 p-3">
-              <dt className="text-xs font-semibold uppercase text-slate-400">
-                File size
-              </dt>
-              <dd className="mt-1 font-semibold text-slate-900">
-                {formatBytes(file.size)}
-              </dd>
-            </div>
-            <div className="rounded-xl bg-slate-50 p-3">
-              <dt className="text-xs font-semibold uppercase text-slate-400">
-                MIME type
-              </dt>
-              <dd className="mt-1 break-words font-semibold text-slate-900">
-                {file.type || "Not provided by browser"}
-              </dd>
-            </div>
-            <div className="rounded-xl bg-slate-50 p-3">
-              <dt className="text-xs font-semibold uppercase text-slate-400">
-                Browser duration
-              </dt>
-              <dd className="mt-1 font-semibold text-slate-900">
-                {formatSeconds(duration)}
-              </dd>
-            </div>
-          </dl>
         </div>
       ) : (
         <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
-          Select an uploaded-video file to preview it here.
+          Select a video file to preview it here.
         </div>
       )}
     </SectionCard>
@@ -243,12 +244,19 @@ function UploadedVideoPreview({
 function ProcessingStatus({
   status,
   error,
+  response,
 }: {
   status: AnalysisStatus;
   error: string | null;
+  response?: VideoUploadResponse | null;
 }) {
-  const activeIndex =
-    status === "uploading" ? 0 : status === "analyzing" ? 5 : status === "completed" ? 7 : -1;
+  const [showCompletedSteps, setShowCompletedSteps] = useState(false);
+  const progressInfo = processingProgress(status);
+  const summary = response?.summary;
+  const keyframeCount =
+    response ? (response.keyframes || response.summary.keyframes || []).length : 0;
+  const showStepList =
+    (status !== "idle" && status !== "completed") || showCompletedSteps;
 
   return (
     <SectionCard>
@@ -256,8 +264,7 @@ function ProcessingStatus({
         <div>
           <h2 className="text-lg font-bold text-slate-950">Processing Status</h2>
           <p className="mt-1 text-sm text-slate-600">
-            The backend is processing the uploaded video. Step indicators are an
-            approximate UI guide.
+            Progress from upload through backend evidence generation.
           </p>
         </div>
         <span
@@ -275,41 +282,88 @@ function ProcessingStatus({
         </span>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
-        {processingSteps.map((step, index) => {
-          const complete = status === "completed" || (activeIndex > index && activeIndex !== -1);
-          const active = activeIndex === index || (status === "analyzing" && index >= 1 && index <= 7);
-          return (
+      {status === "completed" ? (
+        <div className="mt-4 flex flex-col gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 font-semibold">
+            <CheckCircle2 className="h-4 w-4" />
+            <span>
+              Analysis completed - {formatNumber(summary?.total_frames_sampled)} sampled frames -{" "}
+              {formatNumber(keyframeCount)} keyframes
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowCompletedSteps((value) => !value)}
+            className="w-fit rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-semibold text-emerald-800 outline-none transition hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-300"
+          >
+            {showCompletedSteps ? "Hide pipeline steps" : "View pipeline steps"}
+          </button>
+        </div>
+      ) : (
+        <div className="mt-4">
+          <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-500">
+            <span>Progress</span>
+            <span>{progressInfo.progress}%</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-slate-100">
             <div
-              key={step}
-              className={`rounded-xl border p-3 text-sm ${
-                complete
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                  : active
-                    ? "border-blue-200 bg-blue-50 text-blue-800"
-                    : "border-slate-200 bg-slate-50 text-slate-500"
+              className={`h-full rounded-full transition-all duration-300 ${
+                status === "failed" || status === "backend-unavailable"
+                  ? "bg-red-500"
+                  : "bg-blue-600"
               }`}
-            >
-              <div className="flex items-center gap-2">
-                {complete ? (
-                  <CheckCircle2 className="h-4 w-4" />
-                ) : active ? (
-                  <RefreshCw className="h-4 w-4" />
-                ) : (
-                  <span className="h-4 w-4 rounded-full border border-current" />
-                )}
-                <span className="font-semibold">{step}</span>
+              style={{ width: `${progressInfo.progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {showStepList ? (
+        <div className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-500">
+          <span>Pipeline steps</span>
+        </div>
+      ) : null}
+
+      {showStepList ? (
+        <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
+          {processingSteps.map((step, index) => {
+            const complete = index <= progressInfo.completeThrough;
+            const active = index === progressInfo.activeIndex;
+            return (
+              <div
+                key={step}
+                className={`rounded-xl border p-3 text-sm ${
+                  complete
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : active
+                      ? "border-blue-200 bg-blue-50 text-blue-800"
+                      : "border-slate-200 bg-slate-50 text-slate-500"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {complete ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : active ? (
+                    <RefreshCw className="h-4 w-4" />
+                  ) : (
+                    <span className="h-4 w-4 rounded-full border border-current" />
+                  )}
+                  <span className="font-semibold">{step}</span>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      ) : null}
 
       {error ? (
         <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           <div className="flex items-start gap-2">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{error}</span>
+            <div>
+              <div className="font-bold">Failure reason</div>
+              <div className="mt-1">{error}</div>
+            </div>
           </div>
         </div>
       ) : null}
@@ -326,23 +380,35 @@ function ResultOverview({
 }) {
   const summary = response.summary || {};
   const keyframeCount = (response.keyframes || summary.keyframes || []).length;
+  const alertIntervals = mergeWarningIntervals(summary).length;
   const statusItems = [
-    ["Session", response.session_id],
-    ["Status", response.status || summary.pipeline_status || "Not available"],
-    ["Runtime", formatSeconds(response.runtime_duration_sec ?? summary.runtime_sec)],
+    ["Video duration", formatSeconds(summary.duration_sec)],
     ["Sampled frames", formatNumber(summary.total_frames_sampled)],
-    ["Analyzed", formatSeconds(summary.duration_sec)],
+    ["Alert intervals", formatNumber(alertIntervals)],
     ["Keyframes", formatNumber(keyframeCount)],
-    ["Figures", formatNumber(figuresCount)],
+    ["Evidence figures", formatNumber(figuresCount)],
+    ["Processing time", formatSeconds(response.runtime_duration_sec ?? summary.runtime_sec)],
   ];
+  const highRiskCount =
+    summary.high_confidence_intervals?.length ??
+    (summary.high_confidence_drowsiness_candidate_frames ? 1 : 0);
+  const overviewText =
+    highRiskCount > 0
+      ? "The uploaded video contains alert intervals with stronger eye-closure-related evidence."
+      : alertIntervals > 0
+        ? "The uploaded video contains fatigue-related visual alert intervals."
+        : "No alert intervals were returned for this uploaded video.";
 
   return (
     <SectionCard className="border-blue-200 bg-blue-50/30 p-4">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <h2 className="text-lg font-bold text-slate-950">Result Overview</h2>
+          <h2 className="text-lg font-bold text-slate-950">Analysis Summary</h2>
           <p className="mt-1 text-sm font-semibold text-blue-700">
             {resultMessage(summary)}
+          </p>
+          <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-600">
+            {overviewText}
           </p>
         </div>
         <div className="rounded-lg border border-blue-200 bg-white px-3 py-2 text-xs text-slate-600">
@@ -367,9 +433,37 @@ function ResultOverview({
       </dl>
 
       <p className="mt-3 text-xs leading-relaxed text-slate-600">
-        {PERMANENT_WARNING}
+        Technical run identifiers and raw backend artifacts are available in
+        Technical Details.
       </p>
     </SectionCard>
+  );
+}
+
+function ResultSectionNav() {
+  const links = [
+    ["Overview", "overview"],
+    ["Alert Intervals", "alert-intervals"],
+    ["Evidence Figures", "evidence-figures"],
+    ["Keyframes", "keyframes"],
+    ["Technical Details", "technical-details"],
+  ];
+
+  return (
+    <nav
+      aria-label="Video analysis result sections"
+      className="sticky top-0 z-10 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-white/95 p-3 text-sm shadow-sm backdrop-blur"
+    >
+      {links.map(([label, id]) => (
+        <a
+          key={id}
+          href={`#${id}`}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 focus-visible:ring-2 focus-visible:ring-blue-400"
+        >
+          {label}
+        </a>
+      ))}
+    </nav>
   );
 }
 
@@ -377,14 +471,17 @@ export function VideoUploadAnalysis() {
   const { currentUser } = useVisionGuardAuth();
   const { addNotification } = useVisionGuardNotifications();
   const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
+  const [backendUrlLoaded, setBackendUrlLoaded] = useState(false);
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("unchecked");
+  const [backendCheckedAt, setBackendCheckedAt] = useState<string | null>(null);
+  const [allowBackendOverride, setAllowBackendOverride] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [videoDuration, setVideoDuration] = useState<number | undefined>();
   const [status, setStatus] = useState<AnalysisStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<VideoUploadResponse | null>(null);
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  const [reportState, setReportState] = useState<"idle" | "downloaded" | "failed">("idle");
   const [archiveState, setArchiveState] = useState<
     "idle" | "saving" | "saved" | "failed"
   >("idle");
@@ -399,16 +496,38 @@ export function VideoUploadAnalysis() {
     };
   }, [previewUrl]);
 
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      try {
+        const storedBackendUrl = window.localStorage.getItem(BACKEND_URL_STORAGE_KEY);
+        if (storedBackendUrl) {
+          setBackendUrl(storedBackendUrl);
+        }
+      } catch {
+        // Local storage can be unavailable in private or restricted browser contexts.
+      } finally {
+        setBackendUrlLoaded(true);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(id);
+  }, []);
+
   const backendUrlError = validateBackendUrl(backendUrl);
   const normalizedBackendUrl = normalizeBackendUrl(backendUrl);
-  const canAnalyze = Boolean(file) && !backendUrlError && status !== "uploading" && status !== "analyzing";
+  const canAnalyze =
+    Boolean(file) &&
+    !backendUrlError &&
+    (backendStatus === "connected" || allowBackendOverride) &&
+    status !== "uploading" &&
+    status !== "analyzing";
 
   const setSelectedFile = useCallback(
     (nextFile: File | null) => {
       setError(null);
       setResponse(null);
       setVideoDuration(undefined);
-      setCopyState("idle");
+      setReportState("idle");
       setArchiveState("idle");
       setArchiveMessage("");
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -442,36 +561,61 @@ export function VideoUploadAnalysis() {
     setSelectedFile(event.dataTransfer.files?.[0] || null);
   };
 
-  const checkBackend = useCallback(async () => {
-    const validation = validateBackendUrl(backendUrl);
+  const checkBackend = useCallback(async (url = backendUrl) => {
+    const validation = validateBackendUrl(url);
     if (validation) {
-      setBackendStatus("failed");
+      setBackendStatus("disconnected");
+      setBackendCheckedAt(new Date().toISOString());
       setError(validation);
       return;
     }
     setBackendStatus("checking");
     setError(null);
     try {
-      const result = await fetch(buildApiUrl(backendUrl, "/static/upload_test.html"), {
+      const result = await fetch(buildApiUrl(url, BACKEND_HEALTH_PATH), {
         method: "GET",
         cache: "no-store",
+        redirect: "follow",
       });
-      setBackendStatus(result.ok ? "connected" : "failed");
+      setBackendStatus(result.ok ? "connected" : "disconnected");
+      setBackendCheckedAt(new Date().toISOString());
       if (!result.ok) {
         setError(
           `Backend check failed with HTTP ${result.status}. Verify the backend URL and CORS allowed origins.`,
         );
       }
     } catch {
-      setBackendStatus("failed");
-      setError(backendReachabilityMessage(backendUrl));
+      setBackendStatus("disconnected");
+      setBackendCheckedAt(new Date().toISOString());
+      setError(backendReachabilityMessage(url));
     }
   }, [backendUrl]);
+
+  useEffect(() => {
+    if (!backendUrlLoaded) return;
+    const id = window.setTimeout(() => {
+      void checkBackend(backendUrl);
+    }, 500);
+
+    return () => window.clearTimeout(id);
+  }, [backendUrl, backendUrlLoaded, checkBackend]);
+
+  function handleBackendUrlChange(value: string) {
+    setBackendUrl(value);
+    setBackendStatus("unchecked");
+    setBackendCheckedAt(null);
+    setAllowBackendOverride(false);
+    try {
+      window.localStorage.setItem(BACKEND_URL_STORAGE_KEY, value);
+    } catch {
+      // Local storage is optional; the typed URL still applies for this session.
+    }
+  }
 
   const saveVideoResultToArchive = useCallback(
     async (payload: VideoUploadResponse) => {
       setArchiveState("saving");
-      setArchiveMessage("Saving compact uploaded-video summary to local archive.");
+      setArchiveMessage("Saving compact video analysis summary.");
       const archivePayload = buildVideoArchiveRunPayload(
         payload,
         getArchiveClientId(),
@@ -487,7 +631,7 @@ export function VideoUploadAnalysis() {
       const result = await saveVideoArchiveRun(archivePayload);
       if (result.ok) {
         setArchiveState("saved");
-        setArchiveMessage("Saved compact uploaded-video summary to local archive.");
+        setArchiveMessage("Saved compact video analysis summary.");
       } else {
         setArchiveState("failed");
         setArchiveMessage(
@@ -507,14 +651,20 @@ export function VideoUploadAnalysis() {
       setStatus("backend-unavailable");
       return;
     }
+    if (backendStatus !== "connected" && !allowBackendOverride) {
+      setError(
+        "Backend is not connected. Run the backend check or enable the explicit override before analyzing."
+      );
+      setStatus("backend-unavailable");
+      return;
+    }
 
     setError(null);
     setResponse(null);
-    setCopyState("idle");
+    setReportState("idle");
     setArchiveState("idle");
     setArchiveMessage("");
     setStatus("uploading");
-    setBackendStatus("unchecked");
     if (analyzingTimerRef.current) clearTimeout(analyzingTimerRef.current);
     analyzingTimerRef.current = setTimeout(() => setStatus("analyzing"), 900);
 
@@ -539,7 +689,8 @@ export function VideoUploadAnalysis() {
           `Backend returned HTTP ${result.status}.`,
         );
         setStatus(result.status >= 500 ? "failed" : "backend-unavailable");
-        setBackendStatus("failed");
+        setBackendStatus("connected");
+        setBackendCheckedAt(new Date().toISOString());
         setError(message || `Backend returned HTTP ${result.status}.`);
         return;
       }
@@ -548,6 +699,7 @@ export function VideoUploadAnalysis() {
       setResponse(payload);
       setStatus("completed");
       setBackendStatus("connected");
+      setBackendCheckedAt(new Date().toISOString());
       void saveVideoResultToArchive(payload);
       if (currentUser) {
         addNotification({
@@ -557,7 +709,7 @@ export function VideoUploadAnalysis() {
           severity: "success",
           title: "Video upload analysis completed",
           message:
-            "Uploaded-video warning-candidate analysis finished and is ready for review.",
+            "Uploaded-video analysis finished and evidence is ready to inspect.",
           source: "video_upload",
           relatedRoute: "/video-upload",
         });
@@ -565,7 +717,8 @@ export function VideoUploadAnalysis() {
     } catch {
       if (analyzingTimerRef.current) clearTimeout(analyzingTimerRef.current);
       setStatus("backend-unavailable");
-      setBackendStatus("failed");
+      setBackendStatus("disconnected");
+      setBackendCheckedAt(new Date().toISOString());
       setError(backendReachabilityMessage(backendUrl));
     }
   };
@@ -574,7 +727,7 @@ export function VideoUploadAnalysis() {
     setSelectedFile(null);
     setResponse(null);
     setError(null);
-    setCopyState("idle");
+    setReportState("idle");
     setArchiveState("idle");
     setArchiveMessage("");
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -582,20 +735,24 @@ export function VideoUploadAnalysis() {
 
   const clearResult = () => {
     setResponse(null);
-    setCopyState("idle");
+    setReportState("idle");
     setArchiveState("idle");
     setArchiveMessage("");
     setStatus(file ? "file-selected" : "idle");
   };
 
-  const copySummary = async () => {
+  const downloadReport = () => {
     if (!response) return;
     try {
-      await navigator.clipboard.writeText(buildCopySummary(response));
-      setCopyState("copied");
-      window.setTimeout(() => setCopyState("idle"), 1800);
+      downloadTextFile(
+        videoUploadReportFilename(),
+        buildVideoUploadReportHtml(response),
+        "text/html;charset=utf-8",
+      );
+      setReportState("downloaded");
+      window.setTimeout(() => setReportState("idle"), 1800);
     } catch {
-      setCopyState("failed");
+      setReportState("failed");
     }
   };
 
@@ -615,38 +772,19 @@ export function VideoUploadAnalysis() {
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
             <div>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Uploaded Video",
-                  "Rule-based Fusion",
-                  "Warning Candidate",
-                  "Not Webcam",
-                  "Technical Evidence",
-                  "Eye Evidence Aware",
-                ].map((badge) => (
-                  <span
-                    key={badge}
-                    className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700"
-                  >
-                    {badge}
-                  </span>
-                ))}
-              </div>
-              <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-950">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-950">
                 Video Upload Analysis
               </h1>
               <p className="mt-2 text-base font-medium text-slate-600">
-                Uploaded-video rule-based warning-candidate review
-              </p>
-              <p className="mt-3 max-w-4xl text-sm leading-relaxed text-slate-600">
-                {PERMANENT_WARNING}
+                Upload a driving video to detect fatigue-related visual alerts
+                and review supporting evidence.
               </p>
             </div>
 
-            <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4 xl:w-[430px]">
+            <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4 xl:w-[360px]">
               <div className="flex items-center gap-2 text-sm font-bold text-slate-900">
                 <Server className="h-4 w-4 text-blue-600" />
-                Backend status
+                Analysis backend
               </div>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                 <span
@@ -656,21 +794,10 @@ export function VideoUploadAnalysis() {
                 >
                   {backendStatusLabel(backendStatus)}
                 </span>
-                <span className="break-all font-mono text-xs text-slate-600">
-                  {normalizedBackendUrl}
-                </span>
               </div>
-              <button
-                type="button"
-                onClick={checkBackend}
-                disabled={backendStatus === "checking"}
-                className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 outline-none transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <RefreshCw
-                  className={`h-3.5 w-3.5 ${backendStatus === "checking" ? "animate-spin" : ""}`}
-                />
-                Check backend
-              </button>
+              <div className="mt-2 text-xs font-semibold text-slate-500">
+                Last checked: {formatBackendCheckedAt(backendCheckedAt)}
+              </div>
             </div>
           </div>
         </section>
@@ -678,10 +805,11 @@ export function VideoUploadAnalysis() {
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.05fr_0.95fr]">
           <SectionCard>
             <h2 className="text-lg font-bold text-slate-950">
-              Upload & Backend Control
+              Upload video
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              Upload a local video file for backend-connected evidence review.
+              Choose a driving video for backend-connected fatigue alert
+              analysis.
             </p>
 
             <div
@@ -721,10 +849,10 @@ export function VideoUploadAnalysis() {
             </div>
 
             {file ? (
-              <div className="mt-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-3">
+              <div className="mt-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-2 xl:grid-cols-4">
                 <div>
                   <div className="text-xs font-semibold uppercase text-slate-400">
-                    File
+                    Filename
                   </div>
                   <div className="mt-1 break-words font-semibold text-slate-900">
                     {file.name}
@@ -740,6 +868,14 @@ export function VideoUploadAnalysis() {
                 </div>
                 <div>
                   <div className="text-xs font-semibold uppercase text-slate-400">
+                    Duration
+                  </div>
+                  <div className="mt-1 font-semibold text-slate-900">
+                    {formatSeconds(videoDuration)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs font-semibold uppercase text-slate-400">
                     MIME type
                   </div>
                   <div className="mt-1 break-words font-semibold text-slate-900">
@@ -749,25 +885,49 @@ export function VideoUploadAnalysis() {
               </div>
             ) : null}
 
-            <label className="mt-4 block">
-              <span className="text-sm font-semibold text-slate-900">
-                Backend URL
-              </span>
-              <input
-                value={backendUrl}
-                onChange={(event) => {
-                  setBackendUrl(event.target.value);
-                  setBackendStatus("unchecked");
-                }}
-                className={`mt-2 w-full rounded-xl border bg-white px-3 py-2.5 font-mono text-sm text-slate-900 outline-none transition focus-visible:ring-2 focus-visible:ring-blue-400 ${
-                  backendUrlError ? "border-red-300" : "border-slate-200"
-                }`}
-                placeholder={DEFAULT_BACKEND_URL}
-              />
-            </label>
-            {backendUrlError ? (
-              <p className="mt-2 text-sm text-red-600">{backendUrlError}</p>
-            ) : null}
+            <details className="mt-4 rounded-2xl border border-slate-200 bg-white">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm font-bold text-slate-900 outline-none transition hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-400">
+                Advanced backend settings
+              </summary>
+              <div className="border-t border-slate-100 p-4">
+                <label className="block">
+                  <span className="text-sm font-semibold text-slate-900">
+                    Backend URL
+                  </span>
+                  <input
+                    value={backendUrl}
+                    onChange={(event) =>
+                      handleBackendUrlChange(event.target.value)
+                    }
+                    className={`mt-2 w-full rounded-xl border bg-white px-3 py-2.5 font-mono text-sm text-slate-900 outline-none transition focus-visible:ring-2 focus-visible:ring-blue-400 ${
+                      backendUrlError ? "border-red-300" : "border-slate-200"
+                    }`}
+                    placeholder={DEFAULT_BACKEND_URL}
+                  />
+                </label>
+                {backendUrlError ? (
+                  <p className="mt-2 text-sm text-red-600">{backendUrlError}</p>
+                ) : null}
+                <label className="mt-3 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  <input
+                    type="checkbox"
+                    checked={allowBackendOverride}
+                    onChange={(event) =>
+                      setAllowBackendOverride(event.target.checked)
+                    }
+                    className="mt-1 h-4 w-4 rounded border-amber-300"
+                  />
+                  <span>
+                    Allow analysis without a connected backend check. Use only if
+                    the health check is blocked but the analysis API is known to
+                    be reachable.
+                  </span>
+                </label>
+                <p className="mt-3 break-all text-xs text-slate-500">
+                  Current backend URL: {normalizedBackendUrl}
+                </p>
+              </div>
+            </details>
 
             <div className="mt-5 flex flex-wrap gap-3">
               <button
@@ -798,21 +958,30 @@ export function VideoUploadAnalysis() {
                 </button>
               ) : null}
             </div>
+            {!canAnalyze && file ? (
+              <p className="mt-3 text-sm font-semibold text-slate-500">
+                Analyze Video requires a valid file and connected backend, unless
+                the explicit override is enabled.
+              </p>
+            ) : null}
           </SectionCard>
 
           <UploadedVideoPreview
             file={file}
             previewUrl={previewUrl}
-            duration={videoDuration}
             onDuration={setVideoDuration}
           />
         </div>
 
-        <ProcessingStatus status={status} error={error} />
+        <ProcessingStatus status={status} error={error} response={response} />
 
         {response ? (
           <>
-            <ResultOverview response={response} figuresCount={figures.length} />
+            <ResultSectionNav />
+
+            <div id="overview" className="scroll-mt-20">
+              <ResultOverview response={response} figuresCount={figures.length} />
+            </div>
 
             <div
               className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 text-sm shadow-sm ${
@@ -837,7 +1006,7 @@ export function VideoUploadAnalysis() {
                 )}
                 <span>
                   {archiveMessage ||
-                    "Compact uploaded-video summary can be saved to the local backend archive."}
+                    "Compact video analysis summary can be saved after analysis."}
                 </span>
               </div>
               {archiveState === "failed" ? (
@@ -855,54 +1024,55 @@ export function VideoUploadAnalysis() {
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div>
                 <h2 className="text-lg font-bold text-slate-950">
-                  Copyable Review Summary
+                  Analysis Report
                 </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  Copies safe warning-candidate wording and omits local server
-                  paths.
+                  Download a user-readable HTML report for this video analysis.
                 </p>
               </div>
               <button
                 type="button"
-                onClick={copySummary}
+                onClick={downloadReport}
                 className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-sm font-bold text-blue-700 outline-none transition hover:bg-blue-100 focus-visible:ring-2 focus-visible:ring-blue-400"
               >
-                {copyState === "copied" ? (
-                  <ClipboardCheck className="h-4 w-4" />
-                ) : (
-                  <Clipboard className="h-4 w-4" />
-                )}
-                {copyState === "copied"
-                  ? "Copied"
-                  : copyState === "failed"
-                    ? "Copy failed"
-                    : "Copy summary"}
+                <Download className="h-4 w-4" />
+                {reportState === "downloaded"
+                  ? "Downloaded"
+                  : reportState === "failed"
+                    ? "Download failed"
+                    : "Download report"}
               </button>
             </div>
 
             <AnalysisSummaryCards response={response} />
-            <IntervalReviewTable intervals={intervals} />
-            <EvidenceFigures figures={figures} />
-            <KeyframeEvidenceGallery
-              backendUrl={normalizedBackendUrl}
-              keyframes={keyframes}
-            />
-            <InterpretationNotice />
-            <TechnicalEvidencePanel
-              backendUrl={normalizedBackendUrl}
-              response={response}
-            />
+            <div id="alert-intervals" className="scroll-mt-20">
+              <IntervalReviewTable intervals={intervals} />
+            </div>
+            <div id="evidence-figures" className="scroll-mt-20">
+              <EvidenceFigures figures={figures} />
+            </div>
+            <div id="keyframes" className="scroll-mt-20">
+              <KeyframeEvidenceGallery
+                backendUrl={normalizedBackendUrl}
+                keyframes={keyframes}
+              />
+            </div>
+            <div id="technical-details" className="scroll-mt-20">
+              <TechnicalEvidencePanel
+                backendUrl={normalizedBackendUrl}
+                response={response}
+              />
+            </div>
           </>
         ) : (
           <section className="rounded-2xl border border-dashed border-slate-300 bg-white p-6 text-sm leading-relaxed text-slate-600">
             <h2 className="text-lg font-bold text-slate-950">
-              Evidence Review Workspace
+              Analysis workspace
             </h2>
             <p className="mt-2">
               Select an uploaded-video file and run analysis to populate result
-              overview, summary metrics, warning-candidate intervals, evidence
-              figures, keyframes, interpretation notes, and technical evidence
-              links.
+              summary, alert intervals, backend-generated evidence figures,
+              keyframes, and advanced evidence links.
             </p>
           </section>
         )}
