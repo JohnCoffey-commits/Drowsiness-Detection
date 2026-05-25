@@ -1,0 +1,514 @@
+{
+  "created_at_utc": "2026-05-24T13:00:29.357163+00:00",
+  "output_dir": "/Users/zhengpeixian/ZPX/UTS/DeepLearning/Group/Drowsiness_Detection/report_assets/all_figures",
+  "logical_figure_count": 25,
+  "file_count": 42,
+  "final_version_policy": {
+    "pass1_revised_figures": [
+      "fig01",
+      "fig05",
+      "fig10",
+      "fig11",
+      "fig12"
+    ],
+    "pass1_other_figures": "copied from original pass1 figures folder",
+    "pass2_figures": "copied from pass2 figures folder; semantic caption fix copied as pass2_revised_figure_captions.md"
+  },
+  "files": [
+    {
+      "figure": "Figure 1",
+      "title": "Overall System Architecture Diagram",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig01_system_architecture_rev1.png",
+      "destination": "report_assets/all_figures/fig01_system_architecture.png",
+      "size_bytes": 557590,
+      "sha256": "8ef8d9e4cbd5480dcab658889f36b651bf111e6e3ec82a621c38fb5dfc672825",
+      "dimensions": [
+        4711,
+        2741
+      ]
+    },
+    {
+      "figure": "Figure 1",
+      "title": "Overall System Architecture Diagram",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig01_system_architecture_rev1.svg",
+      "destination": "report_assets/all_figures/fig01_system_architecture.svg",
+      "size_bytes": 81517,
+      "sha256": "37809f5b9faed9b4e4b08b94f13092ff1b93098e863691a589c6c5a5a99fc1c1",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 2",
+      "title": "Runtime Inference Pipeline Diagram",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig02_runtime_inference_pipeline.png",
+      "destination": "report_assets/all_figures/fig02_runtime_inference_pipeline.png",
+      "size_bytes": 333359,
+      "sha256": "878fc82a2a608c07806dbd2f6d322e0c20fd7f8ed9874c6834a96d39e834a1da",
+      "dimensions": [
+        4257,
+        2428
+      ]
+    },
+    {
+      "figure": "Figure 2",
+      "title": "Runtime Inference Pipeline Diagram",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig02_runtime_inference_pipeline.svg",
+      "destination": "report_assets/all_figures/fig02_runtime_inference_pipeline.svg",
+      "size_bytes": 63745,
+      "sha256": "99cd8170ef2971e2a838c9717d01641bdac6fe482b925a7595b3474d457fab83",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 3",
+      "title": "Dual Expert Model Evidence Flow Diagram",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig03_dual_expert_model_evidence_flow.png",
+      "destination": "report_assets/all_figures/fig03_dual_expert_model_evidence_flow.png",
+      "size_bytes": 361711,
+      "sha256": "26a01e908612e1e118cd359462edac0cceea3b2dcee0e1a1d466dd94d1a04023",
+      "dimensions": [
+        4257,
+        2428
+      ]
+    },
+    {
+      "figure": "Figure 3",
+      "title": "Dual Expert Model Evidence Flow Diagram",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig03_dual_expert_model_evidence_flow.svg",
+      "destination": "report_assets/all_figures/fig03_dual_expert_model_evidence_flow.svg",
+      "size_bytes": 64717,
+      "sha256": "55d35114e85ed6fe40e2b2498799d7c78b8fb8aec04ded61b54145fb77f79ff0",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 4",
+      "title": "Fusion Logic / Warning State Diagram",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig04_fusion_warning_state_diagram.png",
+      "destination": "report_assets/all_figures/fig04_fusion_warning_state_diagram.png",
+      "size_bytes": 409999,
+      "sha256": "f7d44331add650d505a9b9499c7eb46ee0091c4f79449d4e0aaa7c4f5e30e912",
+      "dimensions": [
+        4257,
+        2428
+      ]
+    },
+    {
+      "figure": "Figure 4",
+      "title": "Fusion Logic / Warning State Diagram",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig04_fusion_warning_state_diagram.svg",
+      "destination": "report_assets/all_figures/fig04_fusion_warning_state_diagram.svg",
+      "size_bytes": 66993,
+      "sha256": "4c732fadef0adcfbff922925d3a3d9fd91f3ac0a6e2c180ed74003aa3a200d19",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 5",
+      "title": "Archive / History / Insights Data Flow Diagram",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig05_archive_history_insights_data_flow_rev1.png",
+      "destination": "report_assets/all_figures/fig05_archive_history_insights_data_flow.png",
+      "size_bytes": 589600,
+      "sha256": "507588b9a736231f27d0bff302eda6e8f6c3e360d81920125756a97f5f18b6d2",
+      "dimensions": [
+        4781,
+        2672
+      ]
+    },
+    {
+      "figure": "Figure 5",
+      "title": "Archive / History / Insights Data Flow Diagram",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig05_archive_history_insights_data_flow_rev1.svg",
+      "destination": "report_assets/all_figures/fig05_archive_history_insights_data_flow.svg",
+      "size_bytes": 108347,
+      "sha256": "a4d73e94be85e700a1e9eee891cfafba493e5d08264f4b684f8b07c44b45170c",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 6",
+      "title": "Remote Demo Deployment Architecture Diagram",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_remote_demo_deployment_architecture.png",
+      "destination": "report_assets/all_figures/fig_remote_demo_deployment_architecture.png",
+      "size_bytes": 390438,
+      "sha256": "eeb98e781dbe2302c1a8f9551404d81a5f69518b4241d64d2b58b7b1b8d7443a",
+      "dimensions": [
+        3455,
+        1954
+      ]
+    },
+    {
+      "figure": "Figure 6",
+      "title": "Remote Demo Deployment Architecture Diagram",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_remote_demo_deployment_architecture.svg",
+      "destination": "report_assets/all_figures/fig_remote_demo_deployment_architecture.svg",
+      "size_bytes": 101633,
+      "sha256": "cd2a33dc8824be1263f6d0dfed0ff6178b3aa2a3b5eaf4acdd12cbe7f130bfc2",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 7",
+      "title": "Combined Specialist Model Performance Summary Chart",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig07_combined_specialist_performance_summary.png",
+      "destination": "report_assets/all_figures/fig07_combined_specialist_performance_summary.png",
+      "size_bytes": 377479,
+      "sha256": "3d4f6f4f01110522fad2a01d5376be8849b88a12ac90143a062d36c28a8f007e",
+      "dimensions": [
+        4163,
+        2674
+      ]
+    },
+    {
+      "figure": "Figure 7",
+      "title": "Combined Specialist Model Performance Summary Chart",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig07_combined_specialist_performance_summary.svg",
+      "destination": "report_assets/all_figures/fig07_combined_specialist_performance_summary.svg",
+      "size_bytes": 64039,
+      "sha256": "f33bcdd5f5b74d2c50405b8b2b0656195729060cecc058e1253e554ad1d6cac1",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 8",
+      "title": "Eye Model Performance Summary Chart",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig08_eye_model_performance_summary.png",
+      "destination": "report_assets/all_figures/fig08_eye_model_performance_summary.png",
+      "size_bytes": 326884,
+      "sha256": "af0e216641b6737e7b914737dcedf1626612a18cf5d2a8b6109726f9dfeb8bac",
+      "dimensions": [
+        3389,
+        2585
+      ]
+    },
+    {
+      "figure": "Figure 8",
+      "title": "Eye Model Performance Summary Chart",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig08_eye_model_performance_summary.svg",
+      "destination": "report_assets/all_figures/fig08_eye_model_performance_summary.svg",
+      "size_bytes": 59531,
+      "sha256": "e8d57c443946987568beb1a0ef5c3e8ac842944ea883b1f8cbbc59a843b737ba",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 9",
+      "title": "Mouth/Yawn Model Performance Summary Chart",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig09_mouth_yawn_model_performance_summary.png",
+      "destination": "report_assets/all_figures/fig09_mouth_yawn_model_performance_summary.png",
+      "size_bytes": 376673,
+      "sha256": "e52f79b3df77543e554b3b4706ba93206b1c6beac2da4ba2327ba027c4af5a71",
+      "dimensions": [
+        3763,
+        2676
+      ]
+    },
+    {
+      "figure": "Figure 9",
+      "title": "Mouth/Yawn Model Performance Summary Chart",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig09_mouth_yawn_model_performance_summary.svg",
+      "destination": "report_assets/all_figures/fig09_mouth_yawn_model_performance_summary.svg",
+      "size_bytes": 65882,
+      "sha256": "4465300591f73d0ac288fa27798719e2c28ec99f33efbb7d10143f453d09aa8e",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 10",
+      "title": "Eye Model Confusion Matrix",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig10_eye_model_confusion_matrix_rev1.png",
+      "destination": "report_assets/all_figures/fig10_eye_model_confusion_matrix.png",
+      "size_bytes": 213392,
+      "sha256": "4fe4cd85d1c7afe1b5ae0e70cf1ce9c55cfd4123708017240a26813d47e5e9f7",
+      "dimensions": [
+        3575,
+        2438
+      ]
+    },
+    {
+      "figure": "Figure 10",
+      "title": "Eye Model Confusion Matrix",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig10_eye_model_confusion_matrix_rev1.svg",
+      "destination": "report_assets/all_figures/fig10_eye_model_confusion_matrix.svg",
+      "size_bytes": 56231,
+      "sha256": "5cfc4349a4275cfd76a611de0061d956687a01b6033533c768defaab9bfc8c83",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 11",
+      "title": "Mouth/Yawn Model Confusion Matrix",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig11_mouth_yawn_model_confusion_matrix_rev1.png",
+      "destination": "report_assets/all_figures/fig11_mouth_yawn_model_confusion_matrix.png",
+      "size_bytes": 219195,
+      "sha256": "281ff5871bd254f14b9c9de4b81e09d67f58feb22c306908899b966292db1bae",
+      "dimensions": [
+        3842,
+        2438
+      ]
+    },
+    {
+      "figure": "Figure 11",
+      "title": "Mouth/Yawn Model Confusion Matrix",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig11_mouth_yawn_model_confusion_matrix_rev1.svg",
+      "destination": "report_assets/all_figures/fig11_mouth_yawn_model_confusion_matrix.svg",
+      "size_bytes": 53916,
+      "sha256": "da116ed5a40d533aaa4c85db4456885a4fd8a6208469c6a947216e0b6a5a4a81",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 12",
+      "title": "Eye Training Curve",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig12_eye_training_curve_rev1.png",
+      "destination": "report_assets/all_figures/fig12_eye_training_curve.png",
+      "size_bytes": 533389,
+      "sha256": "856091ed403506fcb537d9e52d45f1d589fd51d8412f9b2bc939198cf61c847f",
+      "dimensions": [
+        4809,
+        3009
+      ]
+    },
+    {
+      "figure": "Figure 12",
+      "title": "Eye Training Curve",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/revisions/rev1_visual_fixes/figures/fig12_eye_training_curve_rev1.svg",
+      "destination": "report_assets/all_figures/fig12_eye_training_curve.svg",
+      "size_bytes": 108044,
+      "sha256": "98943d8844a255cd5f79be540ded325db166e0b0bd3b871331d5cd2248685e59",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 13",
+      "title": "Mouth/Yawn PR Curve",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig15_mouth_yawn_pr_curve.png",
+      "destination": "report_assets/all_figures/fig15_mouth_yawn_pr_curve.png",
+      "size_bytes": 110651,
+      "sha256": "c5668ee0316da75010787d650a72c4256e9283b5c8f6072ef6caf5527ca7b20f",
+      "dimensions": [
+        2163,
+        1828
+      ]
+    },
+    {
+      "figure": "Figure 13",
+      "title": "Mouth/Yawn PR Curve",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig15_mouth_yawn_pr_curve.svg",
+      "destination": "report_assets/all_figures/fig15_mouth_yawn_pr_curve.svg",
+      "size_bytes": 34564,
+      "sha256": "2436abc23f61d403ee0fcbbfb94c6d34167413dcac0fe52983746e0b374681c8",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 14",
+      "title": "Mouth/Yawn ROC Curve",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig16_mouth_yawn_roc_curve.png",
+      "destination": "report_assets/all_figures/fig16_mouth_yawn_roc_curve.png",
+      "size_bytes": 141391,
+      "sha256": "04ce7d896147e34c015677825251e825dd20699a98562cb442886dbc9ba5ef83",
+      "dimensions": [
+        2163,
+        1828
+      ]
+    },
+    {
+      "figure": "Figure 14",
+      "title": "Mouth/Yawn ROC Curve",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig16_mouth_yawn_roc_curve.svg",
+      "destination": "report_assets/all_figures/fig16_mouth_yawn_roc_curve.svg",
+      "size_bytes": 32077,
+      "sha256": "7162560666ea05ffd8c909da2feb0974e9c5abc14e8f68449f8d0b6101b545d2",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 15",
+      "title": "Mouth/Yawn Threshold Sweep",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig17_mouth_yawn_threshold_sweep.png",
+      "destination": "report_assets/all_figures/fig17_mouth_yawn_threshold_sweep.png",
+      "size_bytes": 186628,
+      "sha256": "eae7b665aa0a6d1387af9d4c2c0892ab459906ca122477188da894310f590e57",
+      "dimensions": [
+        2530,
+        1899
+      ]
+    },
+    {
+      "figure": "Figure 15",
+      "title": "Mouth/Yawn Threshold Sweep",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig17_mouth_yawn_threshold_sweep.svg",
+      "destination": "report_assets/all_figures/fig17_mouth_yawn_threshold_sweep.svg",
+      "size_bytes": 43695,
+      "sha256": "78f738e79af463563f9eda07f5cf77b500affeed6a0c6f30c463bf83f04d5c44",
+      "dimensions": null
+    },
+    {
+      "figure": "Appendix Figure A1",
+      "title": "Mouth/Yawn False Positive Error Gallery",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig18_mouth_yawn_false_positive_error_gallery.png",
+      "destination": "report_assets/all_figures/fig18_mouth_yawn_false_positive_error_gallery.png",
+      "size_bytes": 503396,
+      "sha256": "d8b9d3cff4d9d07bc660dcb38dffbb417c6174979877385195af4b60a283f0e1",
+      "dimensions": [
+        896,
+        814
+      ]
+    },
+    {
+      "figure": "Appendix Figure A2",
+      "title": "Mouth/Yawn False Negative Error Gallery",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig19_mouth_yawn_false_negative_error_gallery.png",
+      "destination": "report_assets/all_figures/fig19_mouth_yawn_false_negative_error_gallery.png",
+      "size_bytes": 509887,
+      "sha256": "d988404b486e782c9b6e4eabaeb33ed0cf71c96d7d46512d1aa3c5577a57ecbd",
+      "dimensions": [
+        896,
+        814
+      ]
+    },
+    {
+      "figure": "Appendix Figure A3",
+      "title": "Mouth/Yawn Sample Grid",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass1_architecture_and_specialist_models/figures/fig20_mouth_yawn_sample_grid.png",
+      "destination": "report_assets/all_figures/fig20_mouth_yawn_sample_grid.png",
+      "size_bytes": 508162,
+      "sha256": "a1e0c799bbf627fd847d4c6d64e4d4eed233ed80daf7c43441bdce86d2c4fc99",
+      "dimensions": [
+        896,
+        814
+      ]
+    },
+    {
+      "figure": "Figure 16",
+      "title": "Example Temporal Evidence Timeline",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_runtime_temporal_evidence_timeline.png",
+      "destination": "report_assets/all_figures/fig_runtime_temporal_evidence_timeline.png",
+      "size_bytes": 375133,
+      "sha256": "4d5a8f034d0384ac90cce7aae65ccef5ad8ba19ae91777ba1130495bd7f27b71",
+      "dimensions": [
+        3818,
+        2099
+      ]
+    },
+    {
+      "figure": "Figure 16",
+      "title": "Example Temporal Evidence Timeline",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_runtime_temporal_evidence_timeline.svg",
+      "destination": "report_assets/all_figures/fig_runtime_temporal_evidence_timeline.svg",
+      "size_bytes": 88801,
+      "sha256": "0c0885f27e9f46caf1293754365793eef18efdccfdade4fd83ebffc5c9965924",
+      "dimensions": null
+    },
+    {
+      "figure": "Figure 17",
+      "title": "Warning-candidate Interval Timeline",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_warning_candidate_interval_timeline.png",
+      "destination": "report_assets/all_figures/fig_warning_candidate_interval_timeline.png",
+      "size_bytes": 179813,
+      "sha256": "7749588325a35be5633e06669ffab18b6399c7638a34a0be63f5a7189188e044",
+      "dimensions": [
+        3891,
+        1686
+      ]
+    },
+    {
+      "figure": "Figure 17",
+      "title": "Warning-candidate Interval Timeline",
+      "format": "svg",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_warning_candidate_interval_timeline.svg",
+      "destination": "report_assets/all_figures/fig_warning_candidate_interval_timeline.svg",
+      "size_bytes": 60836,
+      "sha256": "245cd3bfbb6cb7c2262001b39f0f8f870a12abd361ad830e7d22d1e1dfbcd1a9",
+      "dimensions": null
+    },
+    {
+      "figure": "Appendix Figure A4",
+      "title": "Keyframe Contact Sheet",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_keyframe_contact_sheet.png",
+      "destination": "report_assets/all_figures/fig_keyframe_contact_sheet.png",
+      "size_bytes": 1901402,
+      "sha256": "3374ffdbd32e5b609cdd954c66c9758f5572fd8dac33056cf48190083a38bf4a",
+      "dimensions": [
+        3216,
+        1298
+      ]
+    },
+    {
+      "figure": "Appendix Figure A5",
+      "title": "Live Monitor Interface Screenshot",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_live_monitor_interface.png",
+      "destination": "report_assets/all_figures/fig_live_monitor_interface.png",
+      "size_bytes": 461134,
+      "sha256": "a4f5b3d0ed886deef00dbf4b8ea3de1f1a2d6a51dfb463c79bdf3172b169e7ed",
+      "dimensions": [
+        1440,
+        900
+      ]
+    },
+    {
+      "figure": "Appendix Figure A6",
+      "title": "Video Upload Analysis Interface Screenshot",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_video_upload_interface.png",
+      "destination": "report_assets/all_figures/fig_video_upload_interface.png",
+      "size_bytes": 98157,
+      "sha256": "7b955b9eca5d84583b71c8c6f37f834627fe409b0365c8f074f56e7dbd18cd4d",
+      "dimensions": [
+        1440,
+        900
+      ]
+    },
+    {
+      "figure": "Appendix Figure A7",
+      "title": "History 48h Interface Screenshot",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_history_48h_interface.png",
+      "destination": "report_assets/all_figures/fig_history_48h_interface.png",
+      "size_bytes": 108403,
+      "sha256": "b13f2927da002d0ca17b800326d1a7f0b91018e48c0e7def3cb8985dc1b130cb",
+      "dimensions": [
+        1440,
+        900
+      ]
+    },
+    {
+      "figure": "Appendix Figure A8",
+      "title": "Insights Interface Screenshot",
+      "format": "png",
+      "source": "report_assets/final_report_figures/pass2_runtime_ui_remote_demo/figures/fig_insights_interface.png",
+      "destination": "report_assets/all_figures/fig_insights_interface.png",
+      "size_bytes": 112338,
+      "sha256": "424d712281e9242ca4bc8abed76d0dccc24aad446d321b4ac4170d096a771ad1",
+      "dimensions": [
+        1440,
+        900
+      ]
+    }
+  ]
+}
