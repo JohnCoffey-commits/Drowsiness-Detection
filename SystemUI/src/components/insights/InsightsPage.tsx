@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { AboutInsightsNote } from "@/components/insights/AboutInsightsNote";
-import { AlertsByDriveChart } from "@/components/insights/AlertsByDriveChart";
+import { DriveHighlights } from "@/components/insights/DriveHighlights";
 import { EventCompositionChart } from "@/components/insights/EventCompositionChart";
-import { InsightSummaryCards } from "@/components/insights/InsightSummaryCards";
 import { InsightsEmptyState } from "@/components/insights/InsightsEmptyState";
 import { InsightsHeader } from "@/components/insights/InsightsHeader";
 import { KeyInsights } from "@/components/insights/KeyInsights";
 import { AttentionAreas } from "@/components/insights/AttentionAreas";
-import { SessionComparisonTable } from "@/components/insights/SessionComparisonTable";
 import { SignalQualityInsights } from "@/components/insights/SignalQualityInsights";
 import { TimeOfDayPattern } from "@/components/insights/TimeOfDayPattern";
 import { useVisionGuardAuth } from "@/lib/authStore";
@@ -59,7 +55,6 @@ type ArchiveConnectionState =
   | "disconnected";
 
 export function InsightsPage() {
-  const router = useRouter();
   const { currentUser, isLegacyRecordVisible } = useVisionGuardAuth();
   const [store, setStore] = useState<History48hStore>(EMPTY_STORE);
   const [archiveStore, setArchiveStore] = useState<History48hStore | null>(null);
@@ -182,19 +177,6 @@ export function InsightsPage() {
     sessionRows.length === 1 ? "recent drive" : "recent drives"
   }`;
 
-  function handleViewInHistory(sessionId?: string) {
-    if (!sessionId) {
-      router.push("/history-48h");
-      return;
-    }
-
-    const params = new URLSearchParams({
-      sessionId,
-      timeWindowHours: "48",
-    });
-    router.push(`/history-48h?${params.toString()}`);
-  }
-
   function handleDownloadReport() {
     if (records.length === 0) return;
 
@@ -220,12 +202,12 @@ export function InsightsPage() {
   }
 
   return (
-    <main className="flex-1 overflow-y-auto bg-[#f4f7f9] px-4 py-5 transition-colors duration-300 dark:bg-slate-950 lg:px-6">
-      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5 pb-10">
+    <main className="flex-1 overflow-y-auto bg-[#f4f7f9] px-4 py-4 transition-colors duration-300 dark:bg-slate-950 lg:px-6">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-4 pb-8">
         <InsightsHeader
           displayName={userLabel}
           recordCount={records.length}
-          dataSourceLabel={dataSourceLabel}
+          driveCount={sessionRows.length}
           onDownloadReport={handleDownloadReport}
         />
 
@@ -233,30 +215,26 @@ export function InsightsPage() {
           <InsightsEmptyState />
         ) : (
           <>
-            <KeyInsights insights={keyInsights} />
-            <InsightSummaryCards
-              summary={summary}
-              driveCount={sessionRows.length}
+            <KeyInsights
+              insights={keyInsights}
+              stats={{
+                dominant: summary.dominantAlertLabel.replace(" alert", ""),
+                highRiskShare: `${Math.round(summary.highPriorityShare * 100)}%`,
+                signalCount: summary.signalInterruptionCount,
+              }}
             />
-            <AlertsByDriveChart rows={sessionRows} />
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
+            <DriveHighlights rows={sessionRows} visibleCount={3} />
+            <div className="grid gap-4 xl:grid-cols-2">
               <EventCompositionChart data={composition} />
               <TimeOfDayPattern
                 data={timeOfDay}
                 description={timeOfDayDescription}
               />
             </div>
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
-              <SessionComparisonTable
-                rows={sessionRows}
-                onViewInHistory={handleViewInHistory}
-              />
-              <div className="flex flex-col gap-5">
-                <SignalQualityInsights summary={signalQuality} />
-                <AttentionAreas areas={attentionAreas} />
-              </div>
+            <div className="grid gap-4 xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+              <SignalQualityInsights summary={signalQuality} />
+              <AttentionAreas areas={attentionAreas} />
             </div>
-            <AboutInsightsNote />
           </>
         )}
       </div>

@@ -35,7 +35,7 @@ export function AlertsByDriveChart({ rows }: AlertsByDriveChartProps) {
     <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900 sm:p-5">
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h2 className="text-base font-black text-slate-950 dark:text-white">
+          <h2 className="text-base font-bold text-slate-950 dark:text-white">
             Alerts by Drive
           </h2>
           <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">
@@ -67,14 +67,14 @@ export function AlertsByDriveChart({ rows }: AlertsByDriveChartProps) {
             >
               <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     {row.driveLabel}
                   </h3>
                   <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                     {row.durationLabel} · {row.dominantPattern}
                   </p>
                 </div>
-                <p className="text-sm font-black text-slate-950 dark:text-white">
+                <p className="text-sm font-bold text-slate-950 dark:text-white">
                   {row.eventCount} {row.eventCount === 1 ? "alert" : "alerts"}
                 </p>
               </div>
@@ -111,7 +111,7 @@ export function AlertsByDriveChart({ rows }: AlertsByDriveChartProps) {
           ) : null}
         </div>
       ) : (
-        <div className="flex min-h-[180px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-sm font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
+        <div className="flex min-h-[180px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 text-center text-sm font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-400">
           No alerts in this time window.
         </div>
       )}

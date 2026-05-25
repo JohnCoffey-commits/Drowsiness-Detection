@@ -506,7 +506,7 @@ export function getAttentionAreas(
     });
   }
 
-  return areas.slice(0, 4);
+  return areas.slice(0, 3);
 }
 
 export function formatInsightPercent(value: number): string {
