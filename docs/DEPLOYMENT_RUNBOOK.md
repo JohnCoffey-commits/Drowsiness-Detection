@@ -62,7 +62,7 @@ For remote frontend validation, the local backend must be reachable at `http://1
 
 ## Daily Startup After Mac Restart
 
-Use this flow when the Mac has restarted or the Cloudflare Quick Tunnel URL has changed.
+Use this flow when the Mac has restarted or the Cloudflare Quick Tunnel URL has changed. The SQLite archive is local state on this Mac; do not delete `data/visionguard_archive.sqlite`. Archive data remains saved across restarts as long as the backend uses the same database file.
 
 1. Enter the project root:
 
@@ -84,6 +84,8 @@ curl http://127.0.0.1:8000/api/realtime/health
 curl http://127.0.0.1:8000/api/archive/health
 ```
 
+Confirm `/api/archive/health` reports the expected `record_count`. If `record_count` is missing or unexpectedly reset, stop and check `VISIONGUARD_ARCHIVE_DB_PATH` before continuing.
+
 4. Start Cloudflare Quick Tunnel in a separate terminal:
 
 ```bash
@@ -92,14 +94,16 @@ npx -y cloudflared tunnel --url http://localhost:8000
 
 5. Copy the new `trycloudflare.com` HTTPS URL from the tunnel output.
 
-6. Check tunnel health:
+6. Check remote tunnel health before changing Vercel:
 
 ```bash
 curl https://<new-tunnel-url>/api/realtime/health
 curl https://<new-tunnel-url>/api/archive/health
 ```
 
-7. Update the Vercel production environment variable:
+Both commands must pass before the tunnel is considered usable. If tunnel creation times out, or if a URL is printed but either health check fails, do not update Vercel. Retry later, switch network, or check VPN/proxy/firewall settings.
+
+7. Update the Vercel production environment variable only after remote health passes:
 
 ```text
 NEXT_PUBLIC_API_BASE_URL=https://<new-tunnel-url>
@@ -136,7 +140,21 @@ https://visionguard-systemui.vercel.app
 - FastAPI backend
 - Cloudflare Quick Tunnel
 
-If the Quick Tunnel URL changes, update Vercel `NEXT_PUBLIC_API_BASE_URL` and redeploy. The CORS allowed origin is the Vercel frontend URL, not the Cloudflare backend URL. Backend/archive data lives on the Mac at `data/visionguard_archive.sqlite`; back up that file or use `/api/archive/export`. Do not commit SQLite databases, SQLite sidecars, backups, or archive export JSON files.
+If the Quick Tunnel URL changes, update Vercel `NEXT_PUBLIC_API_BASE_URL` and redeploy only after the new tunnel health checks pass. The CORS allowed origin is the Vercel frontend URL, not the Cloudflare backend URL. Backend/archive data lives on the Mac at `data/visionguard_archive.sqlite`; back up that file or use `/api/archive/export`. Do not commit SQLite databases, SQLite sidecars, backups, or archive export JSON files.
+
+If Quick Tunnel fails during startup:
+
+```text
+failed to request quick Tunnel: Post "https://api.trycloudflare.com/tunnel": context deadline exceeded
+```
+
+or if `cloudflared` reports edge TLS or port `7844` timeouts, leave Vercel unchanged and retry:
+
+```bash
+npx -y cloudflared tunnel --url http://localhost:8000
+```
+
+If retrying on the same network still fails, switch to a different network such as a phone hotspot, temporarily toggle VPN/proxy tools manually, or wait and retry. See `docs/TUNNEL_DIAGNOSTIC_REPORT.md` when present for the latest network diagnostic notes.
 
 ## Cloudflare Tunnel
 
@@ -238,17 +256,22 @@ make deployment-preflight
 
 ## Troubleshooting
 
-| Symptom | Check |
-| --- | --- |
-| CORS error in browser console | Confirm `VISIONGUARD_ALLOWED_ORIGINS` includes the exact Vercel origin without a trailing slash, then restart the backend. |
-| Tunnel URL expired or changed | Start `cloudflared tunnel --url http://localhost:8000`, copy the new HTTPS URL, update `NEXT_PUBLIC_API_BASE_URL`, and redeploy Vercel. |
-| Backend not running | Start the backend with `make stage17-ui` or `.venv-stage10/bin/python src/backend/app.py --host 127.0.0.1 --port 8000`. |
-| Vercel env changed but frontend still calls old URL | Redeploy the Vercel frontend after changing `NEXT_PUBLIC_API_BASE_URL`. |
-| Local checkpoints missing | Restore the local model checkpoint files and Python environment expected by the backend pipeline. |
-| Camera permission blocked | Allow browser camera permission and use HTTPS for the deployed frontend. |
-| Upload request timeout | Use a smaller test video, verify tunnel/backend connectivity, and check local backend terminal output. |
-| Archive health fails | Check `VISIONGUARD_ARCHIVE_ENABLED`, `VISIONGUARD_ARCHIVE_DB_PATH`, and database directory permissions, then restart the backend. |
-| Archive writes fail | Confirm the backend is running. If `VISIONGUARD_ARCHIVE_WRITE_TOKEN` is set, remember that browser writes need the matching header and this is not production authentication. |
+| Problem | Likely cause | Action |
+| --- | --- | --- |
+| Cloudflare tunnel creation timeout | Cloudflare Quick Tunnel API/network/TLS issue | Do not update Vercel; retry `npx -y cloudflared tunnel --url http://localhost:8000`, switch network, or wait. |
+| Quick Tunnel prints a URL but health checks timeout | Tunnel URL was created but the local network cannot complete Cloudflare edge/TLS connectivity | Do not update Vercel; keep testing the URL, retry tunnel creation, or switch network. |
+| Vercel page loads but backend calls fail | Vercel still points to an old tunnel URL | Verify new tunnel realtime/archive health, update `NEXT_PUBLIC_API_BASE_URL`, then redeploy. |
+| History/Insights records missing | Frontend cannot reach `/api/archive/records` or backend is using a different SQLite path | Check `/api/archive/health`, `record_count`, browser network requests, and `VISIONGUARD_ARCHIVE_DB_PATH`. |
+| `record_count` reset or missing | Wrong DB path or missing `data/visionguard_archive.sqlite` | Check `VISIONGUARD_ARCHIVE_DB_PATH` and restore a backup or exported archive if needed. |
+| CORS error in browser console | Backend CORS does not include the exact Vercel frontend origin | Confirm `VISIONGUARD_ALLOWED_ORIGINS` includes `https://visionguard-systemui.vercel.app` without a trailing slash, then restart the backend. |
+| Tunnel URL expired or changed | Quick Tunnel URLs are temporary | Start `cloudflared tunnel --url http://localhost:8000`, copy the new HTTPS URL, verify remote health, update `NEXT_PUBLIC_API_BASE_URL`, and redeploy Vercel. |
+| Backend not running | Local FastAPI process stopped | Start the backend with `make stage17-ui` or `.venv-stage10/bin/python src/backend/app.py --host 127.0.0.1 --port 8000`. |
+| Vercel env changed but frontend still calls old URL | Frontend was not redeployed after env change | Redeploy the Vercel frontend after changing `NEXT_PUBLIC_API_BASE_URL`. |
+| Local checkpoints missing | Backend cannot find the local model checkpoint files | Restore the local model checkpoint files and Python environment expected by the backend pipeline. |
+| Camera permission blocked | Browser camera permission denied | Allow browser camera permission and use HTTPS for the deployed frontend. |
+| Upload request timeout | Large upload or unstable tunnel/backend connectivity | Use a smaller test video, verify tunnel/backend connectivity, and check local backend terminal output. |
+| Archive health fails | Archive disabled, wrong DB path, or database directory permissions issue | Check `VISIONGUARD_ARCHIVE_ENABLED`, `VISIONGUARD_ARCHIVE_DB_PATH`, and database directory permissions, then restart the backend. |
+| Archive writes fail | Backend unavailable or optional write-token mismatch | Confirm the backend is running. If `VISIONGUARD_ARCHIVE_WRITE_TOKEN` is set, remember that browser writes need the matching header and this is not production authentication. |
 
 ## Rollback
 
