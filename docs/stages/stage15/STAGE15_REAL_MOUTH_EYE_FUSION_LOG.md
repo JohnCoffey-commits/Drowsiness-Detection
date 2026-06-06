@@ -11,7 +11,7 @@ This is not synthetic mouth fusion, not manual mouth annotation fusion, and not 
 - Stage 12 eye timelines from `outputs/stage12_eye_alert_rule_analysis/`.
 - Stage 14 mouth/yawn timelines from `outputs/stage14_mouth_yawn_runtime_<slug>/runtime_mouth_yawn_predictions.csv`.
 - Combined real mouth timeline: `outputs/stage15_real_mouth_eye_fusion/combined_stage14_real_mouth_timeline.csv`.
-- Input audit: `artifacts/audits/stage15_real_mouth_eye_fusion_2026-05-09/stage15_input_audit.md`.
+- Input audit: `docs/archive/audits/stage15_real_mouth_eye_fusion_2026-05-09/stage15_input_audit.md`.
 
 ## Run Result
 

@@ -173,7 +173,7 @@ Quick Tunnel URL 可能变化。变化后应：
 5. redeploy frontend；
 6. 运行 preflight。
 
-Source: `docs/DEPLOYMENT_RUNBOOK.md`, `docs/TUNNEL_DIAGNOSTIC_REPORT.md`
+Source: `docs/DEPLOYMENT_RUNBOOK.md`, `docs/archive/deployment/TUNNEL_DIAGNOSTIC_REPORT.md`
 
 ## 10. Preflight 和验证
 
@@ -196,7 +196,7 @@ Source: `scripts/deployment_preflight.sh`
 |---|---|---|---|
 | 前端能打开但 backend calls fail | `NEXT_PUBLIC_API_BASE_URL` 指向旧 tunnel | Vercel env, browser network tab | 更新 env 并 redeploy |
 | CORS error | backend allowed origins 缺少 exact frontend origin | `VISIONGUARD_ALLOWED_ORIGINS` | 加入 origin 后重启 backend |
-| Quick Tunnel 创建失败 | Cloudflare Quick Tunnel API/network/TLS 问题 | `docs/TUNNEL_DIAGNOSTIC_REPORT.md` | 换网络、重试、不要更新 Vercel |
+| Quick Tunnel 创建失败 | Cloudflare Quick Tunnel API/network/TLS 问题 | `docs/archive/deployment/TUNNEL_DIAGNOSTIC_REPORT.md` | 换网络、重试、不要更新 Vercel |
 | archive record count 丢失 | backend 使用了错误 DB path | `/api/archive/health`, `VISIONGUARD_ARCHIVE_DB_PATH` | 停止并核对 DB path，不要删除 DB |
 | upload fails | backend 未运行、视频过大、pipeline error | backend logs, `outputs/system_video_upload_runs/` | 检查 logs 和 input size |
 | checkpoint missing | runtime 模型无法加载 | checkpoint paths | 恢复 checkpoint，不要重新训练作为第一反应 |

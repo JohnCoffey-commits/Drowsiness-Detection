@@ -154,7 +154,7 @@ or if `cloudflared` reports edge TLS or port `7844` timeouts, leave Vercel uncha
 npx -y cloudflared tunnel --url http://localhost:8000
 ```
 
-If retrying on the same network still fails, switch to a different network such as a phone hotspot, temporarily toggle VPN/proxy tools manually, or wait and retry. See `docs/TUNNEL_DIAGNOSTIC_REPORT.md` when present for the latest network diagnostic notes.
+If retrying on the same network still fails, switch to a different network such as a phone hotspot, temporarily toggle VPN/proxy tools manually, or wait and retry. See `docs/archive/deployment/TUNNEL_DIAGNOSTIC_REPORT.md` when present for the latest network diagnostic notes.
 
 ## Cloudflare Tunnel
 

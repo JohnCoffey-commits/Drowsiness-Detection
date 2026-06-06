@@ -151,13 +151,13 @@ Important reports:
 | `reports/stage13_mouth_eye_fusion_design_report.md` | Stage 13 rule-based mouth-eye fusion design/prototype report. |
 | `reports/stage14_mouth_yawn_runtime_validation_report.md` | Stage 14 runtime mouth/yawn validation report using the recovered Stage 7 checkpoint. |
 | `reports/stage15_real_mouth_eye_fusion_validation_report.md` | Stage 15 real synchronized rule-based mouth-eye fusion validation report. |
-| `reports/stage16_final_integration_summary_report.md` | Stage 16 final integration package summary and conservative claim boundary. |
+| `docs/archive/stage16/reports/stage16_final_integration_summary_report.md` | Stage 16 final integration package summary and conservative claim boundary. |
 | `reports/stage17_video_upload_detection_mvp_report.md` | Stage 17 video-upload backend/pipeline MVP report. |
 | `reports/stage17_2_manual_review_interpretation_report.md` | Stage 17.2 manual interpretation report for safe warning-candidate wording. |
 | `reports/stage17_4_video_upload_mvp_stabilization_report.md` | Stage 17.4 stabilization report covering launcher, acceptance, demo, and current limitations. |
 | `reports/stage17_5_eye_evidence_calibration_report.md` | Stage 17.5 eye-evidence calibration report for weak/moderate/strong evidence wording and strength-gate behavior. |
 | `reports/nthuddd2_kaggle_dataset_report.md` | Kaggle NTHUDDD2 exploration report and limitations. |
-| `reports/nthu_dataset_report.md` | Earlier NTHUDDD2 inspection notes. |
+| `docs/archive/reports/nthu_dataset_report.md` | Earlier NTHUDDD2 inspection notes. |
 
 ## 7. Source Code
 
@@ -384,17 +384,17 @@ Stage 10 supporting docs:
 
 | File | Purpose |
 | --- | --- |
-| `docs/STAGE10_RUNTIME_EYE_ROI_DESIGN.md` | Stage 10 design notes and runtime ROI constraints. |
-| `docs/STAGE10_IMPLEMENTATION_LOG.md` | Stage 10 implementation log. |
-| `docs/STAGE10_ENVIRONMENT_SETUP.md` | Dedicated `.venv-stage10` environment setup and validation evidence. |
-| `docs/STAGE10_CONTROLLED_VIDEO_TEST_LOG.md` | Controlled-video test log covering Codex/sandbox failure and successful manual Terminal run. |
+| `docs/stages/stage10/STAGE10_RUNTIME_EYE_ROI_DESIGN.md` | Stage 10 design notes and runtime ROI constraints. |
+| `docs/stages/stage10/STAGE10_IMPLEMENTATION_LOG.md` | Stage 10 implementation log. |
+| `docs/stages/stage10/STAGE10_ENVIRONMENT_SETUP.md` | Dedicated `.venv-stage10` environment setup and validation evidence. |
+| `docs/stages/stage10/STAGE10_CONTROLLED_VIDEO_TEST_LOG.md` | Controlled-video test log covering Codex/sandbox failure and successful manual Terminal run. |
 
 Stage 13 fusion design outputs:
 
 | Path | Purpose |
 | --- | --- |
-| `docs/STAGE13_MOUTH_EYE_FUSION_DESIGN.md` | Stage 13 fusion states, schema, and recommended tiered rule design. |
-| `artifacts/audits/stage13_mouth_eye_fusion_design_2026-05-09/stage13_mouth_runtime_audit.md` | Audit confirming that real synchronized mouth/yawn timelines for A/B/C/D are not currently available. |
+| `docs/stages/stage13/STAGE13_MOUTH_EYE_FUSION_DESIGN.md` | Stage 13 fusion states, schema, and recommended tiered rule design. |
+| `docs/archive/audits/stage13_mouth_eye_fusion_design_2026-05-09/stage13_mouth_runtime_audit.md` | Audit confirming that real synchronized mouth/yawn timelines for A/B/C/D are not currently available. |
 | `outputs/stage13_mouth_eye_fusion_design/` | Stage 13 design/prototype outputs, including synthetic mouth timelines, fusion timelines, rule comparison CSV, summary JSON, report, and figures. |
 | `reports/stage13_mouth_eye_fusion_design_report.md` | Human-readable Stage 13 fusion design/prototype report. |
 
@@ -402,37 +402,37 @@ Stage 14 mouth/yawn runtime audit:
 
 | Path | Purpose |
 | --- | --- |
-| `artifacts/audits/stage14_mouth_yawn_runtime_2026-05-09/stage14_mouth_model_audit.md` | Audit of mouth/yawn checkpoint, architecture, transform, and label mapping availability. |
-| `artifacts/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_BLOCKED_MISSING_MOUTH_MODEL_INFO.md` | Historical blocking report from before the Stage 7 checkpoint was recovered locally. |
-| `artifacts/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_DRIVE_CHECKPOINT_RECOVERY_REPORT.md` | Google Drive recovery report identifying the completed Stage 7 mouth/yawn checkpoint candidate. |
-| `artifacts/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_CHECKPOINT_LOCAL_COPY.md` | Local copy record for the recovered checkpoint. |
-| `artifacts/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_RECOVERED_CHECKPOINT_VERIFICATION.md` | Local checkpoint payload and ResNet18 compatibility verification. |
+| `docs/archive/audits/stage14_mouth_yawn_runtime_2026-05-09/stage14_mouth_model_audit.md` | Audit of mouth/yawn checkpoint, architecture, transform, and label mapping availability. |
+| `docs/archive/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_BLOCKED_MISSING_MOUTH_MODEL_INFO.md` | Historical blocking report from before the Stage 7 checkpoint was recovered locally. |
+| `docs/archive/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_DRIVE_CHECKPOINT_RECOVERY_REPORT.md` | Google Drive recovery report identifying the completed Stage 7 mouth/yawn checkpoint candidate. |
+| `docs/archive/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_CHECKPOINT_LOCAL_COPY.md` | Local copy record for the recovered checkpoint. |
+| `docs/archive/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_RECOVERED_CHECKPOINT_VERIFICATION.md` | Local checkpoint payload and ResNet18 compatibility verification. |
 | `outputs/stage14_mouth_yawn_runtime_A_normal_open_baseline/` | Stage 14 runtime mouth/yawn output for A baseline video. |
 | `outputs/stage14_mouth_yawn_runtime_B_realistic_drowsy_simulation/` | Stage 14 runtime mouth/yawn output for B realistic drowsy simulation video. |
 | `outputs/stage14_mouth_yawn_runtime_C_mild_head_motion/` | Stage 14 runtime mouth/yawn output for C mixed fatigue/head-motion/occlusion video. |
 | `outputs/stage14_mouth_yawn_runtime_D_controlled_long_open_closed/` | Stage 14 runtime mouth/yawn output for D controlled long open/closed reference video. |
 | `reports/stage14_mouth_yawn_runtime_validation_report.md` | Human-readable Stage 14 multi-video runtime mouth/yawn validation report. |
-| `docs/STAGE14_MOUTH_YAWN_RUNTIME_LOG.md` | Stage 14 implementation and run log. |
+| `docs/stages/stage14/STAGE14_MOUTH_YAWN_RUNTIME_LOG.md` | Stage 14 implementation and run log. |
 
 Stage 15 real synchronized fusion validation:
 
 | Path | Purpose |
 | --- | --- |
-| `artifacts/audits/stage15_real_mouth_eye_fusion_2026-05-09/stage15_input_audit.md` | Input audit confirming Stage 12 eye timelines and Stage 14 model-generated mouth timelines were available and aligned. |
+| `docs/archive/audits/stage15_real_mouth_eye_fusion_2026-05-09/stage15_input_audit.md` | Input audit confirming Stage 12 eye timelines and Stage 14 model-generated mouth timelines were available and aligned. |
 | `outputs/stage15_real_mouth_eye_fusion/` | Stage 15 real synchronized rule-based fusion outputs, including combined real mouth timeline, fusion timelines, rule comparison CSV, summary JSON, reports, and figures. |
 | `reports/stage15_real_mouth_eye_fusion_validation_report.md` | Human-readable Stage 15 real mouth-eye fusion validation report. |
-| `docs/STAGE15_REAL_MOUTH_EYE_FUSION_LOG.md` | Stage 15 run log and evidence summary. |
+| `docs/stages/stage15/STAGE15_REAL_MOUTH_EYE_FUSION_LOG.md` | Stage 15 run log and evidence summary. |
 
 Stage 16 final integration package:
 
 | Path | Purpose |
 | --- | --- |
-| `reports/stage16_final_integration_summary_report.md` | Final high-level integration summary, architecture, evidence inventory, claim boundaries, and demo plan. |
-| `docs/STAGE16_FINAL_EVIDENCE_PACKAGE.md` | Structured checklist of final evidence files. |
-| `docs/STAGE16_DEMO_AND_PRESENTATION_OUTLINE.md` | Conservative demo and presentation outline. |
-| `docs/PROJECT_FINAL_STATUS_STAGE16.md` | Concise final Stage 16 status snapshot. |
-| `artifacts/audits/stage16_final_integration_2026-05-09/STAGE15_FIGURE_TITLE_FIX.md` | Audit note for Stage 15 figure-title correction. |
-| `artifacts/audits/stage16_final_integration_2026-05-09/final_repo_artifact_audit.md` | Non-destructive final repository artifact audit. |
+| `docs/archive/stage16/reports/stage16_final_integration_summary_report.md` | Final high-level integration summary, architecture, evidence inventory, claim boundaries, and demo plan. |
+| `docs/archive/stage16/STAGE16_FINAL_EVIDENCE_PACKAGE.md` | Structured checklist of final evidence files. |
+| `docs/archive/stage16/STAGE16_DEMO_AND_PRESENTATION_OUTLINE.md` | Conservative demo and presentation outline. |
+| `docs/archive/stage16/PROJECT_FINAL_STATUS_STAGE16.md` | Concise final Stage 16 status snapshot. |
+| `docs/archive/stage16/audits/STAGE15_FIGURE_TITLE_FIX.md` | Audit note for Stage 15 figure-title correction. |
+| `docs/archive/stage16/audits/final_repo_artifact_audit.md` | Non-destructive final repository artifact audit. |
 
 Stage 17 video-upload MVP:
 
@@ -449,20 +449,20 @@ Stage 17 video-upload MVP:
 | `reports/stage17_video_upload_detection_mvp_report.md` | Stage 17 implementation and validation report. |
 | `reports/stage17_2_manual_review_interpretation_report.md` | Stage 17.2 interpretation-layer report for conservative manual review wording. |
 | `reports/stage17_4_video_upload_mvp_stabilization_report.md` | Stage 17.4 current stabilization report. |
-| `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | Result JSON, timeline, API, and keyframe schema. |
-| `docs/STAGE17_VIDEO_UPLOAD_DETECTION_LOG.md` | Stage 17 command log and validation summary. |
-| `docs/STAGE17_2_RESULT_INTERPRETATION_SCHEMA_ADDENDUM.md` | Result interpretation schema addendum for Stage 17.2. |
-| `docs/STAGE17_2_MANUAL_REVIEW_INTERPRETATION_NOTES.md` | Manual review interpretation notes for safe result discussion. |
-| `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md` | Stage 17.3 UI page report and safe wording notes. |
-| `docs/STAGE17_3_LOCAL_LAUNCH_GUIDE.md` | One-command local launch guide for backend and frontend. |
-| `docs/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md` | Manual acceptance checklist for the Stage 17.3/17.4 video-upload MVP. |
-| `docs/STAGE17_4_DEMO_SCRIPT.md` | Demo script for presenting the Stage 17.4 warning-candidate MVP. |
+| `docs/stages/stage17/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | Result JSON, timeline, API, and keyframe schema. |
+| `docs/stages/stage17/STAGE17_VIDEO_UPLOAD_DETECTION_LOG.md` | Stage 17 command log and validation summary. |
+| `docs/stages/stage17/STAGE17_2_RESULT_INTERPRETATION_SCHEMA_ADDENDUM.md` | Result interpretation schema addendum for Stage 17.2. |
+| `docs/stages/stage17/STAGE17_2_MANUAL_REVIEW_INTERPRETATION_NOTES.md` | Manual review interpretation notes for safe result discussion. |
+| `docs/stages/stage17/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md` | Stage 17.3 UI page report and safe wording notes. |
+| `docs/stages/stage17/STAGE17_3_LOCAL_LAUNCH_GUIDE.md` | One-command local launch guide for backend and frontend. |
+| `docs/stages/stage17/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md` | Manual acceptance checklist for the Stage 17.3/17.4 video-upload MVP. |
+| `docs/stages/stage17/STAGE17_4_DEMO_SCRIPT.md` | Demo script for presenting the Stage 17.4 warning-candidate MVP. |
 | `docs/DEPLOYMENT_RUNBOOK.md` | External-access deployment runbook for Vercel-hosted `SystemUI/`, Cloudflare Tunnel, local FastAPI backend, environment variables, preflight validation, troubleshooting, and rollback. Current production frontend alias: `https://visionguard-systemui.vercel.app`. |
 | `scripts/deployment_preflight.sh` | Safe repeatable deployment preflight for backend health and optional CORS OPTIONS validation. |
 | `scripts/start_stage17_ui.sh` | Starts FastAPI backend and Next.js frontend, and stops both on Ctrl+C. |
 | `Makefile` | Includes `make stage17-ui` and `make deployment-preflight` targets. |
 | `tests/test_stage17_5_eye_evidence_calibration.py` | Regression tests for Stage 17.5 eye-evidence calibration and strength-gate behavior. |
-| `artifacts/audits/stage17_video_upload_mvp_2026-05-09/stage17_systemui_backend_audit.md` | SystemUI/backend audit for Stage 17. |
+| `docs/archive/audits/stage17_video_upload_mvp_2026-05-09/stage17_systemui_backend_audit.md` | SystemUI/backend audit for Stage 17. |
 
 Stage 18, Stage 19, and Stage 20 frontend/realtime additions:
 

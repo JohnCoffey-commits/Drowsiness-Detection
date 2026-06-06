@@ -97,7 +97,7 @@ The page includes a future webcam-ready source type so later frontend/backend wo
 - `SystemUI/src/lib/history48hMockData.ts`
 - `SystemUI/src/lib/history48hStorage.ts`
 - `SystemUI/src/lib/history48hUtils.ts`
-- `docs/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md`
+- `docs/stages/stage18/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md`
 
 ## Validation Commands
 

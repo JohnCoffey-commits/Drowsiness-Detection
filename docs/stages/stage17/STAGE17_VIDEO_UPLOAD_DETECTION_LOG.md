@@ -13,10 +13,10 @@ This is not final system-level drowsiness accuracy and not deployment readiness.
 - `src/backend/app.py`
 - `src/backend/static/upload_test.html`
 - `SystemUI/src/app/video-upload/page.tsx`
-- `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md`
-- `docs/STAGE17_VIDEO_UPLOAD_DETECTION_LOG.md`
+- `docs/stages/stage17/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md`
+- `docs/stages/stage17/STAGE17_VIDEO_UPLOAD_DETECTION_LOG.md`
 - `reports/stage17_video_upload_detection_mvp_report.md`
-- `artifacts/audits/stage17_video_upload_mvp_2026-05-09/stage17_systemui_backend_audit.md`
+- `docs/archive/audits/stage17_video_upload_mvp_2026-05-09/stage17_systemui_backend_audit.md`
 
 ## Files Updated
 

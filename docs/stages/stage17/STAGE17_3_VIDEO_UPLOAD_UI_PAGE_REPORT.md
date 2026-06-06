@@ -41,7 +41,7 @@ Created:
 - `SystemUI/src/components/video-upload/TechnicalEvidencePanel.tsx`
 - `SystemUI/src/lib/videoUploadTypes.ts`
 - `SystemUI/src/lib/videoUploadUtils.ts`
-- `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md`
+- `docs/stages/stage17/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md`
 
 ## UI Sections Implemented
 

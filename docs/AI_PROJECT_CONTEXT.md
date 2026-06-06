@@ -320,7 +320,7 @@ Reference:
 
 - `docs/DEPLOYMENT_RUNBOOK.md`
 - `docs/DAILY_STARTUP_CHECKLIST.md`
-- `docs/TUNNEL_DIAGNOSTIC_REPORT.md`
+- `docs/archive/deployment/TUNNEL_DIAGNOSTIC_REPORT.md`
 
 ## 16. Best Starting Points For Future AI Work
 

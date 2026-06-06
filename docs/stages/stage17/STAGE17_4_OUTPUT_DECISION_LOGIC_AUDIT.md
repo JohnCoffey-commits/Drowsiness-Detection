@@ -46,12 +46,12 @@ Primary source files checked:
 
 Supporting docs/reports checked:
 
-- `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md`
-- `docs/STAGE17_2_RESULT_INTERPRETATION_SCHEMA_ADDENDUM.md`
-- `docs/STAGE17_2_MANUAL_REVIEW_INTERPRETATION_NOTES.md`
-- `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md`
-- `docs/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md`
-- `docs/STAGE17_4_DEMO_SCRIPT.md`
+- `docs/stages/stage17/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md`
+- `docs/stages/stage17/STAGE17_2_RESULT_INTERPRETATION_SCHEMA_ADDENDUM.md`
+- `docs/stages/stage17/STAGE17_2_MANUAL_REVIEW_INTERPRETATION_NOTES.md`
+- `docs/stages/stage17/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md`
+- `docs/stages/stage17/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md`
+- `docs/stages/stage17/STAGE17_4_DEMO_SCRIPT.md`
 - `reports/stage17_video_upload_detection_mvp_report.md`
 - `reports/stage17_2_manual_review_interpretation_report.md`
 - `reports/stage17_4_video_upload_mvp_stabilization_report.md`

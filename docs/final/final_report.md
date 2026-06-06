@@ -106,6 +106,6 @@ Stage 17 将上述 pipeline 封装为 uploaded-video MVP。后端验证 `B_reali
 
 ## Appendices / 附录
 
-主要内部证据文件包括 `docs/PROJECT_STRUCTURE.md`、`docs/PROJECT_CURRENT_STATUS.md`、`reports/stage16_final_integration_summary_report.md`、`reports/stage15_real_mouth_eye_fusion_validation_report.md`、`reports/stage14_mouth_yawn_runtime_validation_report.md`、`reports/stage12_eye_alert_rule_analysis_report.md`、`reports/mrl_eye_stage9b_error_analysis.md`、`reports/yawdd_dash_split_report.md`、`reports/mrl_eye_split_report.md`、`colab_file/stage7_yawdd_training_r.ipynb` 和 `colab_file/stage9_mrl_eye_training_r.ipynb`。
+主要内部证据文件包括 `docs/PROJECT_STRUCTURE.md`、`docs/PROJECT_CURRENT_STATUS.md`、`docs/archive/stage16/reports/stage16_final_integration_summary_report.md`、`reports/stage15_real_mouth_eye_fusion_validation_report.md`、`reports/stage14_mouth_yawn_runtime_validation_report.md`、`reports/stage12_eye_alert_rule_analysis_report.md`、`reports/mrl_eye_stage9b_error_analysis.md`、`reports/yawdd_dash_split_report.md`、`reports/mrl_eye_split_report.md`、`colab_file/stage7_yawdd_training_r.ipynb` 和 `colab_file/stage9_mrl_eye_training_r.ipynb`。
 
 能力使用审计：本次生成使用 research-writing-assistant、figures-diagram、figures-python、latex-output、documents 技能约束。实际产物包括 PDF、Markdown 源稿、5 张 PNG 可视化和构建脚本。验证包括生成脚本执行、PDF 文件完整性检查、PDF 文本抽取、页面渲染抽样和输出文件清单检查。剩余风险是该报告没有引入新的实验结果，所有项目结论均依赖现有 stage reports、notebook 输出和本地源码证据。

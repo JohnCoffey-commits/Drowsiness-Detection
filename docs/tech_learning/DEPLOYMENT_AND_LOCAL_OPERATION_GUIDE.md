@@ -171,7 +171,7 @@ Quick Tunnel URLs may change. After a change:
 5. Redeploy the frontend.
 6. Run preflight.
 
-Source: `docs/DEPLOYMENT_RUNBOOK.md`, `docs/TUNNEL_DIAGNOSTIC_REPORT.md`
+Source: `docs/DEPLOYMENT_RUNBOOK.md`, `docs/archive/deployment/TUNNEL_DIAGNOSTIC_REPORT.md`
 
 ## 10. Preflight and Validation
 
@@ -194,7 +194,7 @@ Note: the archive write test writes a clearly marked summary record. It is not r
 |---|---|---|---|
 | Frontend opens but backend calls fail | `NEXT_PUBLIC_API_BASE_URL` points to an old tunnel | Vercel env, browser network tab | Update env and redeploy |
 | CORS error | Backend allowed origins do not include exact frontend origin | `VISIONGUARD_ALLOWED_ORIGINS` | Add origin and restart backend |
-| Quick Tunnel creation fails | Cloudflare Quick Tunnel API/network/TLS issue | `docs/TUNNEL_DIAGNOSTIC_REPORT.md` | Switch network, retry, do not update Vercel |
+| Quick Tunnel creation fails | Cloudflare Quick Tunnel API/network/TLS issue | `docs/archive/deployment/TUNNEL_DIAGNOSTIC_REPORT.md` | Switch network, retry, do not update Vercel |
 | Archive record count missing | Backend uses wrong DB path | `/api/archive/health`, `VISIONGUARD_ARCHIVE_DB_PATH` | Stop and check DB path; do not delete DB |
 | Upload fails | Backend stopped, video too large, pipeline error | backend logs, `outputs/system_video_upload_runs/` | Check logs and input size |
 | Checkpoint missing | Runtime model cannot load | checkpoint paths | Restore checkpoint; do not retrain as the first response |

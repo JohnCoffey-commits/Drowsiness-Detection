@@ -624,7 +624,7 @@ NTHUDDD2 / Kaggle extracted-frame 数据曾被探索，但不是当前主系统�
 相关路径：
 
 - `reports/nthuddd2_kaggle_dataset_report.md`
-- `reports/nthu_dataset_report.md`
+- `docs/archive/reports/nthu_dataset_report.md`
 - `src/data/build_nthuddd2_kaggle_manifest.py`
 - `src/data/split_nthuddd2_kaggle_subject.py`
 - `artifacts/mappings/nthuddd2_kaggle_all_images.csv`
@@ -800,7 +800,7 @@ reproducible preprocessing artifact 是保存下来的 CSV、report 或 contact 
 - `reports/mrl_eye_dataset_report.md`
 - `reports/mrl_eye_split_report.md`
 - `reports/nthuddd2_kaggle_dataset_report.md`
-- `reports/nthu_dataset_report.md`
+- `docs/archive/reports/nthu_dataset_report.md`
 
 ### 已检查 manifest headers
 

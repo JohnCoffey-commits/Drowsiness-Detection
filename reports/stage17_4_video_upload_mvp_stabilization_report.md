@@ -28,7 +28,7 @@ Stage 17.4 adds a local launcher for the backend and frontend:
 
 - `scripts/start_stage17_ui.sh`
 - `make stage17-ui`
-- `docs/STAGE17_3_LOCAL_LAUNCH_GUIDE.md`
+- `docs/stages/stage17/STAGE17_3_LOCAL_LAUNCH_GUIDE.md`
 
 The launcher starts both services and stops them together when interrupted.
 

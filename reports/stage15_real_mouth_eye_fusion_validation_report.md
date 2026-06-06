@@ -10,7 +10,7 @@ Stage 15 validates real synchronized rule-based mouth-eye fusion using Stage 12 
 - Stage 14 mouth/yawn timelines: `outputs/stage14_mouth_yawn_runtime_<slug>/runtime_mouth_yawn_predictions.csv`
 - Combined Stage 14 real mouth timeline: `outputs/stage15_real_mouth_eye_fusion/combined_stage14_real_mouth_timeline.csv`
 - Mouth timeline source: `stage14_runtime_mouth_yawn_model`
-- Input audit: `artifacts/audits/stage15_real_mouth_eye_fusion_2026-05-09/stage15_input_audit.md`
+- Input audit: `docs/archive/audits/stage15_real_mouth_eye_fusion_2026-05-09/stage15_input_audit.md`
 
 ## 3. Input Audit Result
 

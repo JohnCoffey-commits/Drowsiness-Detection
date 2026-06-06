@@ -27,7 +27,7 @@ No model checkpoint, retraining path, Python inference formula, backend fusion r
 - `SystemUI/src/components/video-upload/EvidenceFigures.tsx`
 - `SystemUI/src/components/video-upload/KeyframeEvidenceGallery.tsx`
 - `SystemUI/src/lib/videoUploadUtils.ts`
-- `docs/STAGE17_5_VIDEO_UPLOAD_UI_SECOND_PASS_CLEANUP.md`
+- `docs/stages/stage17/STAGE17_5_VIDEO_UPLOAD_UI_SECOND_PASS_CLEANUP.md`
 
 ## Interval Table Cleanup
 

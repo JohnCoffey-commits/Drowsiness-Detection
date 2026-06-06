@@ -14,7 +14,7 @@ The UI also needed clearer wording for `recent_yawn_event` because that flag can
 - `SystemUI/src/components/video-upload/IntervalReviewTable.tsx`
 - `SystemUI/src/lib/videoUploadTypes.ts`
 - `SystemUI/src/lib/videoUploadUtils.ts`
-- `docs/STAGE17_5_VIDEO_UPLOAD_UI_FALLBACK_POLISH.md`
+- `docs/stages/stage17/STAGE17_5_VIDEO_UPLOAD_UI_FALLBACK_POLISH.md`
 
 ## What Was Fixed
 

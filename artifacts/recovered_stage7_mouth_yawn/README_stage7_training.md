@@ -77,4 +77,4 @@ Checkpoints:
 
 Written summary:
 
-- `reports/initial_experiment_summary.md`
+- `docs/archive/reports/initial_experiment_summary.md`

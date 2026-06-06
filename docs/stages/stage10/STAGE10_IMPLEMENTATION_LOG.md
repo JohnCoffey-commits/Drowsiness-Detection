@@ -14,8 +14,8 @@ No model training was performed.
 
 - `src/runtime/__init__.py`
 - `src/runtime/stage10_eye_roi_consistency.py`
-- `docs/STAGE10_RUNTIME_EYE_ROI_DESIGN.md`
-- `docs/STAGE10_IMPLEMENTATION_LOG.md`
+- `docs/stages/stage10/STAGE10_RUNTIME_EYE_ROI_DESIGN.md`
+- `docs/stages/stage10/STAGE10_IMPLEMENTATION_LOG.md`
 
 The preflight command also writes runtime audit outputs under:
 
@@ -106,8 +106,8 @@ python src/runtime/stage10_eye_roi_consistency.py \
 
 ## 9. Exact Document And Output Paths
 
-- `docs/STAGE10_RUNTIME_EYE_ROI_DESIGN.md`
-- `docs/STAGE10_IMPLEMENTATION_LOG.md`
+- `docs/stages/stage10/STAGE10_RUNTIME_EYE_ROI_DESIGN.md`
+- `docs/stages/stage10/STAGE10_IMPLEMENTATION_LOG.md`
 - `src/runtime/stage10_eye_roi_consistency.py`
 - `outputs/stage10_eye_roi_consistency/summary.json`
 - `outputs/stage10_eye_roi_consistency/STAGE10_RUNTIME_EYE_ROI_REPORT.md`

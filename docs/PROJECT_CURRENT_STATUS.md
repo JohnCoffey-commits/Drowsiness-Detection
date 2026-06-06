@@ -151,7 +151,7 @@ Stage 7 trained three CNN baselines:
 - MobileNetV2
 - EfficientNet-B0
 
-Training settings documented in `README_stage7_training.md` and `colab_file/stage7_yawdd_training_r.ipynb`:
+Training settings documented in `docs/archive/root_stage_readmes/README_stage7_training.md` and `colab_file/stage7_yawdd_training_r.ipynb`:
 
 | Setting | Value |
 | --- | --- |
@@ -418,7 +418,7 @@ Summary artifacts:
 - `outputs/stage11_multi_video_validation_summary.csv`
 - `outputs/stage11_multi_video_validation_summary.json`
 - `reports/stage11_multi_video_temporal_validation_report.md`
-- `docs/STAGE10_11_MULTI_VIDEO_VALIDATION_LOG.md`
+- `docs/stages/stage10/STAGE10_11_MULTI_VIDEO_VALIDATION_LOG.md`
 
 This remains runtime eye ROI and eye-only temporal behavior validation only. It is not final drowsiness accuracy and not mouth/yawn fusion by itself. The A/B/C/D findings were later used by Stage 12 eye-only rule design and Stage 15 synchronized rule-based fusion.
 
@@ -474,8 +474,8 @@ Rule behavior:
 
 Stage 13 artifacts:
 
-- `docs/STAGE13_MOUTH_EYE_FUSION_DESIGN.md`
-- `artifacts/audits/stage13_mouth_eye_fusion_design_2026-05-09/stage13_mouth_runtime_audit.md`
+- `docs/stages/stage13/STAGE13_MOUTH_EYE_FUSION_DESIGN.md`
+- `docs/archive/audits/stage13_mouth_eye_fusion_design_2026-05-09/stage13_mouth_runtime_audit.md`
 - `outputs/stage13_mouth_eye_fusion_design/`
 - `reports/stage13_mouth_eye_fusion_design_report.md`
 
@@ -519,13 +519,13 @@ For `B_realistic_drowsy_simulation`, the sampled 14.3s-16.8s interval produced 1
 
 Stage 14 artifacts:
 
-- `artifacts/audits/stage14_mouth_yawn_runtime_2026-05-09/stage14_mouth_model_audit.md`
-- `artifacts/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_CHECKPOINT_LOCAL_COPY.md`
-- `artifacts/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_RECOVERED_CHECKPOINT_VERIFICATION.md`
+- `docs/archive/audits/stage14_mouth_yawn_runtime_2026-05-09/stage14_mouth_model_audit.md`
+- `docs/archive/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_CHECKPOINT_LOCAL_COPY.md`
+- `docs/archive/audits/stage14_mouth_yawn_runtime_2026-05-09/STAGE14_RECOVERED_CHECKPOINT_VERIFICATION.md`
 - `outputs/stage14_mouth_yawn_runtime_multi_video_summary.csv`
 - `outputs/stage14_mouth_yawn_runtime_multi_video_summary.json`
 - `reports/stage14_mouth_yawn_runtime_validation_report.md`
-- `docs/STAGE14_MOUTH_YAWN_RUNTIME_LOG.md`
+- `docs/stages/stage14/STAGE14_MOUTH_YAWN_RUNTIME_LOG.md`
 
 Stage 14 is runtime mouth/yawn validation only. It is not final system-level drowsiness accuracy and not fusion by itself. Human visual inspection of mouth contact sheets and debug frames remains useful for ROI quality review. Stage 15 later used these `p_yawn` timelines for real synchronized rule-based mouth-eye fusion validation.
 
@@ -556,7 +556,7 @@ Stage 15 artifacts:
 - `outputs/stage15_real_mouth_eye_fusion/stage15_real_fusion_summary.json`
 - `outputs/stage15_real_mouth_eye_fusion/STAGE15_REAL_MOUTH_EYE_FUSION_REPORT.md`
 - `reports/stage15_real_mouth_eye_fusion_validation_report.md`
-- `docs/STAGE15_REAL_MOUTH_EYE_FUSION_LOG.md`
+- `docs/stages/stage15/STAGE15_REAL_MOUTH_EYE_FUSION_LOG.md`
 
 Stage 15 is not final system-level drowsiness accuracy, not deployment readiness, and not a trained fusion classifier. It validates rule behavior on a small controlled-realistic set. Stage 16 integration summary and Stage 17 uploaded-video warning-candidate MVP now build on this evidence, with any learned fusion still deferred until synchronized annotated data exists.
 
@@ -568,12 +568,12 @@ Stage 16 also fixed the Stage 15 figure-title issue: Stage 15 figures now use St
 
 Stage 16 artifacts:
 
-- `reports/stage16_final_integration_summary_report.md`
-- `docs/STAGE16_FINAL_EVIDENCE_PACKAGE.md`
-- `docs/STAGE16_DEMO_AND_PRESENTATION_OUTLINE.md`
-- `docs/PROJECT_FINAL_STATUS_STAGE16.md`
-- `artifacts/audits/stage16_final_integration_2026-05-09/STAGE15_FIGURE_TITLE_FIX.md`
-- `artifacts/audits/stage16_final_integration_2026-05-09/final_repo_artifact_audit.md`
+- `docs/archive/stage16/reports/stage16_final_integration_summary_report.md`
+- `docs/archive/stage16/STAGE16_FINAL_EVIDENCE_PACKAGE.md`
+- `docs/archive/stage16/STAGE16_DEMO_AND_PRESENTATION_OUTLINE.md`
+- `docs/archive/stage16/PROJECT_FINAL_STATUS_STAGE16.md`
+- `docs/archive/stage16/audits/STAGE15_FIGURE_TITLE_FIX.md`
+- `docs/archive/stage16/audits/final_repo_artifact_audit.md`
 
 Stage 16 status is now superseded by Stage 17.5 upload UI, Stage 19 Live Monitor, Stage 21A History/Insights, Stage 22 local archive, and the May 26 Settings/Minimal Mode work. The Stage 16 evidence package remains useful historical integration evidence, but it is no longer the current project snapshot.
 
@@ -653,8 +653,8 @@ Stage 17.4 added local acceptance/demo stabilization:
 - Launcher script: `scripts/start_stage17_ui.sh`
 - Local backend URL: `http://127.0.0.1:8000`
 - Local frontend URL: `http://127.0.0.1:3000/video-upload`
-- Acceptance checklist: `docs/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md`
-- Demo script: `docs/STAGE17_4_DEMO_SCRIPT.md`
+- Acceptance checklist: `docs/stages/stage17/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md`
+- Demo script: `docs/stages/stage17/STAGE17_4_DEMO_SCRIPT.md`
 - Stabilization report: `reports/stage17_4_video_upload_mvp_stabilization_report.md`
 
 Stage 17.3/17.4 manual upload validation on `upload_test/C_upload_test.mp4` produced these expected UI markers:
@@ -702,7 +702,7 @@ Stage 18 implementation files:
 - `SystemUI/src/lib/history48hStorage.ts`
 - `SystemUI/src/lib/history48hUtils.ts`
 - `SystemUI/next.config.ts`
-- `docs/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md`
+- `docs/stages/stage18/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md`
 
 Stage 18 data strategy:
 
@@ -1032,18 +1032,18 @@ YawDD safety interpretation:
 | `src/backend/local_archive.py` | Stage 22 local SQLite archive layer for compact Live Monitor and uploaded-video summary records. |
 | `SystemUI/src/lib/backendArchiveApi.ts` | Stage 22 frontend client for archive health, list, write, review update, export, and history-compatible mapping. |
 | `tests/test_stage17_5_eye_evidence_calibration.py` | Regression tests for Stage 17.5 eye-evidence calibration and strength-gate behavior. |
-| `docs/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | Stage 17 response, summary, interval, timeline, and keyframe schema. |
-| `docs/STAGE17_3_LOCAL_LAUNCH_GUIDE.md` | Local launcher and troubleshooting guide. |
-| `docs/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md` | Stage 17.3 UI implementation report. |
-| `docs/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md` | Manual acceptance checklist for the video-upload MVP. |
-| `docs/STAGE17_4_DEMO_SCRIPT.md` | Safe-worded demo script for Stage 17.4. |
+| `docs/stages/stage17/STAGE17_VIDEO_UPLOAD_RESULT_SCHEMA.md` | Stage 17 response, summary, interval, timeline, and keyframe schema. |
+| `docs/stages/stage17/STAGE17_3_LOCAL_LAUNCH_GUIDE.md` | Local launcher and troubleshooting guide. |
+| `docs/stages/stage17/STAGE17_3_VIDEO_UPLOAD_UI_PAGE_REPORT.md` | Stage 17.3 UI implementation report. |
+| `docs/stages/stage17/STAGE17_4_VIDEO_UPLOAD_UI_ACCEPTANCE_CHECKLIST.md` | Manual acceptance checklist for the video-upload MVP. |
+| `docs/stages/stage17/STAGE17_4_DEMO_SCRIPT.md` | Safe-worded demo script for Stage 17.4. |
 | `reports/stage17_4_video_upload_mvp_stabilization_report.md` | Historical Stage 17.4 stabilization report, superseded by Stage 17.5 UI cleanup and Stage 18 history-page work. |
-| `docs/STAGE17_5_EYE_EVIDENCE_CALIBRATION.md` | Stage 17.5 eye evidence calibration and strength-gate documentation. |
+| `docs/stages/stage17/STAGE17_5_EYE_EVIDENCE_CALIBRATION.md` | Stage 17.5 eye evidence calibration and strength-gate documentation. |
 | `reports/stage17_5_eye_evidence_calibration_report.md` | Stage 17.5 implementation report. |
-| `docs/STAGE17_5_VIDEO_UPLOAD_UI_EVIDENCE_REVIEW_PAGE.md` | Stage 17.5 evidence review UI page report. |
-| `docs/STAGE17_5_VIDEO_UPLOAD_UI_FALLBACK_POLISH.md` | Stage 17.5 keyframe fallback and optional-field UI polish report. |
-| `docs/STAGE17_5_VIDEO_UPLOAD_UI_SECOND_PASS_CLEANUP.md` | Stage 17.5 second-pass `/video-upload` evidence review cleanup report. |
-| `docs/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md` | Stage 18 frontend-only 48h History page implementation and validation record. |
+| `docs/stages/stage17/STAGE17_5_VIDEO_UPLOAD_UI_EVIDENCE_REVIEW_PAGE.md` | Stage 17.5 evidence review UI page report. |
+| `docs/stages/stage17/STAGE17_5_VIDEO_UPLOAD_UI_FALLBACK_POLISH.md` | Stage 17.5 keyframe fallback and optional-field UI polish report. |
+| `docs/stages/stage17/STAGE17_5_VIDEO_UPLOAD_UI_SECOND_PASS_CLEANUP.md` | Stage 17.5 second-pass `/video-upload` evidence review cleanup report. |
+| `docs/stages/stage18/STAGE18_HISTORY_48H_UI_PAGE_PLAN.md` | Stage 18 frontend-only 48h History page implementation and validation record. |
 
 ## 10. Reporting Notes and Limitations
 

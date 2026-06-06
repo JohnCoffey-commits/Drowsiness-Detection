@@ -624,7 +624,7 @@ NTHUDDD2 / Kaggle extracted-frame data was explored, but it is not the current m
 Relevant paths:
 
 - `reports/nthuddd2_kaggle_dataset_report.md`
-- `reports/nthu_dataset_report.md`
+- `docs/archive/reports/nthu_dataset_report.md`
 - `src/data/build_nthuddd2_kaggle_manifest.py`
 - `src/data/split_nthuddd2_kaggle_subject.py`
 - `artifacts/mappings/nthuddd2_kaggle_all_images.csv`
@@ -800,7 +800,7 @@ Use this checklist before starting or reviewing model training.
 - `reports/mrl_eye_dataset_report.md`
 - `reports/mrl_eye_split_report.md`
 - `reports/nthuddd2_kaggle_dataset_report.md`
-- `reports/nthu_dataset_report.md`
+- `docs/archive/reports/nthu_dataset_report.md`
 
 ### Manifest Headers Checked
 
