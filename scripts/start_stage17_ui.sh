@@ -2,6 +2,10 @@
 set -Eeuo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT_DIR}/scripts/activate_deployment_env.sh"
+cd "${ROOT_DIR}"
+
 BACKEND_HOST="127.0.0.1"
 BACKEND_PORT="8000"
 FRONTEND_HOST="127.0.0.1"
@@ -62,6 +66,11 @@ if [[ ! -x "${ROOT_DIR}/.venv-stage10/bin/python" ]]; then
   exit 1
 fi
 
+if [[ "${VIRTUAL_ENV:-}" != "${ROOT_DIR}/.venv-stage10" ]]; then
+  echo "[stage17-ui] Expected VIRTUAL_ENV=${ROOT_DIR}/.venv-stage10, got ${VIRTUAL_ENV:-<unset>}." >&2
+  exit 1
+fi
+
 if [[ ! -f "${ROOT_DIR}/src/backend/app.py" ]]; then
   echo "[stage17-ui] Missing backend app: ${ROOT_DIR}/src/backend/app.py" >&2
   exit 1
@@ -78,7 +87,7 @@ if ! command -v npm >/dev/null 2>&1; then
 fi
 
 echo "[stage17-ui] Starting FastAPI backend on ${BACKEND_URL}"
-"${ROOT_DIR}/.venv-stage10/bin/python" "${ROOT_DIR}/src/backend/app.py" \
+python "${ROOT_DIR}/src/backend/app.py" \
   --host "${BACKEND_HOST}" \
   --port "${BACKEND_PORT}" &
 BACKEND_PID=$!
@@ -98,6 +107,8 @@ cat <<EOF
 [stage17-ui] Stage 17.5 Video Upload Evidence Review UI is running.
 [stage17-ui] Frontend URL: ${FRONTEND_URL}
 [stage17-ui] Backend URL:  ${BACKEND_URL}
+[stage17-ui] VIRTUAL_ENV:  ${VIRTUAL_ENV}
+[stage17-ui] API base URL: ${NEXT_PUBLIC_API_BASE_URL}
 [stage17-ui] Press Ctrl+C to stop both services.
 
 EOF

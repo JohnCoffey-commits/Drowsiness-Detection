@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck disable=SC1091
+source "${ROOT_DIR}/scripts/activate_deployment_env.sh"
+cd "${ROOT_DIR}"
+
 FAILURES=0
 
 normalize_base_url() {
@@ -35,8 +40,8 @@ check_health() {
 
 print_archive_health_summary() {
   local body="$1"
-  if command -v python3 >/dev/null 2>&1; then
-    python3 - "$body" <<'PY'
+  if command -v python >/dev/null 2>&1; then
+    python - "$body" <<'PY'
 import json
 import sys
 
