@@ -14,8 +14,9 @@ Validated runtime: `08a4da1f3b2d58effdca61c2973fc7529de21451`, 11 November 2026.
 - [x] Image IDs/sizes, measured build history and original logs retained.
 - [x] Draft PR, Project and acceptance-linked Issues available for review.
 - [x] All three checks passed for documentation commit `377fe0f` in [Actions run 42968877311](https://github.com/JohnCoffey-commits/Drowsiness-Detection/actions/runs/42968877311). The latest delivery head and its run are recorded in the local delivery manifest.
+- [x] Three required checks enforced only on `codex/visionguard-github-update` by [active ruleset 27044329](https://github.com/JohnCoffey-commits/Drowsiness-Detection/rules/27044329), verified 12 November 2026.
 - [ ] Student independently operates the workflow and explains the evidence limits.
 - [ ] Real human peer feedback is received and addressed.
 - [ ] Student confirms personal reflection and actual learning hours.
 
-The local document delivery has a separate render/QA record. No automatic merge, production release, private-media publication or Canvas submission. The owner authorised the three required checks. See the local delivery manifest for the verified ruleset status. The PR remains draft until the outstanding human steps are addressed.
+The local document delivery has a separate render/QA record. No automatic merge, production release, private-media publication or Canvas submission. The owner authorised the three required checks on 11 November; the rule was saved and verified on 12 November 2026. The PR remains draft until the outstanding human steps are addressed.
