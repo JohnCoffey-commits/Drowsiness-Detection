@@ -1,20 +1,20 @@
 # Goal 3 task status
 
-Updated 11 November 2026. A checked implementation item is not automatically CI or clean-clone verification.
+Updated 11 November 2026. Implementation, machine verification and personal learning are recorded separately.
 
 | Work item | Acceptance evidence | Status |
 | --- | --- | --- |
-| Baseline and scope | Exact starting SHA, historical tests and contribution boundary | Verified locally |
-| Issue backlog | Issues 1 through 4 with acceptance criteria | Created |
-| API/archive regression checks | Invalid uploads/metadata, path escape, sessions, SQLite, missing model feedback | 34 tests pass locally, including 3 historical tests |
-| Dependency and quality gates | Pinned Python/npm, Ruff, Black, scoped mypy, frontend lint/types/build | Verified locally; npm has 7 moderate dev-tool findings |
-| Actions | Real jobs on learning branch and draft PR | Implemented; remote run pending |
-| Containers | CPU models, readonly binds, non-root users, persistent volume | Frontend built; backend retry in progress |
-| Native video pipeline | Authorized short clip, real checkpoints, complete pipeline outputs | Completed locally; needs final committed-version rerun |
-| Clean clone | Independent directory, exact committed SHA, documented setup | Pending |
-| Project and draft PR | Linked issues and accurate statuses | Pending |
-| Human peer review | Actual reviewer comments and responses | Pending student arrangement |
-| Evidence pack | E05-E09, editable Word and verified PDF | In progress |
-| Student learning | Own course work, operations, reflection and recorded hours | Partial evidence; understanding checks pending |
+| Baseline and scope | Exact starting SHA and historical contribution boundary | Verified |
+| Issue backlog and Project | Issues 1-4; private Project with acceptance criteria | Created and updated |
+| API/archive/temporal regression checks | 3 preserved historical tests and 32 new cases | 35 pass locally and in CI |
+| Dependencies and quality | Locks, Ruff, Black, scoped mypy, frontend lint/types/build | Pass; 7 moderate npm dev findings remain |
+| Actions | Three actual jobs on runtime commit 08a4da1 | All passed; merge enforcement off |
+| Containers | CPU, non-root, readonly models, persistent volume | Built and verified on Linux arm64 |
+| Native video | Real checkpoints, authorized video at runtime SHA | Completed |
+| Clean clone | New environment/npm installation; exact runtime SHA; browser to archive | Verified, including recreation persistence |
+| Draft PR | Complete-app base and linked issues | PR 5 open and draft |
+| Human peer review | Actual comments and responses | Pending student arrangement |
+| Evidence pack | E05-E09 editable Word and PDF | Assembled separately; see local delivery QA record |
+| Student learning | Own operations, understanding and reflection | Partial; new toolchain exercise and hours pending |
 
-Issues: [1](https://github.com/JohnCoffey-commits/Drowsiness-Detection/issues/1), [2](https://github.com/JohnCoffey-commits/Drowsiness-Detection/issues/2), [3](https://github.com/JohnCoffey-commits/Drowsiness-Detection/issues/3), [4](https://github.com/JohnCoffey-commits/Drowsiness-Detection/issues/4).
+See `VERIFICATION.md`, `evidence-index.md` and `review-record.md` for evidence and limits. Machine runtimes are not student learning hours.

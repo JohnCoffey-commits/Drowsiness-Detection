@@ -31,6 +31,8 @@ docker compose up --build -d --wait
 
 Open http://127.0.0.1:3000/video-upload. Backend: http://127.0.0.1:8000. An optional `.env` can be copied from `.env.example` when paths/ports differ; defaults need no hidden configuration.
 
+The existing UI uses a local demonstration account defined in `SystemUI/src/lib/authStore.tsx`. Use the owner-provided demo credentials when the login screen appears. This browser-only account is not server authentication. After analysis, the page saves a compact video-run summary to SQLite. The History page intentionally filters Live Monitor events; use `/api/archive/export` to verify saved uploaded-video summaries.
+
 The browser cannot resolve the Compose service name `backend`. `NEXT_PUBLIC_API_BASE_URL` is a browser URL baked into the frontend build. If the API port changes, update both `API_PORT` and that URL, update `FRONTEND_ORIGIN` when the frontend port changes, then rebuild the frontend. Runtime environment changes alone do not rewrite an existing Next.js browser bundle.
 
 ```bash

@@ -26,6 +26,10 @@ Python dependencies have exact transitive pins in `requirements/dev.txt` and `ru
 
 Three jobs cover backend behavior/quality, frontend lint/types/build and dependency audits. Versions are explicit; actions are pinned to verified full commit SHAs. Permissions are `contents: read`, checkout does not retain credentials, cache keys depend on lockfiles, jobs have timeouts, and test/audit artifacts are retained for 14 days even on failure. No secrets, models or private videos are required.
 
-[Run 42966445209](https://github.com/JohnCoffey-commits/Drowsiness-Detection/actions/runs/42966445209) passed all three jobs for `4773a8727b08b7794514aea046f15dc79e8c64f3` (34 tests at that point). Later changes require a new run. The base branch API reported `protected: false`, enforcement `off`, empty checks/contexts. CI is informational rather than an enforced merge requirement; no rules were changed.
+[Run 42967521499](https://github.com/JohnCoffey-commits/Drowsiness-Detection/actions/runs/42967521499) passed all three jobs for runtime commit `08a4da1f3b2d58effdca61c2973fc7529de21451` (35 tests). The earlier [run 42966445209](https://github.com/JohnCoffey-commits/Drowsiness-Detection/actions/runs/42966445209) passed at `4773a8727b08b7794514aea046f15dc79e8c64f3` (34 tests). The base branch API reported `protected: false`, enforcement `off`, empty checks/contexts. CI is informational rather than an enforced merge requirement; no rules were changed.
 
 A 35th test executes the Stage 11 CLI with synthetic CSV input and obstructed legacy global-report storage. It verifies session-scoped reporting, covering the real non-root container PermissionError. Production npm audit (`--omit=dev`) separately reported zero findings.
+
+## Merge-policy proposal requiring owner decision
+
+If the owner later chooses to enforce the A1 merge gate on `codex/visionguard-github-update`, the concrete checks are `Backend behavior and quality`, `Frontend lint types and build`, and `Dependency audit`. Requiring these checks and one real approving review would prevent merges that have failing/missing checks or no qualifying review. This changes policy for every PR targeting that shared branch, not only Goal 3. No such setting has been applied; passing CI currently demonstrates execution but does not satisfy an enforced required-check policy.

@@ -1,15 +1,17 @@
 # Goal 3 learning and execution log
 
-Dates are actual activity dates in Australia/Sydney. Machine runtimes describe commands, not student effort hours. Student time is not supplied and is not inferred.
+Dates are actual Australia/Sydney dates. Student effort hours are not supplied. Machine runtimes do not measure learning time; A1's 45 hours remains a plan.
 
-| Date | Activity and actor | Evidence and result | Next step |
+| Date | Activity and actor | Result and evidence | Next step |
 | --- | --- | --- | --- |
-| 9 Nov 2026 | AI preparation of existing application | Isolated environment; original 3 tests and frontend checks passed; assets verified; npm audit findings preserved | Establish authorized delivery scope |
-| 11 Nov 2026 | Student opened Docker and authorized local video; AI verified environment | Docker hello-world passed; exact repo baseline rechecked; Issues 1-4 created | Tests and reproducible delivery |
-| 11 Nov 2026 | AI test-driven boundary repair | Initial 12 failing cases; after repair 29 passed; health/CPU/temporal cases brought total to 34 | Student run/explanation remains pending |
-| 11 Nov 2026 | AI dependency and quality checks | Locked dependencies, lint/format/types, frontend checks pass; npm findings reduced to 7 moderate, no high/critical | Track upstream dev-tool fix and remote CI |
-| 11 Nov 2026 | AI native CPU video execution using student's authorized clip | Full pipeline completed; 166 sampled frames, 39.45 seconds; private logs/outputs retained | Rerun committed version and container |
-| 11 Nov 2026 | AI container build/debug | Frontend built in 86.59 seconds; backend first attempt failed on CPU-index support dependency availability | Retry with PyPI support packages preinstalled |
-| 11 Nov 2026 | Student supplied A1 PDF; AI read page 8 and viewed Canvas read-only | A1 plan verified; current A3 and Portfolio rules verified; existing quiz results observed | Keep remaining course/peer/reflective evidence truthful |
+| 9 Nov 2026 | AI prepared existing application | Isolated environment, 3 historical tests/frontend checks, verified downloads | Extend delivery scope |
+| 11 Nov 2026 | Student opened Docker, logged into Canvas and supplied authorized video/A1 | Environment and sources available; Canvas read only | Preserve attribution |
+| 11 Nov 2026 | AI test/debug work | 12 initial failing cases; fixes; 35 final tests including 3 historical | Student run and explanation pending |
+| 11 Nov 2026 | AI dependency and quality checks | Locks; lint/format/types/build pass; npm 31 to 7 findings, all remaining moderate dev tools | Monitor upstream fixes |
+| 11 Nov 2026 | AI GitHub workflow | Four Issues, private Project, draft PR 5; actual Actions all three jobs pass | Student inspect logs; real peer review |
+| 11 Nov 2026 | AI container debugging | CPU-index support package, EGL/GLES and report-directory failures corrected | Retain failure-to-fix evidence |
+| 11 Nov 2026 | AI real inference | Native final command 35.49 s; primary API 61.45 s; independent UI 64.5 s | Labelled evaluation remains separate |
+| 11 Nov 2026 | AI clean-clone validation | New Python/npm setup; CPU browser flow; SQLite/output recreation persistence | Student repeat one operation |
+| 11 Nov 2026 | AI evidence assembly | E05-E09, readiness, release/review records, Word/PDF | Student personal reflection and actual hours |
 
-Sources include the original repository, A1 page 8, course pages, official Docker/Next/PyTorch documentation and actual tool logs. No activity is backdated into the September/October plan.
+Two existing GitHub quiz results were observed on Canvas, without taking a quiz or submitting information. Other course activities, certificates and external-course recognition are not established by the technical work. The student asked what the proposed pytest exercise meant; an explanation was provided, but execution and understanding remain unverified. No activity is backdated into September/October.
