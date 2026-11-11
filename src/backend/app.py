@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import shutil
@@ -20,7 +21,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -31,10 +31,20 @@ from src.backend.local_archive import (  # noqa: E402
     get_archive,
     is_archive_enabled,
 )
-from src.runtime.realtime_temporal_state import REALTIME_RULE_WARNING, RealtimeTemporalState  # noqa: E402
+from src.runtime.realtime_temporal_state import (  # noqa: E402
+    REALTIME_RULE_WARNING,
+    RealtimeTemporalState,
+)
 
-RUNS_ROOT = PROJECT_ROOT / "outputs" / "system_video_upload_runs"
-AUDIT_DIR = PROJECT_ROOT / "artifacts" / "audits" / "stage17_video_upload_mvp_2026-05-09"
+RUNS_ROOT = Path(
+    os.environ.get("VISIONGUARD_RUNS_ROOT", PROJECT_ROOT / "outputs" / "system_video_upload_runs")
+)
+AUDIT_DIR = Path(
+    os.environ.get(
+        "VISIONGUARD_AUDIT_DIR",
+        PROJECT_ROOT / "artifacts" / "audits" / "stage17_video_upload_mvp_2026-05-09",
+    )
+)
 STATIC_DIR = PROJECT_ROOT / "src" / "backend" / "static"
 ALLOWED_EXTENSIONS = {".mp4", ".mov", ".avi", ".m4v"}
 MAX_UPLOAD_BYTES = 750 * 1024 * 1024
@@ -105,14 +115,21 @@ def parse_optional_float(value: str | None) -> float | None:
     if value is None or value == "":
         return None
     try:
-        return float(value)
+        parsed = float(value)
+        if not math.isfinite(parsed) or parsed < 0:
+            raise ValueError("Expected a finite non-negative number")
+        return parsed
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=f"Invalid numeric field: {value}") from exc
 
 
 def parse_optional_int(value: str | None) -> int | None:
     parsed = parse_optional_float(value)
-    return None if parsed is None else int(parsed)
+    if parsed is None:
+        return None
+    if not parsed.is_integer() or parsed <= 0:
+        raise HTTPException(status_code=400, detail="Frame dimensions must be positive integers.")
+    return int(parsed)
 
 
 def parse_allowed_origins(value: str | None) -> list[str]:
@@ -152,9 +169,13 @@ async def read_json_object(request: Request) -> dict[str, Any]:
 
 
 def session_dir(session_id: str) -> Path:
-    if not re.fullmatch(r"[A-Za-z0-9_.-]+", session_id):
+    if session_id in {".", ".."} or not re.fullmatch(r"[A-Za-z0-9_.-]+", session_id):
         raise ValueError("Invalid session id")
-    return RUNS_ROOT / session_id
+    root = RUNS_ROOT.resolve()
+    candidate = (root / session_id).resolve()
+    if candidate.parent != root:
+        raise ValueError("Session directory escapes runs root")
+    return candidate
 
 
 def safe_session_file(session_id: str, relative_path: str) -> Path:
@@ -280,6 +301,22 @@ def create_app():
     async def root():
         return RedirectResponse(url="/static/upload_test.html")
 
+    @app.get("/health/live")
+    async def liveness():
+        return {"ok": True, "service": "visionguard"}
+
+    @app.get("/health/ready")
+    def readiness():
+        """Load and check model assets; this does not claim successful video inference."""
+        from src.runtime.realtime_frame_inference import get_realtime_service
+
+        service = get_realtime_service()
+        try:
+            service.ensure_loaded()
+        except Exception as exc:
+            return JSONResponse({"ready": False, "error": str(exc)}, status_code=503)
+        return {"ready": service.models_loaded, "device": service.device_name()}
+
     @app.post("/api/analyze-video")
     async def analyze_video(file: UploadFile = File(...)):
         filename = sanitize_filename(file.filename or "uploaded_video.mp4")
@@ -305,6 +342,11 @@ def create_app():
                     if size > MAX_UPLOAD_BYTES:
                         raise HTTPException(status_code=413, detail="Uploaded video is too large")
                     f.write(chunk)
+            if size == 0:
+                raise HTTPException(status_code=400, detail="Uploaded video is empty")
+        except Exception:
+            shutil.rmtree(out_dir)
+            raise
         finally:
             await file.close()
 
@@ -397,7 +439,9 @@ def create_app():
         except ArchiveValidationError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except Exception as exc:
-            raise HTTPException(status_code=503, detail=f"Archive records unavailable: {exc}") from exc
+            raise HTTPException(
+                status_code=503, detail=f"Archive records unavailable: {exc}"
+            ) from exc
 
     @app.post("/api/archive/live-event")
     async def archive_live_event(
@@ -446,7 +490,9 @@ def create_app():
         except ArchiveValidationError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except Exception as exc:
-            raise HTTPException(status_code=503, detail=f"Archive session save failed: {exc}") from exc
+            raise HTTPException(
+                status_code=503, detail=f"Archive session save failed: {exc}"
+            ) from exc
 
     @app.post("/api/archive/video-run")
     async def archive_video_run(
@@ -496,9 +542,13 @@ def create_app():
         except ArchiveDisabledError as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except KeyError as exc:
-            raise HTTPException(status_code=404, detail=f"Unknown archive record id: {record_id}") from exc
+            raise HTTPException(
+                status_code=404, detail=f"Unknown archive record id: {record_id}"
+            ) from exc
         except Exception as exc:
-            raise HTTPException(status_code=503, detail=f"Archive review update failed: {exc}") from exc
+            raise HTTPException(
+                status_code=503, detail=f"Archive review update failed: {exc}"
+            ) from exc
 
     @app.get("/api/archive/export")
     async def archive_export():
@@ -549,13 +599,13 @@ def create_app():
     async def realtime_session_stop(session_id: str = Form(...)):
         session = REALTIME_SESSIONS.get(session_id)
         if session is None:
-            raise HTTPException(status_code=404, detail=f"Unknown realtime session_id: {session_id}")
+            raise HTTPException(
+                status_code=404, detail=f"Unknown realtime session_id: {session_id}"
+            )
 
         if session.get("status") == "stopped":
             stopped_at = str(session.get("stopped_at") or now_iso())
-            note = (
-                "Realtime session was already stopped. Model singleton remains loaded for future sessions."
-            )
+            note = "Realtime session was already stopped. Model singleton remains loaded for future sessions."
         else:
             stopped_at = now_iso()
             session["status"] = "stopped"
@@ -589,7 +639,9 @@ def create_app():
     ):
         session = REALTIME_SESSIONS.get(session_id)
         if session is None:
-            raise HTTPException(status_code=404, detail=f"Unknown realtime session_id: {session_id}")
+            raise HTTPException(
+                status_code=404, detail=f"Unknown realtime session_id: {session_id}"
+            )
         if session.get("status") == "stopped":
             raise HTTPException(
                 status_code=409,
@@ -601,16 +653,21 @@ def create_app():
                 },
             )
         if frame.content_type not in {"image/jpeg", "image/jpg", "application/octet-stream"}:
-            raise HTTPException(status_code=400, detail="Realtime frame must be an image/jpeg upload.")
+            raise HTTPException(
+                status_code=400, detail="Realtime frame must be an image/jpeg upload."
+            )
 
-        frame_bytes = await frame.read()
+        frame_bytes = await frame.read(MAX_REALTIME_FRAME_BYTES + 1)
         await frame.close()
         if not frame_bytes:
             raise HTTPException(status_code=400, detail="Realtime frame upload is empty.")
         if len(frame_bytes) > MAX_REALTIME_FRAME_BYTES:
             raise HTTPException(status_code=413, detail="Realtime frame upload is too large.")
 
-        from src.runtime.realtime_frame_inference import RealtimeFrameInferenceError, get_realtime_service
+        from src.runtime.realtime_frame_inference import (
+            RealtimeFrameInferenceError,
+            get_realtime_service,
+        )
 
         try:
             result = get_realtime_service().analyze_frame(
@@ -621,6 +678,8 @@ def create_app():
                 frame_height=parse_optional_int(frame_height),
                 sampling_fps=parse_optional_float(sampling_fps),
             )
+        except HTTPException:
+            raise
         except RealtimeFrameInferenceError as exc:
             raise HTTPException(
                 status_code=503,
@@ -673,7 +732,9 @@ def create_app():
             summary = load_json(session_dir(session_id) / "summary.json")
         except (ValueError, FileNotFoundError) as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
-        return JSONResponse({"session_id": session_id, "keyframes": keyframe_urls(session_id, summary)})
+        return JSONResponse(
+            {"session_id": session_id, "keyframes": keyframe_urls(session_id, summary)}
+        )
 
     @app.get("/api/runs/{session_id}/files/{relative_path:path}")
     async def get_file(session_id: str, relative_path: str):

@@ -1,0 +1,6 @@
+-r core.in
+mediapipe==1.2.2
+opencv-contrib-python==5.0.0.93
+pillow==13.0.0
+numpy==2.4.6
+scikit-learn==1.9.1

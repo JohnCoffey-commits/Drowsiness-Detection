@@ -7,6 +7,7 @@ it does not compute temporal warning state, alarms, or final drowsiness truth.
 
 from __future__ import annotations
 
+import os
 import time
 import uuid
 from contextlib import contextmanager
@@ -15,9 +16,10 @@ from pathlib import Path
 from threading import Lock
 from typing import Any
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-EYE_CHECKPOINT = PROJECT_ROOT / "outputs" / "mrl_eye" / "checkpoints" / "best_mobilenet_v2_mrl_eye.pt"
+EYE_CHECKPOINT = (
+    PROJECT_ROOT / "outputs" / "mrl_eye" / "checkpoints" / "best_mobilenet_v2_mrl_eye.pt"
+)
 MOUTH_CHECKPOINT = PROJECT_ROOT / "checkpoints" / "resnet18_best.pt"
 FACE_LANDMARKER = PROJECT_ROOT / "artifacts" / "models" / "face_landmarker.task"
 SAFE_INTERPRETATION = (
@@ -46,6 +48,11 @@ def bbox_xywh(bbox: tuple[int, int, int, int] | None) -> list[int] | None:
 
 
 def select_realtime_device(torch: Any) -> Any:
+    requested = os.environ.get("VISIONGUARD_DEVICE", "auto").lower()
+    if requested == "cpu":
+        return torch.device("cpu")
+    if requested != "auto":
+        raise RealtimeFrameInferenceError("VISIONGUARD_DEVICE must be cpu or auto.")
     mps_backend = getattr(torch.backends, "mps", None)
     if mps_backend is not None and mps_backend.is_available():
         return torch.device("mps")
@@ -396,13 +403,14 @@ class RealtimeFrameInferenceService:
                 errors[side] = str(exc)
 
         valid_values = [value for value in values.values() if value is not None]
-        mean_p_eye_closed = (
-            float(sum(valid_values) / len(valid_values)) if valid_values else None
-        )
+        mean_p_eye_closed = float(sum(valid_values) / len(valid_values)) if valid_values else None
         available = bool(valid_values)
         reason = None
         if not available:
-            reason = "; ".join(f"{side}: {error}" for side, error in errors.items()) or "eye ROI unavailable"
+            reason = (
+                "; ".join(f"{side}: {error}" for side, error in errors.items())
+                or "eye ROI unavailable"
+            )
 
         return {
             "available": available,
@@ -453,11 +461,16 @@ class RealtimeFrameInferenceService:
                 "reason": str(exc),
             }
 
-    def _signal_quality(self, eye_result: dict[str, Any], mouth_result: dict[str, Any]) -> tuple[str, str]:
+    def _signal_quality(
+        self, eye_result: dict[str, Any], mouth_result: dict[str, Any]
+    ) -> tuple[str, str]:
         if eye_result.get("available") and mouth_result.get("available"):
             return "ok", "Face, eye ROI, and mouth ROI available for this frame."
         if eye_result.get("available") or mouth_result.get("available"):
-            return "partial", "Face detected, but one specialist ROI was unavailable for this frame."
+            return (
+                "partial",
+                "Face detected, but one specialist ROI was unavailable for this frame.",
+            )
         return "roi_unavailable", "Face detected, but eye and mouth ROI evidence was unavailable."
 
     def _base_response(

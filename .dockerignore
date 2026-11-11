@@ -1,0 +1,9 @@
+**
+!requirements/
+!requirements/**
+!src/
+!src/**
+!scripts/
+!scripts/verify_assets.py
+**/__pycache__
+**/*.pyc

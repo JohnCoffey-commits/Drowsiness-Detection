@@ -100,3 +100,21 @@ visionguard-archive-export-*.json
 # Local upload-validation videos and generated upload evidence
 upload_test/*.mp4
 upload_test/results/
+
+# Goal 3 local preparation assets and transient evidence
+preparation/logs/
+preparation/media/
+*.mp4
+*.mov
+*.avi
+*.m4v
+*.db
+*.db-*
+.env.*
+!.env.example
+*.pem
+*.key
+*.sqlite-journal
+/preparation/
+/reports/
+*.tsbuildinfo

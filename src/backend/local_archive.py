@@ -10,7 +10,6 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ARCHIVE_DB_PATH = PROJECT_ROOT / "data" / "visionguard_archive.sqlite"
 ARCHIVE_ENABLED_ENV = "VISIONGUARD_ARCHIVE_ENABLED"
@@ -87,7 +86,9 @@ def _validate_safe_json(value: Any, path: str = "root") -> None:
                 raise ArchiveValidationError(f"Archive field {path}.{key} is not allowed.")
             _validate_safe_json(item, f"{path}.{key}")
         return
-    raise ArchiveValidationError(f"Archive field {path} has unsupported type {type(value).__name__}.")
+    raise ArchiveValidationError(
+        f"Archive field {path} has unsupported type {type(value).__name__}."
+    )
 
 
 def _json_dumps(value: Any) -> str:
@@ -169,8 +170,7 @@ class LocalArchive:
 
     def ensure_schema(self) -> None:
         with self._connect() as conn:
-            conn.execute(
-                """
+            conn.execute("""
                 CREATE TABLE IF NOT EXISTS archive_records (
                     id TEXT PRIMARY KEY,
                     record_type TEXT NOT NULL,
@@ -191,13 +191,20 @@ class LocalArchive:
                     evidence_json TEXT,
                     metadata_json TEXT
                 )
-                """
+                """)
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_archive_created_at ON archive_records(created_at)"
             )
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_archive_created_at ON archive_records(created_at)")
             conn.execute("CREATE INDEX IF NOT EXISTS idx_archive_source ON archive_records(source)")
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_archive_record_type ON archive_records(record_type)")
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_archive_session_id ON archive_records(session_id)")
-            conn.execute("CREATE INDEX IF NOT EXISTS idx_archive_client_id ON archive_records(client_id)")
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_archive_record_type ON archive_records(record_type)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_archive_session_id ON archive_records(session_id)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_archive_client_id ON archive_records(client_id)"
+            )
 
     def health(self) -> dict[str, Any]:
         db_exists = self.db_path.exists()
@@ -227,7 +234,9 @@ class LocalArchive:
         source: str,
         event_type: str | None = None,
     ) -> dict[str, Any]:
-        record = _normalize_record(payload, record_type=record_type, source=source, event_type=event_type)
+        record = _normalize_record(
+            payload, record_type=record_type, source=source, event_type=event_type
+        )
         columns = list(record.keys())
         placeholders = ", ".join("?" for _ in columns)
         update_columns = [column for column in columns if column not in {"id", "created_at"}]
@@ -245,7 +254,9 @@ class LocalArchive:
 
     def get_record(self, record_id: str) -> dict[str, Any]:
         with self._connect() as conn:
-            row = conn.execute("SELECT * FROM archive_records WHERE id = ?", (record_id,)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM archive_records WHERE id = ?", (record_id,)
+            ).fetchone()
         if row is None:
             raise KeyError(record_id)
         return self._row_to_record(row)
@@ -316,7 +327,7 @@ class LocalArchive:
         reviewed: bool | None = None,
         review_note: str | None = None,
     ) -> dict[str, Any]:
-        fields = {"updated_at": now_iso()}
+        fields: dict[str, Any] = {"updated_at": now_iso()}
         if reviewed is not None:
             fields["reviewed"] = 1 if reviewed else 0
         if review_note is not None:
@@ -333,9 +344,7 @@ class LocalArchive:
 
     def export_records(self) -> dict[str, Any]:
         with self._connect() as conn:
-            rows = conn.execute(
-                "SELECT * FROM archive_records ORDER BY created_at DESC"
-            ).fetchall()
+            rows = conn.execute("SELECT * FROM archive_records ORDER BY created_at DESC").fetchall()
         records = [self._row_to_record(row) for row in rows]
         return {
             "ok": True,
