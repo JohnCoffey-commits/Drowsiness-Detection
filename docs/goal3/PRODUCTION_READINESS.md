@@ -5,7 +5,7 @@
 | Area | Verified evidence | Remaining condition |
 | --- | --- | --- |
 | Reproducibility | Exact pins/model hashes; independent clone; Linux arm64 CPU browser flow | Other platforms; offline and OS-package reproducibility |
-| Software checks | 35 tests; scoped quality checks; frontend build; three CI jobs pass | Wider regression coverage; required-check enforcement |
+| Software checks | 35 tests; scoped quality checks; frontend build; three CI jobs pass | Wider regression coverage. See the delivery manifest for the required-check ruleset status. |
 | Model performance | Real models complete one authorized video | Labelled representative evaluation, error analysis and thresholds; platform output differences |
 | Configuration | CPU and writable paths explicit; browser API URL built correctly | Managed deployment settings, TLS and secrets before remote use |
 | Input handling | Size/format/empty/metadata checks; directory confinement; readiness errors | Rate limits, concurrency/queue limits, hostile decoder inputs |

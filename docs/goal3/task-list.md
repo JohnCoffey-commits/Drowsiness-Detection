@@ -8,7 +8,7 @@ Updated 11 November 2026. Implementation, machine verification and personal lear
 | Issue backlog and Project | Issues 1-4; private Project with acceptance criteria | Created and updated |
 | API/archive/temporal regression checks | 3 preserved historical tests and 32 new cases | 35 pass locally and in CI |
 | Dependencies and quality | Locks, Ruff, Black, scoped mypy, frontend lint/types/build | Pass; 7 moderate npm dev findings remain |
-| Actions | Three actual jobs on runtime commit 08a4da1 | All passed; merge enforcement off |
+| Actions | Three actual jobs on runtime commit 08a4da1 | All passed. See the delivery manifest for the required-check ruleset status. |
 | Containers | CPU, non-root, readonly models, persistent volume | Built and verified on Linux arm64 |
 | Native video | Real checkpoints, authorized video at runtime SHA | Completed |
 | Clean clone | New environment/npm installation; exact runtime SHA; browser to archive | Verified, including recreation persistence |
