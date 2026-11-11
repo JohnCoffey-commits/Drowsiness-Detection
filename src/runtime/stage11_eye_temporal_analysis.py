@@ -34,6 +34,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--input-csv", type=Path, default=DEFAULT_INPUT_CSV)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    parser.add_argument("--repo-report", type=Path, default=DEFAULT_REPORT_PATH)
     parser.add_argument("--closed-threshold", type=float, default=0.50)
     parser.add_argument("--rolling-window", type=int, default=5)
     return parser.parse_args()
@@ -509,7 +510,7 @@ def main() -> None:
 
     write_reports(
         output_report_path=output_report_path,
-        repo_report_path=DEFAULT_REPORT_PATH,
+        repo_report_path=args.repo_report,
         input_csv=input_csv,
         output_dir=output_dir,
         figures=figures,
@@ -524,7 +525,7 @@ def main() -> None:
     print(f"[done] events: {events_csv_path}")
     print(f"[done] summary: {summary_json_path}")
     print(f"[done] output report: {output_report_path}")
-    print(f"[done] repo report: {DEFAULT_REPORT_PATH}")
+    print(f"[done] repo report: {args.repo_report}")
     for figure in figures:
         print(f"[done] figure: {figure}")
 

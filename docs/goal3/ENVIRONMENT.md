@@ -16,3 +16,8 @@ Base images use version and manifest digest: Python `3.11.18-slim-bookworm` at `
 4. Frontend security repairs required updating Next and its ESLint config, retaining baseline shadcn CSS locally, and a targeted brace-expansion patch override. Seven moderate developer-tool findings remain documented.
 
 Build logs, measured durations, image metadata, health responses and clean-clone results are retained in the separate local evidence pack. An initial frontend container build completed in 86.59 seconds. Final build/verification results supersede preliminary runs and must include the tested commit.
+
+5. A healthy HTTP process initially returned model readiness 503 because MediaPipe needed `libEGL.so.1` and `libGLESv2.so.2`. Added Debian libegl1/libgles2 after shared-library inspection. Readiness then returned true on CPU.
+6. Full video analysis exposed a Stage 11 global `reports/` write outside the non-root writable volume. Added an explicit report-path option and passed the session directory from the upload pipeline. The original standalone default remains compatible. A synthetic CLI regression and actual container rerun passed: HTTP 200, 166 samples, 61.45 seconds total API time.
+
+The same clip and model hashes produced some differing candidate counts on native macOS and Linux CPU. Delivery reproduction is established by successful processing and recorded outputs, not claimed bitwise numerical parity. Causes such as platform-specific inference and video decoding require separate controlled analysis.

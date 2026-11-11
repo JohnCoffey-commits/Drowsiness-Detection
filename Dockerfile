@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
     VISIONGUARD_DEVICE=cpu VISIONGUARD_ARCHIVE_DB_PATH=/app/data/archive.sqlite \
     VISIONGUARD_RUNS_ROOT=/app/data/runs VISIONGUARD_AUDIT_DIR=/app/data/audits
 WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libportaudio2 \
+RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libegl1 libgles2 libglib2.0-0 libportaudio2 \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 10001 app && useradd --uid 10001 --gid app --create-home app
 COPY requirements/ requirements/

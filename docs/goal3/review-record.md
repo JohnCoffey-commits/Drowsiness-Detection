@@ -5,3 +5,7 @@ Status: pending. No human code review has yet been recorded for the Goal 3 chang
 The student should share the draft PR with a real peer. Review focus: input/path failure handling, private asset exclusion, CI scope, model readiness semantics, persistent storage and whether the clean-clone instructions are sufficient. The peer should leave their actual observations on the PR. Record each observation, the student's response and any resulting commit when it exists. Do not fabricate comments, approval or a reviewer's identity.
 
 The PR stays draft until the student's learning checks, independent reproduction and actual review status are clear. No merge or branch protection changes are authorized automatically.
+
+Draft PR: https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5
+
+Private project: https://github.com/users/JohnCoffey-commits/projects/1 . Four issues were imported; test/CI issues completed and container/evidence issues remain in progress as of the first successful CI run. Closed issues automatically move to Done, verified in the board. Project privacy was preserved.

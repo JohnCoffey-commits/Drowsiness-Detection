@@ -4,7 +4,7 @@
 
 ## Backend behavior
 
-There are 34 local passing tests as of 11 November: three historical eye-evidence calibration tests and 31 new Goal 3 parameterized cases. The historical assertions are preserved; only an import-order annotation documents their existing direct-script path bootstrap.
+There are 35 local passing tests as of 11 November: three historical eye-evidence calibration tests and 32 new Goal 3 parameterized cases. The historical assertions are preserved; only an import-order annotation documents their existing direct-script path bootstrap.
 
 New tests exercise session path and symlink boundaries, invalid/empty/oversized upload handling and cleanup, structured pipeline failure, finite and correctly typed frame metadata, missing model feedback, frame limits, separate session state, stop/reset behavior, temporary SQLite upsert/query/review/export, media rejection, optional write token, disabled archive, liveness/readiness distinction and explicit CPU selection. Inference substitutes intentionally avoid private assets. Temporary databases never write to the user's real archive.
 
@@ -26,4 +26,6 @@ Python dependencies have exact transitive pins in `requirements/dev.txt` and `ru
 
 Three jobs cover backend behavior/quality, frontend lint/types/build and dependency audits. Versions are explicit; actions are pinned to verified full commit SHAs. Permissions are `contents: read`, checkout does not retain credentials, cache keys depend on lockfiles, jobs have timeouts, and test/audit artifacts are retained for 14 days even on failure. No secrets, models or private videos are required.
 
-Remote runs and their exact SHA will be linked after execution. YAML presence alone is not CI success. No branch protection or repository rules were changed; these jobs are not claimed as enforced merge gates until actual repository settings are verified and approved by the owner.
+[Run 42966445209](https://github.com/JohnCoffey-commits/Drowsiness-Detection/actions/runs/42966445209) passed all three jobs for `4773a8727b08b7794514aea046f15dc79e8c64f3` (34 tests at that point). Later changes require a new run. The base branch API reported `protected: false`, enforcement `off`, empty checks/contexts. CI is informational rather than an enforced merge requirement; no rules were changed.
+
+A 35th test executes the Stage 11 CLI with synthetic CSV input and obstructed legacy global-report storage. It verifies session-scoped reporting, covering the real non-root container PermissionError. Production npm audit (`--omit=dev`) separately reported zero findings.
