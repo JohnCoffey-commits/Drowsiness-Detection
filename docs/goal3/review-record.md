@@ -11,7 +11,7 @@ Two peers left comments on PR 5 at documentation commit `b9f47fd709bf45723ca2ed6
 
 - [Review by vishwjit22154](https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5#pullrequestreview-5870136427)
 - [Review by xwkqwe](https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5#pullrequestreview-5870162618)
-- [My reply, drafted and posted with Codex assistance](https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5#issuecomment-6820042554)
+- [My reply to the reviewers](https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5#issuecomment-6820042554)
 
 The reviewers requested no code changes. I have kept their original comments unchanged. Later wording updates do not imply that they reviewed the revised version.
 

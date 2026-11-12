@@ -32,4 +32,4 @@ A 35th test executes the Stage 11 CLI with synthetic CSV input and obstructed le
 
 ## Required checks
 
-On 12 November 2026, Codex configured [ruleset 27044329](https://github.com/JohnCoffey-commits/Drowsiness-Detection/rules/27044329) with my approval. It is active on `codex/visionguard-github-update` and requires `Backend behavior and quality`, `Frontend lint types and build`, and `Dependency audit`, all from GitHub Actions. No bypass actors or extra rules are configured. The saved API response is in the private portfolio at `sources/E08-active-ruleset.json`.
+On 12 November 2026, I configured [ruleset 27044329](https://github.com/JohnCoffey-commits/Drowsiness-Detection/rules/27044329) for my learning PR. It is active on the PR's base branch and requires `Backend behavior and quality`, `Frontend lint types and build`, and `Dependency audit`, all from GitHub Actions. No bypass actors or extra rules are configured. The saved API response is in the private portfolio at `sources/E08-active-ruleset.json`.

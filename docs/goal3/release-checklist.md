@@ -20,4 +20,4 @@ Validated runtime: `08a4da1f3b2d58effdca61c2973fc7529de21451`, 11 November 2026.
 - [x] Two documentation/CI reviews received and acknowledged; see review-record.md.
 - [ ] Final personal review of the reflection; actual study hours remain unknown.
 
-The local portfolio contains the operation records, reflection and review links. PR 5 remains draft and unmerged. Codex configured the three required checks with my approval on 12 November. The saved runtime results refer to the tested version above.
+The local portfolio contains the operation records, reflection and review links. PR 5 remains draft and unmerged. I configured the three required checks on 12 November. The saved runtime results refer to the tested version above.

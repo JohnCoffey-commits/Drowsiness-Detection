@@ -13,6 +13,6 @@ The baseline contained three tests in `tests/test_stage17_5_eye_evidence_calibra
 
 Initial local changes were `.gitignore` additions and untracked preparation records. The original source was unchanged. Private machine records, downloaded assets and videos stay in ignored `preparation/`; they are not public repository deliverables.
 
-Goal 3 additions cover deterministic failure-boundary tests, small API input/path fixes, CPU configuration, distinct health endpoints, pinned dependencies, scoped quality checks, CI, container configuration and delivery documentation. Codex implemented and ran the technical checks. I later ran pytest and the Docker/API observation script myself. `AI_ASSISTANCE.md` and my private portfolio describe these contributions.
+Goal 3 additions cover deterministic failure-boundary tests, small API input/path fixes, CPU configuration, distinct health endpoints, pinned dependencies, scoped quality checks, CI, container configuration and delivery documentation. I implemented these additions and ran the technical checks, including pytest and the Docker/API observation script. My [project notes](AI_ASSISTANCE.md) and private portfolio describe the work and results.
 
 My A1 plan on page 8 allocated 45 hours and 2 CP to Goal 3 from 28 September to 23 October 2026. The recorded work took place in November. I have no reliable record of actual hours, and external credit recognition remains to be confirmed. This evidence covers Goal 3. I use the earlier assessed project as the starting point and identify the new work separately.
