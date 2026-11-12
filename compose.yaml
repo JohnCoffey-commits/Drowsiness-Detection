@@ -1,0 +1,50 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "127.0.0.1:${API_PORT:-8000}:8000"
+    environment:
+      VISIONGUARD_DEVICE: cpu
+      VISIONGUARD_ALLOWED_ORIGINS: ${FRONTEND_ORIGIN:-http://127.0.0.1:3000}
+    volumes:
+      - archive-data:/app/data
+      - type: bind
+        source: ${EYE_MODEL_PATH:-./outputs/mrl_eye/checkpoints/best_mobilenet_v2_mrl_eye.pt}
+        target: /app/outputs/mrl_eye/checkpoints/best_mobilenet_v2_mrl_eye.pt
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${MOUTH_MODEL_PATH:-./checkpoints/resnet18_best.pt}
+        target: /app/checkpoints/resnet18_best.pt
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${FACE_MODEL_PATH:-./artifacts/models/face_landmarker.task}
+        target: /app/artifacts/models/face_landmarker.task
+        read_only: true
+        bind:
+          create_host_path: false
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+  frontend:
+    build:
+      context: ./SystemUI
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://127.0.0.1:8000}
+    ports:
+      - "127.0.0.1:${WEB_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  archive-data:

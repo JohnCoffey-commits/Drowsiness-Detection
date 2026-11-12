@@ -12,6 +12,7 @@ import argparse
 import csv
 import glob
 import json
+import os
 import sys
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -360,7 +361,7 @@ def load_model_and_metadata(
 
     model = build_mobilenet_v2(deps)
     try:
-        payload = deps.torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+        payload = deps.torch.load(checkpoint_path, map_location="cpu", weights_only=True)
     except TypeError:
         payload = deps.torch.load(checkpoint_path, map_location="cpu")
 
@@ -1027,7 +1028,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--face-landmarker", type=Path, default=DEFAULT_FACE_LANDMARKER)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--image-size", type=int, default=224)
-    parser.add_argument("--device", choices=["auto", "cuda", "mps", "cpu"], default="auto")
+    parser.add_argument(
+        "--device", choices=["auto", "cuda", "mps", "cpu"],
+        default=os.environ.get("VISIONGUARD_DEVICE", "auto"),
+    )
     parser.add_argument("--closed-threshold", type=float, default=0.50)
     parser.add_argument("--eye-margin", type=float, default=0.35)
     parser.add_argument("--save-crops", action="store_true")

@@ -1042,6 +1042,8 @@ def run_pipeline(args: argparse.Namespace) -> dict[str, Any]:
             str(eye_stage10_dir / "runtime_eye_roi_predictions.csv"),
             "--output-dir",
             str(eye_stage11_dir),
+            "--repo-report",
+            str(eye_stage11_dir / "stage11_eye_temporal_analysis_report.md"),
             "--closed-threshold",
             "0.50",
             "--rolling-window",
