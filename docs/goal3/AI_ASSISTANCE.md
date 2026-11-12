@@ -1,11 +1,11 @@
-# AI assistance and student participation
+# How I used Codex
 
-Codex assisted with environment setup, source inspection, downloaded asset verification, test and configuration implementation, debugging, command execution, dependency repair, GitHub issue preparation, documentation and evidence assembly. These are AI-assisted artifacts and machine execution records, not automatically the student's learning hours or independent competence.
+I used OpenAI Codex to help implement and check this Goal 3 project. Codex inspected the existing code, verified the downloaded models, added tests and configuration, repaired failures, ran the technical checks, and prepared the GitHub records and documentation. It also helped draft and revise my portfolio and reflection.
 
-The student selected Goal 3 and VisionGuard, authorized the work, opened Docker, provided an authorized local face video, logged into Canvas personally, supplied the original A1 PDF and specified that Canvas must remain read-only. Canvas displayed recorded results for GitHub Essentials Quiz 1 and GitHub Workflow Quiz 2; private academic details are kept in the local portfolio rather than public code documentation. The agent did not take either quiz or submit anything to Canvas.
+I selected VisionGuard for my A1 goal, provided the original A1 report and an authorised video, opened Docker and signed into the course systems myself. On 12 November I ran pytest in the prepared environment and obtained 35 passing tests. I also ran the supplied Docker/API observation script, which reported healthy containers and successful health checks. My screenshots and logs are in the private portfolio. Codex captured the CI screenshot at my request.
 
-Student hands-on operation and explanation of the new toolchain remain pending. A terminal/pytest exercise was offered; the student requested an explanation of what it was, and the agent explained it in plain language. This is not recorded as successful student execution or mastery. The original plan's 45 hours is not recorded as actual time spent.
+These were guided operations. I still need practice setting up and troubleshooting the workflow independently. I do not have a reliable record of my study time; the 45 hours in A1 was my plan.
 
-Human peer review is pending student arrangement. AI self-checks are never labelled as peer feedback. Personal difficulties, understanding, feelings and career judgments for the reflection must come from the student's own answers. Course activities without actual completion evidence remain pending.
+Two peers reviewed the documentation and linked CI results on 12 November, and I replied to their comments. Their review did not independently validate the model. See [the review record](review-record.md). I used Codex to draft and post my brief reply.
 
-Suggested short acknowledgement for the eventual report: “I used OpenAI Codex to assist with implementation, debugging, documentation and evidence organisation. Machine-generated outputs were checked against recorded commands, repository changes and runtime results. My own learning activities and peer feedback are identified separately.” The student should review this wording against their actual final contribution.
+I completed my course quizzes myself. The separate GitHub Skills exercises were implemented and checked with Codex assistance. Their automated completion messages record exercise completion; course recognition is recorded separately in my private portfolio.

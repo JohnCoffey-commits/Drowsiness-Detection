@@ -1,11 +1,18 @@
-# Human review record
+# Peer review and my response
 
-Status: pending. No human code review has yet been recorded for the Goal 3 changes. AI review and automated checks are separate evidence.
+Updated 12 November 2026.
 
-The student should share the draft PR with a real peer. Review focus: input/path failure handling, private asset exclusion, CI scope, model readiness semantics, persistent storage and whether the clean-clone instructions are sufficient. The peer should leave their actual observations on the PR. Record each observation, the student's response and any resulting commit when it exists. Do not fabricate comments, approval or a reviewer's identity.
+Two peers left comments on PR 5 at documentation commit `b9f47fd709bf45723ca2ed69c50234cb946f0624`. They reviewed the PR description, RUNNING.md and the linked GitHub Actions results. Both found no issues within that scope. Neither review establishes an independent application run or model-accuracy evaluation.
 
-Independent reproduction is complete at runtime commit `08a4da1`; the PR stays draft while student learning checks and real human review remain pending. The owner authorised three CI checks on the PR base on 11 November. [Ruleset 27044329](https://github.com/JohnCoffey-commits/Drowsiness-Detection/rules/27044329) enforces those checks from 12 November 2026. Human peer review remains a separate learning activity.
+| Reviewer | Feedback | My response |
+| --- | --- | --- |
+| vishwjit22154 | The setup documentation was clear and all three CI checks passed; explicitly did not run the app or evaluate accuracy | I thanked both reviewers and noted the documentation/CI scope in my portfolio |
+| xwkqwe | The setup steps were clear and all three CI checks passed; no issues found within that scope | Included in the same reply |
 
-Draft PR: https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5
+- [Review by vishwjit22154](https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5#pullrequestreview-5870136427)
+- [Review by xwkqwe](https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5#pullrequestreview-5870162618)
+- [My reply, drafted and posted with Codex assistance](https://github.com/JohnCoffey-commits/Drowsiness-Detection/pull/5#issuecomment-6820042554)
 
-Private project: https://github.com/users/JohnCoffey-commits/projects/1 . Four issues were imported. Issues 1-3 are closed as completed; evidence/human-review issue 4 remains open. The board's closed-issue-to-Done automation was verified when issues 1 and 2 closed. Project privacy was preserved.
+The reviewers requested no code changes. I have kept their original comments unchanged. Later wording updates do not imply that they reviewed the revised version.
+
+PR 5 remains open, draft and unmerged. [Ruleset 27044329](https://github.com/JohnCoffey-commits/Drowsiness-Detection/rules/27044329) requires the three CI checks on the base branch. My [private project](https://github.com/users/JohnCoffey-commits/projects/1) tracks the four Goal 3 issues: Issues 1-3 are closed, while Issue 4 tracks the remaining portfolio and learning records.

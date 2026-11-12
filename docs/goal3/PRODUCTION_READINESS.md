@@ -1,6 +1,6 @@
 # VisionGuard production readiness checklist
 
-11 November 2026. Runtime SHA `08a4da1`. Engineering application of production-ML systems concepts; not a production or road-safety certification or evidence of course completion.
+11 November 2026. Runtime SHA `08a4da1`. This checklist applies production-ML concepts to the prototype. It records engineering checks; model performance and road safety require separate evaluation.
 
 | Area | Verified evidence | Remaining condition |
 | --- | --- | --- |
@@ -13,8 +13,8 @@
 | Storage and recovery | SQLite and outputs survive stop/start and recreation | Tested backups/restores, storage limits and disk-full recovery |
 | Health and logging | Liveness, model readiness and pipeline logs distinguished | Metrics, alert routing and availability objectives |
 | ML monitoring | Signal quality and rule outputs recorded | Drift/ROI trends, versioned evaluation and rollback criteria |
-| Release governance | Exact version, draft PR, linked Issues and private Project | Human review, student understanding and release sign-off |
+| Release governance | Exact version, draft PR, linked Issues, private Project and two documentation/CI reviews | Further independent practice and release sign-off |
 
-Priority: complete human review and personal learning verification; then evaluate labelled failure cases, authenticated access and recovery. Keep human interpretation of warning candidates. No diagnostic or safety guarantee follows from these tests.
+My next priorities are more independent practice with the workflow, labelled failure cases, authenticated access and recovery testing. Keep human interpretation of warning candidates. No diagnostic or safety guarantee follows from these tests.
 
-Reference: [Google MLCC Production ML Systems](https://developers.google.com/machine-learning/crash-course/production-ml-systems). Reading/application and recognized course completion are different claims.
+Reference: [Google MLCC Production ML Systems](https://developers.google.com/machine-learning/crash-course/production-ml-systems). The passing-result screenshot I supplied is kept in my private portfolio; external-course recognition remains to be confirmed.

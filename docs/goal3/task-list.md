@@ -1,6 +1,6 @@
 # Goal 3 task status
 
-Updated 12 November 2026. Implementation, machine verification and personal learning are recorded separately.
+Updated 12 November 2026. This table records the project checks and my own activities.
 
 | Work item | Acceptance evidence | Status |
 | --- | --- | --- |
@@ -13,8 +13,8 @@ Updated 12 November 2026. Implementation, machine verification and personal lear
 | Native video | Real checkpoints, authorized video at runtime SHA | Completed |
 | Clean clone | New environment/npm installation; exact runtime SHA; browser to archive | Verified, including recreation persistence |
 | Draft PR | Complete-app base and linked issues | PR 5 open and draft |
-| Human peer review | Actual comments and responses | Pending student arrangement |
+| Peer review | Two documentation/CI reviews and my reply | Recorded on 12 November; see review-record.md |
 | Evidence pack | E05-E09 editable Word and PDF | Assembled separately; see local delivery QA record |
-| Student learning | Own operations, understanding and reflection | Partial; new toolchain exercise and hours pending |
+| My learning | Pytest and Docker/API operation records; reflection | Guided operations recorded; further independent practice and external recognition remain; actual hours unknown |
 
 See `VERIFICATION.md`, `evidence-index.md` and `review-record.md` for evidence and limits. Machine runtimes are not student learning hours.

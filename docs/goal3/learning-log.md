@@ -1,17 +1,20 @@
-# Goal 3 learning and execution log
+# My Goal 3 learning record
 
-Dates are actual Australia/Sydney dates. Student effort hours are not supplied. Machine runtimes do not measure learning time; A1's 45 hours remains a plan.
+Dates use Australia/Sydney time. I did not keep a reliable study-time log, so I have left actual hours unknown. The 45 hours in A1 was my planned allocation.
 
-| Date | Activity and actor | Result and evidence | Next step |
-| --- | --- | --- | --- |
-| 9 Nov 2026 | AI prepared existing application | Isolated environment, 3 historical tests/frontend checks, verified downloads | Extend delivery scope |
-| 11 Nov 2026 | Student opened Docker, logged into Canvas and supplied authorized video/A1 | Environment and sources available; Canvas read only | Preserve attribution |
-| 11 Nov 2026 | AI test/debug work | 12 initial failing cases; fixes; 35 final tests including 3 historical | Student run and explanation pending |
-| 11 Nov 2026 | AI dependency and quality checks | Locks; lint/format/types/build pass; npm 31 to 7 findings, all remaining moderate dev tools | Monitor upstream fixes |
-| 11 Nov 2026 | AI GitHub workflow | Four Issues, private Project, draft PR 5; actual Actions all three jobs pass | Student inspect logs; real peer review |
-| 11 Nov 2026 | AI container debugging | CPU-index support package, EGL/GLES and report-directory failures corrected | Retain failure-to-fix evidence |
-| 11 Nov 2026 | AI real inference | Native final command 35.49 s; primary API 61.45 s; independent UI 64.5 s | Labelled evaluation remains separate |
-| 11 Nov 2026 | AI clean-clone validation | New Python/npm setup; CPU browser flow; SQLite/output recreation persistence | Student repeat one operation |
-| 11 Nov 2026 | AI evidence assembly | E05-E09, readiness, release/review records, Word/PDF | Student personal reflection and actual hours |
+| Date | Activity | Result |
+| --- | --- | --- |
+| 9 Nov 2026 | Codex checked the existing application and model downloads | Three historical tests and the frontend checks passed |
+| 11 Nov 2026 | I opened Docker, signed into Canvas and provided my A1 report and an authorised video | The required environment and inputs were available |
+| 11 Nov 2026 | Codex added tests and fixed the failures they exposed | 12 initially failing cases; 35 passing tests in the final suite, including the 3 historical tests |
+| 11 Nov 2026 | Codex pinned dependencies and added quality checks | Backend and frontend checks passed; npm findings fell from 31 to 7 moderate development-tool findings |
+| 11 Nov 2026 | Codex set up the Issues, Project and PR | Three GitHub Actions jobs passed |
+| 11 Nov 2026 | Codex built and tested the containers | CPU package, EGL/GLES and report-directory problems were repaired |
+| 11 Nov 2026 | Codex ran real-model inference and checked a fresh clone | Native command 35.49 s; primary API 61.45 s; independent browser run 64.5 s; stored results survived recreation |
+| 12 Nov 2026 | I ran pytest and the supplied Docker/API observation script | 35 tests passed; containers and health endpoints responded successfully |
+| 12 Nov 2026 | Codex implemented the custom Action and three GitHub Skills exercises | Recorded checks passed and the three Skills bots confirmed completion |
+| 12 Nov 2026 | Two peers reviewed the documentation and CI; I replied | Their comments and my reply are linked in review-record.md |
 
-Two existing GitHub quiz results were observed on Canvas, without taking a quiz or submitting information. Other course activities, certificates and external-course recognition are not established by the technical work. The student asked what the proposed pytest exercise meant; an explanation was provided, but execution and understanding remain unverified. No activity is backdated into September/October.
+Both of my Canvas GitHub quiz results are 9/10. My private portfolio also includes the Production ML Systems passing-result screenshot that I supplied. Recognition of external learning and any unverified module activities remain to be confirmed.
+
+I can document the prepared commands I ran. Setting up and debugging the full workflow without help remains an area for further practice. The original command logs retain the failures and results from November.
